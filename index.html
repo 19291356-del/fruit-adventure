@@ -273,11 +273,11 @@ ocean.rotation.x=-Math.PI/2;ocean.position.y=-.12;scene.add(ocean);
 
 const PLAYER_Y=2.05;
 const islands=[
- {name:'Ilha Inicial',x:0,z:0,r:100,top:0x8fc77d,side:0x9a8060,theme:'praia'},
- {name:'Ilha da Floresta',x:-220,z:-65,r:84,top:0x6eaa68,side:0x806c55,theme:'floresta'},
- {name:'Ilha Candy',x:235,z:-85,r:87,top:0xe3adc8,side:0x9a7d91,theme:'candy'},
- {name:'Ilha do Vulcão',x:-150,z:250,r:83,top:0x96967b,side:0x68615c,theme:'vulcao'},
- {name:'Ilha de Papel',x:250,z:255,r:79,top:0xcbd9bf,side:0x929c90,theme:'papel'}
+ {name:'Ilha Inicial',x:0,z:0,r:125,top:0x8fc77d,side:0x9a8060,theme:'praia'},
+ {name:'Ilha da Floresta',x:-220,z:-65,r:108,top:0x6eaa68,side:0x806c55,theme:'floresta'},
+ {name:'Ilha Candy',x:235,z:-85,r:110,top:0xe3adc8,side:0x9a7d91,theme:'candy'},
+ {name:'Ilha do Vulcão',x:-150,z:250,r:106,top:0x96967b,side:0x68615c,theme:'vulcao'},
+ {name:'Ilha de Papel',x:250,z:255,r:102,top:0xcbd9bf,side:0x929c90,theme:'papel'}
 ];
 
 function addBox(parent,w,h,d,material,x,y,z){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),material);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;}
@@ -330,7 +330,7 @@ function addHouse(island,angle,houseIndex){
  g.position.set(island.x+Math.cos(angle)*distance,1.72,island.z+Math.sin(angle)*distance);
  g.rotation.y=angle+Math.PI;
  g.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
- scene.add(g);
+ scene.add(g);enemyHouseColliders.push(g);
 }
 function addTreasureChest(island,islandIndex,chestIndex){
  const palettes={
@@ -372,6 +372,7 @@ function addStaticNpcHealthBar(group,y=4.65){
  const c=document.createElement('canvas');c.width=256;c.height=64;const ctx=c.getContext('2d');ctx.fillStyle='rgba(12,20,22,.82)';ctx.beginPath();ctx.roundRect(7,12,242,39,12);ctx.fill();ctx.fillStyle='#315a3c';ctx.beginPath();ctx.roundRect(15,20,226,22,7);ctx.fill();ctx.fillStyle='#62c778';ctx.beginPath();ctx.roundRect(15,20,226,22,7);ctx.fill();ctx.fillStyle='#fff';ctx.font='bold 17px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('100 / 100',128,31);const tex=new THREE.CanvasTexture(c);const sprite=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthWrite:false}));sprite.scale.set(3.1,.78,1);sprite.position.y=y;group.add(sprite);return sprite;
 }
 const breakables=[];
+const enemyHouseColliders=[];
 const treasureChests=[];
 const openedTreasureChestIds=new Set();
 try{const savedOpened=JSON.parse(localStorage.getItem('fruitAdventureOpenedChests')||'[]');if(Array.isArray(savedOpened))for(const id of savedOpened)openedTreasureChestIds.add(String(id));}catch(err){}
@@ -482,7 +483,20 @@ const questRightLeg=new THREE.Group();questRightLeg.position.set(.29,1.55,0);que
 const questLabel=makeLabel('MESTRE DAS MISSÕES');questLabel.position.set(10,6.5,-13);scene.add(questLabel);addStaticNpcHealthBar(questNpc,4.55);
 
 // Vendedor de frutas: NPC amigável da loja, próximo aos outros mestres.
-const shopNpc=new THREE.Group();scene.add(shopNpc);shopNpc.position.set(-10,PLAYER_Y,-13);
+// Loja construída: o vendedor fica dentro de uma pequena casa com entrada aberta.
+const fruitShopBuilding=new THREE.Group();fruitShopBuilding.position.set(-24,1.72,-13);
+const shopWall=mat(0xcbb58d),shopRoofMat=mat(0x72503b),shopTrim=mat(0x59412f);
+addBox(fruitShopBuilding,10,.35,9,shopTrim,0,.18,0);
+addBox(fruitShopBuilding,.45,5.3,9,shopWall,-5,2.9,0);
+addBox(fruitShopBuilding,.45,5.3,9,shopWall,5,2.9,0);
+addBox(fruitShopBuilding,10,5.3,.45,shopWall,0,2.9,-4.5);
+// Fachada dividida: abertura central para entrar.
+addBox(fruitShopBuilding,3.4,5.3,.45,shopWall,-3.3,2.9,4.5);
+addBox(fruitShopBuilding,3.4,5.3,.45,shopWall,3.3,2.9,4.5);
+addBox(fruitShopBuilding,11,.55,10,shopRoofMat,0,5.75,0);
+const shopSign=makeLabel('VENDEDOR DE FRUTAS');shopSign.scale.set(9,2,1);shopSign.position.set(0,6.9,4.9);fruitShopBuilding.add(shopSign);
+scene.add(fruitShopBuilding);
+const shopNpc=new THREE.Group();scene.add(shopNpc);shopNpc.position.set(-24,PLAYER_Y,-14);
 const shopCoat=mat(0x426b69),shopPants=mat(0x37454b),shopSkin=mat(0xc99a78),shopGold=mat(0xd3ad60);
 addBox(shopNpc,1.0,1.4,.62,shopCoat,0,2.25,0);
 const shopHead=new THREE.Mesh(new THREE.SphereGeometry(.46,16,12),shopSkin);shopHead.position.set(0,3.28,0);shopNpc.add(shopHead);
@@ -493,7 +507,7 @@ const shopArmL=new THREE.Group();shopArmL.position.set(-.67,2.75,0);shopNpc.add(
 const shopArmR=new THREE.Group();shopArmR.position.set(.67,2.75,0);shopNpc.add(shopArmR);addBox(shopArmR,.32,1.1,.35,shopCoat,0,-.48,0);addBox(shopArmR,.28,.28,.3,shopSkin,0,-1.06,0);
 const shopLegL=new THREE.Group();shopLegL.position.set(-.29,1.55,0);shopNpc.add(shopLegL);addBox(shopLegL,.36,1.4,.4,shopPants,0,-.69,0);addBox(shopLegL,.4,.24,.58,mat(0x292d2e),0,-1.42,.08);
 const shopLegR=new THREE.Group();shopLegR.position.set(.29,1.55,0);shopNpc.add(shopLegR);addBox(shopLegR,.36,1.4,.4,shopPants,0,-.69,0);addBox(shopLegR,.4,.24,.58,mat(0x292d2e),0,-1.42,.08);
-const shopLabel=makeLabel('LOJA DE FRUTAS');shopLabel.position.set(-10,6.5,-13);scene.add(shopLabel);addStaticNpcHealthBar(shopNpc,4.55);
+const shopLabel=makeLabel('VENDEDOR DE FRUTAS');shopLabel.position.set(-24,6.5,-14);scene.add(shopLabel);addStaticNpcHealthBar(shopNpc,4.55);
 
 const fruitData=[
  {name:'Papel',chance:17,color:0xe2ddcd,secondary:0xb7c9c1,skills:[
@@ -800,7 +814,20 @@ function updateEnemyHealthBar(enemy){
  ctx.fillStyle='#fff';ctx.font='bold 17px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(Math.max(0,Math.ceil(enemy.userData.hp))+' / '+enemy.userData.maxHp,128,31);
  enemy.userData.healthTexture.needsUpdate=true;
 }
-function createEnemy(x,z,islandIndex){
+function enemyInsideHouse(x,z){
+ const point=new THREE.Vector3(x,PLAYER_Y,z);
+ for(const house of enemyHouseColliders){
+  const local=house.worldToLocal(point.clone());
+  // Casas convencionais: não deixe o inimigo atravessar o volume da construção.
+  // A entrada frontal fica livre para a aproximação.
+  if(Math.abs(local.x)<4.65&&Math.abs(local.z)<3.95&&local.y<5.5){
+   if(local.z>2.9&&Math.abs(local.x)<1.15)continue;
+   return true;
+  }
+ }
+ return false;
+}
+function createEnemy(x,z,islandIndex,isBoss=false){
  const e=new THREE.Group();
  const palettes=[
   {shirt:0x8c6748,pants:0x3b4549,skin:0xc89671,detail:0xe0c17c},
@@ -820,12 +847,23 @@ function createEnemy(x,z,islandIndex){
  const legL=new THREE.Group();legL.position.set(-.29,1.57,0);e.add(legL);addBox(legL,.36,1.38,.4,mat(pal.pants),0,-.68,0);addBox(legL,.4,.24,.58,mat(0x292d2e),0,-1.4,.08);
  const legR=new THREE.Group();legR.position.set(.29,1.57,0);e.add(legR);addBox(legR,.36,1.38,.4,mat(pal.pants),0,-.68,0);addBox(legR,.4,.24,.58,mat(0x292d2e),0,-1.4,.08);
  e.position.set(x,PLAYER_Y,z);
- e.userData={hp:65,maxHp:65,alive:true,attack:Math.random(),islandIndex,speed:1.8+Math.random()*.7,powerCooldown:2+Math.random()*2,walk:Math.random()*6,armL,armR,legL,legR,homeX:x,homeZ:z,powerName:enemyPowers[islandIndex].name};
+ const difficulty=[1,1.65,2.35,3.15,4.1][islandIndex]||1;
+ const maxHp=Math.round(65*difficulty*(isBoss?12:1));
+ e.userData={hp:maxHp,maxHp,alive:true,attack:Math.random(),islandIndex,speed:(1.8+Math.random()*.7)*Math.sqrt(difficulty)*(isBoss?1.12:1),powerCooldown:2+Math.random()*2,walk:Math.random()*6,armL,armR,legL,legR,homeX:x,homeZ:z,powerName:enemyPowers[islandIndex].name,isBoss,difficulty};
+ if(isBoss){e.scale.setScalar(1.8);e.userData.speed*=.85;}
+ e.traverse(o=>{if(o.isMesh)o.castShadow=true});scene.add(e);makeEnemyHealthBar(e);enemies.push(e);return e;
  e.traverse(o=>{if(o.isMesh)o.castShadow=true});scene.add(e);makeEnemyHealthBar(e);enemies.push(e);return e;
 }
 islands.forEach((island,idx)=>{
- const count=idx===0?6:5;
+ const count=idx===0?7:6;
  for(let i=0;i<count;i++){const a=(i/count)*Math.PI*2+.5,r=island.r*.55;createEnemy(island.x+Math.cos(a)*r,island.z+Math.sin(a)*r,idx);}
+ // Um chefe exclusivo por ilha, numa pequena formação rochosa afastada da costa.
+ const angle=.7+idx*1.17,bossX=island.x+Math.cos(angle)*(island.r+25),bossZ=island.z+Math.sin(angle)*(island.r+25);
+ const platform=new THREE.Mesh(new THREE.CylinderGeometry(13,16,5,16),mat(island.side));
+ platform.position.set(bossX,-.1,bossZ);platform.castShadow=true;platform.receiveShadow=true;scene.add(platform);
+ const boss=createEnemy(bossX, bossZ,idx,true);
+ boss.userData.homeX=bossX;boss.userData.homeZ=bossZ;
+ const bossLabel=makeLabel('CHEFE • '+island.name.toUpperCase());bossLabel.scale.set(9,2.2,1);bossLabel.position.set(0,8.8,0);boss.add(bossLabel);
 });
 const enemyProjectiles=[];
 function launchEnemyPower(enemy){
@@ -836,7 +874,7 @@ function launchEnemyPower(enemy){
  else geometry=new THREE.SphereGeometry(.55,12,10);
  const projectile=new THREE.Mesh(geometry,mat(power.color,.72));projectile.position.copy(enemy.position);projectile.position.y+=2.25;projectile.castShadow=true;scene.add(projectile);
  const dir=new THREE.Vector3(player.position.x-projectile.position.x,0,player.position.z-projectile.position.z).normalize();
- enemyProjectiles.push({obj:projectile,dir,speed:11,life:3,damage:power.damage,islandIndex:enemy.userData.islandIndex});
+ enemyProjectiles.push({obj:projectile,dir,speed:11,life:3,damage:Math.round(power.damage*enemy.userData.difficulty*(enemy.userData.isBoss?1.8:1)),islandIndex:enemy.userData.islandIndex});
  message('⚠️ O inimigo usou '+power.name+'!');
 }
 function updateEnemyProjectiles(delta){
@@ -1223,7 +1261,7 @@ function interact(){
  if(modalOpen){closeModals();return;}
  const fruitDrop=nearestFruitDrop(5.2);if(fruitDrop){pickUpFruitDrop(fruitDrop);return;}
  const chest=nearestTreasureChest(6.2);if(chest){openTreasureChest(chest);return;}
- if(currentIsland===0&&player.position.distanceTo(shopNpc.position)<5.8){openShop();return;}
+ if(currentIsland===0&&player.position.distanceTo(shopNpc.position)<8){openShop();return;}
  if(currentIsland===0&&player.position.distanceTo(npc.position)<5.8){openFruitNPC();return;}
  if(currentIsland===0&&player.position.distanceTo(questNpc.position)<5.8){openQuestNPC();return;}
  const boat=nearestBoat();if(boat){openBoatMenu();return;}
@@ -1323,7 +1361,7 @@ function damageEnemy(e,amount,masteryReward=0,killMasteryReward=0){
  if(masteryReward>0)gainMastery(masteryReward);
  if(e.userData.hp<=0&&e.userData.alive){
   e.userData.alive=false;
-  e.userData.respawnAt=performance.now()+10000;
+  e.userData.respawnAt=performance.now()+(e.userData.isBoss?45000:10000);
   scene.remove(e);
   kills++;money+=25;bolt+=10;const leveledUp=addExperience(35);saveBolt();
   const questCompleted=recordQuestKill(e.userData.islandIndex);
@@ -1331,7 +1369,8 @@ function damageEnemy(e,amount,masteryReward=0,killMasteryReward=0){
   // Recompensa especial do soco: só concede maestria quando o golpe final
   // derrota o inimigo e o jogador está com uma fruta equipada.
   if(killMasteryReward>0&&currentFruit)gainMastery(killMasteryReward);
-  const rewardText='💰 +25 moedas • 🔩 +10 Bolt';
+  if(e.userData.isBoss){money+=250+e.userData.islandIndex*150;bolt+=50+e.userData.islandIndex*25;}
+  const rewardText=e.userData.isBoss?'👑 CHEFE DERROTADO! • Recompensa especial':'💰 +25 moedas • 🔩 +10 Bolt';
   const masteryText=killMasteryReward>0&&currentFruit?' • +'+killMasteryReward+' maestria de '+currentFruit:'';
   if(leveledUp){message('⭐ Nível '+level+'! Vida máxima: '+maxHealthForLevel()+' • Dano: +'+Math.round((levelMultiplierFor()-1)*100)+'%'+(level===MAX_LEVEL?' • NÍVEL MÁXIMO ALCANÇADO!':'')+' '+rewardText+masteryText);}
   else if(questCompleted)message('🏆 Inimigo derrotado! '+rewardText+masteryText);
@@ -1712,11 +1751,17 @@ function updateEnemies(delta){
  if(!onlineActive||inventoryOpen||modalOpen)return;
  for(const e of enemies){if(!e.userData.alive||e.userData.islandIndex!==currentIsland)continue;
   const dx=player.position.x-e.position.x,dz=player.position.z-e.position.z,d=Math.hypot(dx,dz);e.userData.attack-=delta;e.userData.powerCooldown-=delta;e.userData.stunned=Math.max(0,(e.userData.stunned||0)-delta);
-  if(e.userData.stunned<=0&&d>2.3&&d<23){e.position.x+=dx/d*e.userData.speed*delta;e.position.z+=dz/d*e.userData.speed*delta;e.rotation.y=Math.atan2(dx,dz);
-   const land=islands[currentIsland],ox=e.position.x-land.x,oz=e.position.z-land.z,rr=Math.hypot(ox,oz),lim=land.r-5;if(rr>lim){e.position.x=land.x+ox/rr*lim;e.position.z=land.z+oz/rr*lim;}
+  if(e.userData.stunned<=0&&d>2.3&&d<23){
+   const stepX=dx/d*e.userData.speed*delta,stepZ=dz/d*e.userData.speed*delta;
+   const nextX=e.position.x+stepX,nextZ=e.position.z+stepZ;
+   if(e.userData.isBoss||!enemyInsideHouse(nextX,nextZ)){e.position.x=nextX;e.position.z=nextZ;}
+   else if(!enemyInsideHouse(e.position.x+stepX,nextZ))e.position.z=nextZ;
+   else if(!enemyInsideHouse(nextX,e.position.z+stepZ))e.position.x=nextX;
+   e.rotation.y=Math.atan2(dx,dz);
+   const land=islands[currentIsland],ox=e.position.x-land.x,oz=e.position.z-land.z,rr=Math.hypot(ox,oz),lim=e.userData.isBoss?land.r+42:land.r-5;if(rr>lim){e.position.x=land.x+ox/rr*lim;e.position.z=land.z+oz/rr*lim;}
    e.userData.walk+=delta*8;const swing=Math.sin(e.userData.walk)*.42;e.userData.legL.rotation.x=swing;e.userData.legR.rotation.x=-swing;e.userData.armL.rotation.x=-swing*.75;e.userData.armR.rotation.x=swing*.75;
   }else{e.userData.legL.rotation.x*=.82;e.userData.legR.rotation.x*=.82;e.userData.armL.rotation.x*=.82;e.userData.armR.rotation.x*=.82;}
-  if(e.userData.stunned<=0&&d<2.4&&e.userData.attack<=0){playerTakeDamage(7);e.userData.attack=1.15;}
+  if(e.userData.stunned<=0&&d<2.4&&e.userData.attack<=0){playerTakeDamage(Math.round(7*e.userData.difficulty*(e.userData.isBoss?2:1)));e.userData.attack=e.userData.isBoss?.85:1.15;}
   else if(e.userData.stunned<=0&&d>=5&&d<15&&e.userData.powerCooldown<=0){launchEnemyPower(e);e.userData.powerCooldown=4.5+Math.random()*1.5;}
  }
 }
@@ -1724,7 +1769,7 @@ function updateCamera(){
  if(travelState&&travelBoat){camera.position.set(travelBoat.position.x+7,travelBoat.position.y+8,travelBoat.position.z+12);camera.lookAt(travelBoat.position.x,travelBoat.position.y+1,travelBoat.position.z);return;}
  const dist=(flying||adminFlying)?13:10,h=dist*Math.cos(pitch);camera.position.set(player.position.x+Math.sin(yaw)*h,player.position.y+3.3+Math.sin(pitch)*dist,player.position.z+Math.cos(yaw)*h);camera.lookAt(player.position.x,player.position.y+2.1,player.position.z);
 }
-function updateHint(){let t='';if(inventoryOpen||modalOpen||pendingFruit){$('hint').style.display='none';return;}const drop=nearestFruitDrop(5.2);const chest=nearestTreasureChest(6.2);if(drop)t='Passe por cima para pegar '+drop.userData.fruitName;else if(chest)t='Aperte E para abrir o baú e ganhar '+chest.userData.reward+' moedas';else if(currentIsland===0&&player.position.distanceTo(shopNpc.position)<6)t='Aperte E para comprar frutas na loja';else if(currentIsland===0&&player.position.distanceTo(npc.position)<6)t='Aperte E para girar uma fruta no Mestre das Frutas';else if(currentIsland===0&&player.position.distanceTo(questNpc.position)<6)t='Aperte E para receber missões e ganhar dinheiro';else if(nearestBoat())t='Aperte E para escolher um barco e viajar para outra ilha';$('hint').textContent=t;$('hint').style.display=t?'block':'none';}
+function updateHint(){let t='';if(inventoryOpen||modalOpen||pendingFruit){$('hint').style.display='none';return;}const drop=nearestFruitDrop(5.2);const chest=nearestTreasureChest(6.2);if(drop)t='Passe por cima para pegar '+drop.userData.fruitName;else if(chest)t='Aperte E para abrir o baú e ganhar '+chest.userData.reward+' moedas';else if(currentIsland===0&&player.position.distanceTo(shopNpc.position)<8)t='Aperte E para comprar frutas na loja';else if(currentIsland===0&&player.position.distanceTo(npc.position)<6)t='Aperte E para girar uma fruta no Mestre das Frutas';else if(currentIsland===0&&player.position.distanceTo(questNpc.position)<6)t='Aperte E para receber missões e ganhar dinheiro';else if(nearestBoat())t='Aperte E para escolher um barco e viajar para outra ilha';$('hint').textContent=t;$('hint').style.display=t?'block':'none';}
 
 addEventListener('keydown',e=>{
  if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();
