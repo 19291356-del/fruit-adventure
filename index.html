@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FRUIT ADVENTURE — VERSÃO 19 ONLINE</title>
+<title>FRUIT ADVENTURE — VERSÃO 20 ONLINE</title>
 <style>
 *{box-sizing:border-box}body{margin:0;overflow:hidden;background:#183746;color:#fff;font-family:Arial,sans-serif}canvas{display:block}
 #hud,#info,#help{position:absolute;background:rgba(19,48,59,.86);border:1px solid rgba(195,235,225,.58);box-shadow:0 10px 28px #12334455;backdrop-filter:blur(7px)}
@@ -58,6 +58,17 @@
 #connectingCard{width:min(360px,calc(100vw - 24px));padding:9px 13px;border-radius:13px;text-align:center;background:rgba(20,65,75,.96);border:1px solid rgba(180,237,210,.85);box-shadow:0 8px 24px #07303e44;pointer-events:none}
 #connectingCard h2,#connectingCard p,#connectingCard small,.connectingMark{display:none}
 #onlineLoadingText{margin:0;padding:7px 9px;border-radius:8px;background:transparent;color:#e5fff0;font-size:12px;font-weight:bold}
+#playerIdentityModal{position:fixed;inset:0;z-index:120;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(6,20,29,.84)}
+#playerIdentityCard{width:min(430px,95vw);padding:24px;border-radius:18px;background:linear-gradient(145deg,#24545d,#142c40);border:1px solid #a0dbc1;box-shadow:0 18px 70px #000b;text-align:center}
+#playerIdentityCard h2{margin:0 0 8px;color:#d8f5e4}
+#playerIdentityCard p{color:#d0e8df;font-size:13px;line-height:1.5}
+#playerIdentityCard input{display:block;width:100%;margin:8px 0;padding:12px;border-radius:9px;border:1px solid #719a9b;background:#0f2933;color:#fff;font-size:14px}
+#playerIdentityCard button{width:100%;margin-top:8px}
+#playerIdentityCreate{background:#9bd8ad;color:#183327}
+#playerIdentityLogin{background:#8fc8df;color:#153342}
+#playerIdentityCloud{background:#354b61;color:#edf7ff}
+#playerIdentityMessage{min-height:22px;color:#ffe0a3;font-size:12px;margin-top:10px}
+#playerIdentityNote{display:block;margin-top:10px;color:#b5d0c7;font-size:10px;line-height:1.45}
 @media(max-width:700px){#connectingCard{padding:19px 16px}#shopCard{padding:14px}#shopFruitList{grid-template-columns:1fr}#shopFruitList .shopFruitRow{gap:7px}.shopBuy{padding:7px 8px;font-size:10px}#card{padding:15px}#fruitChoices{grid-template-columns:repeat(3,minmax(0,1fr));max-height:230px}.fruitCard{font-size:11px}}
 #spinResult{min-height:28px;color:#f1d38a;font-weight:bold;margin:12px 0}
 button{border:0;border-radius:10px;padding:12px 18px;font-weight:bold;cursor:pointer;font-size:14px;transition:filter .16s ease,transform .16s ease,box-shadow .16s ease}button:hover{filter:brightness(1.12);transform:translateY(-1px);box-shadow:0 5px 13px #06141b44}button:active{transform:translateY(0);filter:brightness(.98)}#spinButton{background:#82c9a8;color:#102b25;width:100%}#closeButton{background:#344b54;color:#fff;margin-top:9px;width:100%}
@@ -98,6 +109,7 @@ button{border:0;border-radius:10px;padding:12px 18px;font-weight:bold;cursor:poi
 .adminFruitButton:hover{background:#285575}.adminFruitButton .adminFruitDot{width:26px;height:26px;flex:0 0 26px;border-radius:50%;box-shadow:inset -5px -5px 8px #0006}
 .adminFruitButton span{min-width:0;font-size:12px}.adminFruitButton small{display:block;color:#a9c9df;font-size:10px;margin-top:2px}
 .adminActions{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:7px;margin:12px 0}
+.adminLevelPicker{margin:12px auto;padding:12px;max-width:430px;border:1px solid #7095ad;background:#17344b;border-radius:12px;text-align:left}.adminLevelPicker label{display:block;color:#cdeaff;font-size:12px;font-weight:bold;margin-bottom:8px}.adminLevelRow{display:flex;gap:8px}.adminLevelRow input{width:110px;min-width:0;padding:10px;border-radius:8px;border:1px solid #84a9c4;background:#0e2234;color:#fff;font-size:16px}.adminLevelRow button{flex:1;margin:0}
 #adminState{font-size:12px;color:#9fdbf6;margin:8px 0}
 @media(max-width:650px){.adminCard{padding:13px}#adminFruitGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.adminFruitButton{padding:7px}}
 
@@ -181,6 +193,7 @@ button{border:0;border-radius:10px;padding:12px 18px;font-weight:bold;cursor:poi
    <button id="adminRainButton" class="adminPrimary">🌧️ CHOVER 5 FRUTAS</button>
    <button id="adminInvincibleButton" class="adminPrimary">🛡️ ATIVAR INVENCIBILIDADE</button>
   </div>
+  <div class="adminLevelPicker"><label for="adminLevelInput">⭐ ESCOLHER NÍVEL DO JOGADOR (1–700)</label><div class="adminLevelRow"><input id="adminLevelInput" type="number" min="1" max="700" step="1" value="1"><button id="adminSetLevelButton" class="adminPrimary">APLICAR NÍVEL</button></div></div>
   <p style="font-size:12px">Durante o voo: <b>WASD</b> para mover, <b>ESPAÇO</b> para subir e <b>C</b> para descer.</p>
   <div id="adminFruitGrid"></div>
   <button id="adminPanelClose" class="adminSecondary">FECHAR PAINEL</button>
@@ -202,6 +215,19 @@ button{border:0;border-radius:10px;padding:12px 18px;font-weight:bold;cursor:poi
  </div>
 </div>
 
+<div id="playerIdentityModal" role="dialog" aria-modal="true" aria-labelledby="playerIdentityTitle">
+ <div id="playerIdentityCard">
+  <h2 id="playerIdentityTitle">🌐 BEM-VINDO AO FRUIT ADVENTURE</h2>
+  <p>Antes de entrar no mundo, escolha seu apelido e uma senha exclusiva para este jogo.</p>
+  <input id="playerIdentityNick" type="text" maxlength="16" autocomplete="nickname" placeholder="Seu nick (3 a 16 caracteres)">
+  <input id="playerIdentityPassword" type="password" minlength="8" autocomplete="new-password" placeholder="Senha do jogo (mínimo 8 caracteres)">
+  <button id="playerIdentityCreate">CRIAR PERFIL</button>
+  <button id="playerIdentityLogin">ENTRAR COM PERFIL EXISTENTE</button>
+  <button id="playerIdentityCloud">USAR CONTA DO SERVIDOR (E-MAIL)</button>
+  <div id="playerIdentityMessage">Conecte-se ao mundo para continuar.</div>
+  <small id="playerIdentityNote">Aviso: o serviço de contas ainda não está configurado nesta publicação. Este perfil fica salvo somente neste navegador. Use uma senha exclusiva, nunca a mesma de outras contas.</small>
+ </div>
+</div>
 <div id="connectingOverlay" aria-live="polite">
  <div id="connectingCard">
   <div class="connectingMark">🌐</div>
@@ -822,9 +848,20 @@ function updateEnemyProjectiles(delta){
 }
 
 // ESTADO DO JOGO
+const MAX_LEVEL=700;
 let currentFruit=null,money=0,bolt=0,xp=0,level=1,health=100,kills=0;
+try{level=Math.min(MAX_LEVEL,Math.max(1,Math.floor(Number(localStorage.getItem('fruitAdventureLevel'))||1)));xp=Math.max(0,Math.min(99,Math.floor(Number(localStorage.getItem('fruitAdventureXP'))||0)));}catch(err){}
 try{const savedBolt=Number(localStorage.getItem('fruitAdventureBolt')||0);if(Number.isFinite(savedBolt))bolt=Math.max(0,Math.floor(savedBolt));}catch(err){}
 function saveBolt(){try{localStorage.setItem('fruitAdventureBolt',String(bolt));}catch(err){}}
+function addExperience(amount){
+ if(level>=MAX_LEVEL){level=MAX_LEVEL;xp=0;return false;}
+ xp+=Math.max(0,Math.floor(Number(amount)||0));
+ let leveledUp=false;
+ while(xp>=100&&level<MAX_LEVEL){xp-=100;level++;leveledUp=true;}
+ if(level>=MAX_LEVEL){level=MAX_LEVEL;xp=0;}
+ try{localStorage.setItem('fruitAdventureLevel',String(level));localStorage.setItem('fruitAdventureXP',String(xp));}catch(err){}
+ return leveledUp;
+}
 let activeQuest=null,completedQuests=0;
 let currentIsland=0,yaw=0,pitch=.28,locked=false,jumping=false,velocityY=0;
 let attackCooldown=0,messageTime=0,modalOpen=false,walkTime=0;
@@ -918,10 +955,20 @@ function adminEquipFruit(name){
  message('🍎 ADM: '+name+' equipada com todas as habilidades liberadas!');
  updateAdminButtons();
 }
+function applyAdminLevel(){
+ if(!adminUnlocked)return;
+ const requested=Math.floor(Number($('adminLevelInput').value));
+ if(!Number.isFinite(requested)){message('Digite um nível entre 1 e '+MAX_LEVEL+'.');return;}
+ level=Math.max(1,Math.min(MAX_LEVEL,requested));xp=0;
+ try{localStorage.setItem('fruitAdventureLevel',String(level));localStorage.setItem('fruitAdventureXP','0');}catch(err){}
+ updateHUD();updateAdminButtons();message('⭐ Nível alterado para '+level+'!');
+ if(typeof queueCloudSave==='function')queueCloudSave();
+}
 function updateAdminButtons(){
  const button=$('adminFlyToggle');if(button)button.textContent=adminFlying?'🛬 DESATIVAR VOO ADM':'✈️ ATIVAR VOO ADM';
  const inv=$('adminInvincibleButton');if(inv)inv.textContent=adminInvincible?'🛡️ DESATIVAR INVENCIBILIDADE':'🛡️ ATIVAR INVENCIBILIDADE';
- const state=$('adminState');if(state)state.textContent='MODO ADM ATIVO • '+(currentFruit?'FRUTA: '+currentFruit:'SEM FRUTA')+' • '+(adminFlying?'VOANDO':'NO CHÃO')+' • '+(adminInvincible?'INVENCÍVEL':'VULNERÁVEL');
+ const levelInput=$('adminLevelInput');if(levelInput&&document.activeElement!==levelInput)levelInput.value=String(level);
+ const state=$('adminState');if(state)state.textContent='MODO ADM ATIVO • NÍVEL '+level+'/'+MAX_LEVEL+' • '+(currentFruit?'FRUTA: '+currentFruit:'SEM FRUTA')+' • '+(adminFlying?'VOANDO':'NO CHÃO')+' • '+(adminInvincible?'INVENCÍVEL':'VULNERÁVEL');
 }
 function toggleAdminInvincibility(){
  if(!adminUnlocked)return;adminInvincible=!adminInvincible;
@@ -963,6 +1010,7 @@ function toggleAdminFlight(){
  updateAdminButtons();updateHUD();
 }
 $('adminCodeSubmit').addEventListener('click',submitAdminCode);
+$('adminSetLevelButton').addEventListener('click',applyAdminLevel);
 $('adminCodeClose').addEventListener('click',closeAdminUI);
 $('adminPanelClose').addEventListener('click',closeAdminUI);
 $('adminFlyToggle').addEventListener('click',toggleAdminFlight);
@@ -1262,7 +1310,7 @@ function damageEnemy(e,amount,masteryReward=0,killMasteryReward=0){
   e.userData.alive=false;
   e.userData.respawnAt=performance.now()+10000;
   scene.remove(e);
-  kills++;money+=25;bolt+=10;xp+=35;saveBolt();
+  kills++;money+=25;bolt+=10;const leveledUp=addExperience(35);saveBolt();
   const questCompleted=recordQuestKill(e.userData.islandIndex);
   if(masteryReward>0)gainMastery(5);
   // Recompensa especial do soco: só concede maestria quando o golpe final
@@ -1270,7 +1318,7 @@ function damageEnemy(e,amount,masteryReward=0,killMasteryReward=0){
   if(killMasteryReward>0&&currentFruit)gainMastery(killMasteryReward);
   const rewardText='💰 +25 moedas • 🔩 +10 Bolt';
   const masteryText=killMasteryReward>0&&currentFruit?' • +'+killMasteryReward+' maestria de '+currentFruit:'';
-  if(xp>=100){xp-=100;level++;message('⭐ Nível '+level+'! '+rewardText+masteryText);}
+  if(leveledUp){message('⭐ Nível '+level+'!'+(level===MAX_LEVEL?' • NÍVEL MÁXIMO ALCANÇADO!':'')+' '+rewardText+masteryText);}
   else if(questCompleted)message('🏆 Inimigo derrotado! '+rewardText+masteryText);
   else message('Inimigo derrotado! '+rewardText+masteryText);
   updateHUD();
@@ -1715,12 +1763,70 @@ function updateOnlineCount(){
  const count=onlineIsHost?onlineConnections.size+1:(onlineActive?onlineRemoteModels.size+1:0);
  $('onlineConnectionCount').textContent=onlineActive?('👥 '+count+' jogador(es) conectados'):'Aguardando jogadores...';
 }
+let playerIdentityAuthenticated=false,playerIdentityPrompted=false;
+const LOCAL_PLAYER_ACCOUNTS_KEY='fruitAdventureLocalAccountsV1';
+function readLocalPlayerAccounts(){
+ try{const value=JSON.parse(localStorage.getItem(LOCAL_PLAYER_ACCOUNTS_KEY)||'{}');return value&&typeof value==='object'?value:{};}catch(err){return {};}
+}
+async function derivePlayerPasswordHash(password,salt){
+ if(!window.crypto?.subtle)throw new Error('Use o jogo pelo endereço HTTPS do GitHub Pages para criar a conta.');
+ const material=await crypto.subtle.importKey('raw',new TextEncoder().encode(password),'PBKDF2',false,['deriveBits']);
+ const bits=await crypto.subtle.deriveBits({name:'PBKDF2',salt:new TextEncoder().encode(salt),iterations:160000,hash:'SHA-256'},material,256);
+ return Array.from(new Uint8Array(bits),b=>b.toString(16).padStart(2,'0')).join('');
+}
+function finishPlayerIdentity(nick){
+ onlinePlayerName=nick.slice(0,16);playerIdentityAuthenticated=true;playerIdentityPrompted=true;
+ try{localStorage.setItem('fruitAdventurePlayerName',onlinePlayerName);}catch(err){}
+ $('playerIdentityModal').style.display='none';modalOpen=false;
+ message('✅ Bem-vindo, '+onlinePlayerName+'!');updateHUD();
+}
+function requirePlayerIdentity(){
+ if(playerIdentityAuthenticated||cloudUser)return;
+ if(playerIdentityPrompted)return;
+ playerIdentityPrompted=true;modalOpen=true;
+ if(document.pointerLockElement)document.exitPointerLock();
+ const savedNick=localStorage.getItem('fruitAdventurePlayerName')||'';
+ if(savedNick)$('playerIdentityNick').value=savedNick;
+ const accounts=readLocalPlayerAccounts(),key=savedNick.trim().toLowerCase();
+ $('playerIdentityMessage').textContent=key&&accounts[key]?'Perfil encontrado. Digite sua senha para entrar ou escolha outro nick.':'Escolha seu nick e senha para criar o perfil deste navegador.';
+ $('playerIdentityModal').style.display='flex';
+}
+async function createLocalPlayerIdentity(){
+ const nick=$('playerIdentityNick').value.trim(),password=$('playerIdentityPassword').value;
+ if(!/^[A-Za-zÀ-ÿ0-9 _-]{3,16}$/.test(nick)){$('playerIdentityMessage').textContent='Use um nick de 3 a 16 caracteres, com letras, números, espaço, _ ou -.';return;}
+ if(password.length<8){$('playerIdentityMessage').textContent='A senha precisa ter pelo menos 8 caracteres.';return;}
+ const accounts=readLocalPlayerAccounts(),key=nick.toLowerCase();
+ if(accounts[key]){$('playerIdentityMessage').textContent='Esse nick já tem perfil neste navegador. Use ENTRAR.';return;}
+ try{
+  const salt=Array.from(crypto.getRandomValues(new Uint8Array(16)),b=>b.toString(16).padStart(2,'0')).join('');
+  const hash=await derivePlayerPasswordHash(password,salt);
+  accounts[key]={nick,salt,hash,createdAt:new Date().toISOString()};
+  localStorage.setItem(LOCAL_PLAYER_ACCOUNTS_KEY,JSON.stringify(accounts));
+  $('playerIdentityPassword').value='';finishPlayerIdentity(nick);
+ }catch(err){$('playerIdentityMessage').textContent=err.message||'Não foi possível criar o perfil neste navegador.';}
+}
+async function loginLocalPlayerIdentity(){
+ const nick=$('playerIdentityNick').value.trim(),password=$('playerIdentityPassword').value;
+ if(!nick||!password){$('playerIdentityMessage').textContent='Digite seu nick e sua senha.';return;}
+ const accounts=readLocalPlayerAccounts(),account=accounts[nick.toLowerCase()];
+ if(!account){$('playerIdentityMessage').textContent='Perfil não encontrado neste navegador. Clique em CRIAR PERFIL.';return;}
+ try{
+  const hash=await derivePlayerPasswordHash(password,account.salt);
+  if(hash!==account.hash){$('playerIdentityMessage').textContent='Senha incorreta. Tente novamente.';return;}
+  $('playerIdentityPassword').value='';finishPlayerIdentity(account.nick);
+ }catch(err){$('playerIdentityMessage').textContent=err.message||'Não foi possível verificar a senha.';}
+}
+function openCloudAccountFromIdentity(){
+ if(!cloudClient){$('playerIdentityMessage').textContent='A conta no servidor ainda não está configurada. Use o perfil local ou configure o serviço Supabase.';return;}
+ openAccountModal();
+}
 function onlineSetStatus(messageText){
  onlineStatus(messageText);updateOnlineCount();
  const overlay=$('connectingOverlay');if(overlay)overlay.style.display=onlineActive?'none':'flex';
+ if(onlineActive)requirePlayerIdentity();
 }
 function onlineMakeLocalState(){
- return {name:onlinePlayerName,x:player.position.x,y:player.position.y,z:player.position.z,yaw:player.rotation.y,island:currentIsland,fruit:currentFruit||'',level:level,health:health,adminFlying:!!adminFlying,flying:!!flying,openedChests:[...openedTreasureChestIds]};
+ return {name:onlinePlayerName,x:player.position.x,y:player.position.y,z:player.position.z,yaw:player.rotation.y,island:currentIsland,fruit:currentFruit||'',level:Math.min(MAX_LEVEL,Math.max(1,level)),health:health,adminFlying:!!adminFlying,flying:!!flying,openedChests:[...openedTreasureChestIds]};
 }
 function onlineSendToHost(packet){if(onlineHostConnection&&onlineHostConnection.open){try{onlineHostConnection.send(packet);}catch(err){onlineSetStatus('Falha ao enviar dados. Tente reconectar.');}}}
 function onlineBroadcast(packet,exceptId=null){for(const [id,conn] of onlineConnections){if(id!==exceptId&&conn.open){try{conn.send(packet);}catch(err){}}}}
@@ -1954,17 +2060,19 @@ let cloudClient=null,cloudUser=null,cloudSaveTimer=null,cloudLastSignature='',cl
 function accountMessage(text){const el=$('accountMessage');if(el)el.textContent=text;}
 function openAccountModal(){modalOpen=true;$('accountModal').style.display='flex';if(document.pointerLockElement)document.exitPointerLock();}
 function closeAccountModal(){modalOpen=false;$('accountModal').style.display='none';}
-function cloudProfileRow(){return {user_id:cloudUser.id,display_name:(onlinePlayerName||'Aventureiro').slice(0,16),money:Math.max(0,Math.floor(money)),bolt:Math.max(0,Math.floor(bolt)),xp:Math.max(0,Math.floor(xp)),level:Math.max(1,Math.floor(level)),health:Math.max(0,Math.min(100,Math.floor(health))),fruit:currentFruit||null,mastery:masteryByFruit,stored_fruits:storedFruits,kills:Math.max(0,Math.floor(kills))};}
+function cloudProfileRow(){return {user_id:cloudUser.id,display_name:(onlinePlayerName||'Aventureiro').slice(0,16),money:Math.max(0,Math.floor(money)),bolt:Math.max(0,Math.floor(bolt)),xp:Math.max(0,Math.floor(xp)),level:Math.min(MAX_LEVEL,Math.max(1,Math.floor(level))),health:Math.max(0,Math.min(100,Math.floor(health))),fruit:currentFruit||null,mastery:masteryByFruit,stored_fruits:storedFruits,kills:Math.max(0,Math.floor(kills))};}
 async function loadCloudProfile(){
  if(!cloudClient||!cloudUser)return;
  const {data,error}=await cloudClient.from('player_profiles').select('*').eq('user_id',cloudUser.id).maybeSingle();
  if(error){accountMessage('Login feito, mas não consegui ler o perfil. Confira o arquivo SQL e as políticas de acesso. '+error.message);return;}
- if(data){money=Math.max(0,Number(data.money)||0);bolt=Math.max(0,Number(data.bolt)||0);xp=Math.max(0,Number(data.xp)||0);level=Math.max(1,Number(data.level)||1);health=Math.max(1,Math.min(100,Number(data.health)||100));kills=Math.max(0,Number(data.kills)||0);currentFruit=data.fruit&&fruitByName[data.fruit]?data.fruit:null;
+ if(data){money=Math.max(0,Number(data.money)||0);bolt=Math.max(0,Number(data.bolt)||0);xp=Math.max(0,Number(data.xp)||0);level=Math.min(MAX_LEVEL,Math.max(1,Math.floor(Number(data.level)||1)));health=Math.max(1,Math.min(100,Number(data.health)||100));kills=Math.max(0,Number(data.kills)||0);currentFruit=data.fruit&&fruitByName[data.fruit]?data.fruit:null;
+  if(level>=MAX_LEVEL)xp=0;
   if(data.mastery&&typeof data.mastery==='object')for(const name of fruitNames)if(Number.isFinite(Number(data.mastery[name])))masteryByFruit[name]=Math.max(0,Number(data.mastery[name]));
   storedFruits.splice(0,storedFruits.length,...(Array.isArray(data.stored_fruits)?data.stored_fruits.filter(n=>fruitByName[n]):[]));
  }else{const {error:insertError}=await cloudClient.from('player_profiles').upsert(cloudProfileRow(),{onConflict:'user_id'});if(insertError){accountMessage('Conta conectada, mas não consegui criar o perfil: '+insertError.message);return;}}
  if(cloudUser.user_metadata?.display_name){onlinePlayerName=String(cloudUser.user_metadata.display_name).slice(0,16);try{localStorage.setItem('fruitAdventurePlayerName',onlinePlayerName);}catch(e){}}
  try{localStorage.setItem('fruitAdventureEquipped',currentFruit||'');localStorage.setItem('fruitAdventureBag',JSON.stringify(storedFruits));localStorage.setItem('fruitAdventureBolt',String(bolt));localStorage.setItem('fruitAdventureMastery',JSON.stringify(masteryByFruit));}catch(e){}
+ playerIdentityAuthenticated=true;playerIdentityPrompted=true;$('playerIdentityModal').style.display='none';
  cloudLastSignature=JSON.stringify(cloudProfileRow());updateHUD();renderInventory();accountMessage('Conectado como '+(cloudUser.email||onlinePlayerName)+'. Seu progresso será sincronizado na nuvem.');
 }
 function queueCloudSave(){
@@ -2006,6 +2114,8 @@ async function signInCloudAccount(){
 async function signOutCloudAccount(){if(!cloudClient||!cloudUser){accountMessage('Nenhuma conta conectada.');return;}const {error}=await cloudClient.auth.signOut();if(error){accountMessage('Erro ao sair: '+error.message);return;}clearTimeout(cloudSaveTimer);cloudSaveTimer=null;cloudQueuedSignature='';cloudUser=null;cloudLastSignature='';accountMessage('Você saiu da conta.');}
 async function initCloudAccounts(){
  $('accountOpenButton').addEventListener('click',openAccountModal);$('accountClose').addEventListener('click',closeAccountModal);
+ $('playerIdentityCreate').addEventListener('click',createLocalPlayerIdentity);$('playerIdentityLogin').addEventListener('click',loginLocalPlayerIdentity);$('playerIdentityCloud').addEventListener('click',openCloudAccountFromIdentity);
+ $('playerIdentityPassword').addEventListener('keydown',e=>{if(e.key==='Enter')loginLocalPlayerIdentity();});
  $('accountSignUp').addEventListener('click',createCloudAccount);$('accountSignIn').addEventListener('click',signInCloudAccount);$('accountSignOut').addEventListener('click',signOutCloudAccount);
  if(SUPABASE_URL.startsWith('COLE_')||SUPABASE_ANON_KEY.startsWith('COLE_')||!window.supabase?.createClient){accountMessage('Contas no servidor aguardam configuração. O modo online público continua disponível sem conta.');return;}
  try{cloudClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});const {data,error}=await cloudClient.auth.getSession();if(error)throw error;if(data.session){cloudUser=data.session.user;await loadCloudProfile();}else accountMessage('Servidor de contas conectado. Crie uma conta ou entre para sincronizar seu progresso.');}
