@@ -957,7 +957,7 @@ function toggleAdminFlight(){
   const dx=player.position.x-land.x,dz=player.position.z-land.z,d=Math.hypot(dx,dz),limit=land.r-5;
   if(d>limit){player.position.x=land.x+dx/d*limit;player.position.z=land.z+dz/d*limit;}
   player.position.y=PLAYER_Y;
-  $('help').textContent='WASD: andar · Mouse: câmera · Clique/F: soco · 1–5: habilidades · Q: 1ª habilidade · E: interagir · Espaço: pular · Shift: correr · Botão direito: ADM';
+  $('help').textContent='WASD: andar · Mouse: câmera · Clique/F: soco · 1–5: habilidades · Q: 1ª habilidade · E: interagir · Espaço: pular · Shift: correr';
   message('🛬 Voo ADM desativado.');
  }
  updateAdminButtons();updateHUD();
