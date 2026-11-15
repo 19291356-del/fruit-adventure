@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FRUIT ADVENTURE — VERSÃO 20 ONLINE</title>
+<title>FRUIT ADVENTURE — VERSÃO 21 ONLINE</title>
 <style>
 *{box-sizing:border-box}body{margin:0;overflow:hidden;background:#183746;color:#fff;font-family:Arial,sans-serif}canvas{display:block}
 #hud,#info,#help{position:absolute;background:rgba(19,48,59,.86);border:1px solid rgba(195,235,225,.58);box-shadow:0 10px 28px #12334455;backdrop-filter:blur(7px)}
@@ -136,7 +136,7 @@ button{border:0;border-radius:10px;padding:12px 18px;font-weight:bold;cursor:poi
 <body>
 <div id="hud">
  <div class="stat" id="level">Nível: 1</div>
- <div class="stat">❤️ Vida: <span id="health">100</span>/100<div class="bar"><div id="hp" class="fill"></div></div></div>
+ <div class="stat">❤️ Vida: <span id="health">100</span>/<span id="maxHealth">100</span><div class="bar"><div id="hp" class="fill"></div></div></div>
  <div class="currencyRow"><div class="currencyStat moneyStat">💰 DINHEIRO<b id="money">0</b></div><div class="currencyStat boltStat">🔩 BOLT<b id="bolt">0</b></div></div>
 </div>
 <div id="info"><b id="islandName">ILHA INICIAL</b><br>Abates: <span id="kills">0</span><br>Inimigos próximos: <span id="nearby">0</span><br>🚤 Barcos: 5<br><span id="missionStatus">📜 Missão: nenhuma</span><div id="onlineStatus">🌐 Conectando ao mundo público...</div><div id="onlineConnectionCount">Aguardando jogadores...</div><button id="accountOpenButton" style="margin-top:7px;padding:8px 10px;background:#395f79;color:#fff;width:100%;font-size:11px">👤 CONTA / ENTRAR</button></div>
@@ -159,7 +159,7 @@ button{border:0;border-radius:10px;padding:12px 18px;font-weight:bold;cursor:poi
 <div id="modal">
  <div id="card">
   <h2>🍈 MESTRE DAS FRUTAS</h2>
-  <p>Gire uma fruta aleatória! Existem <b>20 frutas</b>. Cada tentativa custa <b>100 moedas</b>. A fruta aparece no chão: pegue-a para segurá-la e depois escolha se quer comer ou guardar.</p>
+  <p>Gire uma fruta aleatória! Existem <b>20 frutas</b>. O preço aumenta 25% a cada nível. Preço atual: <b id="fruitSpinPrice">100 moedas</b>. A fruta aparece no chão: pegue-a para segurá-la e depois escolha se quer comer ou guardar.</p>
   <div id="fruitChoices" aria-label="Catálogo das 20 frutas"></div>
   <div id="fruitOddsNote">As porcentagens mostram a chance de cada fruta sair na roleta. A fruta Buraco Negro é exclusiva do painel ADM.</div>
   <div id="spinResult">Você ainda não tem fruta.</div>
@@ -851,15 +851,21 @@ function updateEnemyProjectiles(delta){
 const MAX_LEVEL=700;
 let currentFruit=null,money=0,bolt=0,xp=0,level=1,health=100,kills=0;
 try{level=Math.min(MAX_LEVEL,Math.max(1,Math.floor(Number(localStorage.getItem('fruitAdventureLevel'))||1)));xp=Math.max(0,Math.min(99,Math.floor(Number(localStorage.getItem('fruitAdventureXP'))||0)));}catch(err){}
+function levelMultiplierFor(value=level){const safeLevel=Math.max(1,Math.min(MAX_LEVEL,Math.floor(Number(value)||1)));return 1+(safeLevel-1)*.01;}
+function maxHealthForLevel(value=level){return Math.round(100*levelMultiplierFor(value));}
+function damageForLevel(baseDamage,value=level){return Math.round(Math.max(0,Number(baseDamage)||0)*levelMultiplierFor(value)*100)/100;}
+health=maxHealthForLevel(level);
 try{const savedBolt=Number(localStorage.getItem('fruitAdventureBolt')||0);if(Number.isFinite(savedBolt))bolt=Math.max(0,Math.floor(savedBolt));}catch(err){}
 function saveBolt(){try{localStorage.setItem('fruitAdventureBolt',String(bolt));}catch(err){}}
 function addExperience(amount){
  if(level>=MAX_LEVEL){level=MAX_LEVEL;xp=0;return false;}
+ const oldMaxHealth=maxHealthForLevel(level);
  xp+=Math.max(0,Math.floor(Number(amount)||0));
  let leveledUp=false;
  while(xp>=100&&level<MAX_LEVEL){xp-=100;level++;leveledUp=true;}
  if(level>=MAX_LEVEL){level=MAX_LEVEL;xp=0;}
- try{localStorage.setItem('fruitAdventureLevel',String(level));localStorage.setItem('fruitAdventureXP',String(xp));}catch(err){}
+ if(leveledUp){const healthGain=maxHealthForLevel(level)-oldMaxHealth;health=Math.min(maxHealthForLevel(level),health+healthGain);}
+ try{localStorage.setItem('fruitAdventureLevel',String(level));localStorage.setItem('fruitAdventureXP',String(xp));localStorage.setItem('fruitAdventureHealth',String(health));}catch(err){}
  return leveledUp;
 }
 let activeQuest=null,completedQuests=0;
@@ -933,6 +939,7 @@ function openAdminAccess(){
 }
 function openAdminPanel(){
  $('adminCodeModal').style.display='none';$('adminPanelModal').style.display='flex';
+ $('adminLevelInput').value=String(level);
  renderAdminFruitGrid();updateAdminButtons();
 }
 function closeAdminUI(){
@@ -959,15 +966,19 @@ function applyAdminLevel(){
  if(!adminUnlocked)return;
  const requested=Math.floor(Number($('adminLevelInput').value));
  if(!Number.isFinite(requested)){message('Digite um nível entre 1 e '+MAX_LEVEL+'.');return;}
+ const oldLevel=level,oldMaxHealth=maxHealthForLevel(level);
  level=Math.max(1,Math.min(MAX_LEVEL,requested));xp=0;
- try{localStorage.setItem('fruitAdventureLevel',String(level));localStorage.setItem('fruitAdventureXP','0');}catch(err){}
- updateHUD();updateAdminButtons();message('⭐ Nível alterado para '+level+'!');
+ const newMaxHealth=maxHealthForLevel(level);
+ if(level>oldLevel)health=Math.min(newMaxHealth,health+(newMaxHealth-oldMaxHealth));
+ else health=Math.min(newMaxHealth,health);
+ try{localStorage.setItem('fruitAdventureLevel',String(level));localStorage.setItem('fruitAdventureXP','0');localStorage.setItem('fruitAdventureHealth',String(health));}catch(err){}
+ $('adminLevelInput').value=String(level);
+ updateHUD();updateAdminButtons();message('⭐ Nível '+level+' aplicado! Vida: '+Math.ceil(health)+'/'+newMaxHealth+' • Dano: +'+Math.round((levelMultiplierFor(level)-1)*100)+'%.');
  if(typeof queueCloudSave==='function')queueCloudSave();
 }
 function updateAdminButtons(){
  const button=$('adminFlyToggle');if(button)button.textContent=adminFlying?'🛬 DESATIVAR VOO ADM':'✈️ ATIVAR VOO ADM';
  const inv=$('adminInvincibleButton');if(inv)inv.textContent=adminInvincible?'🛡️ DESATIVAR INVENCIBILIDADE':'🛡️ ATIVAR INVENCIBILIDADE';
- const levelInput=$('adminLevelInput');if(levelInput&&document.activeElement!==levelInput)levelInput.value=String(level);
  const state=$('adminState');if(state)state.textContent='MODO ADM ATIVO • NÍVEL '+level+'/'+MAX_LEVEL+' • '+(currentFruit?'FRUTA: '+currentFruit:'SEM FRUTA')+' • '+(adminFlying?'VOANDO':'NO CHÃO')+' • '+(adminInvincible?'INVENCÍVEL':'VULNERÁVEL');
 }
 function toggleAdminInvincibility(){
@@ -1123,11 +1134,12 @@ $('shopClose').addEventListener('click',closeShop);
 
 function updateHUD(){
  $('level').textContent='Nível: '+level;
- $('health').textContent=Math.floor(health);
+ $('health').textContent=Math.ceil(health);
+ $('maxHealth').textContent=maxHealthForLevel().toLocaleString('pt-BR');
  $('money').textContent=money.toLocaleString('pt-BR');
  $('bolt').textContent=bolt.toLocaleString('pt-BR');
  $('kills').textContent=kills;
- $('hp').style.width=health+'%';
+ $('hp').style.width=Math.max(0,Math.min(100,health/maxHealthForLevel()*100))+'%';
  $('islandName').textContent=islands[currentIsland].name.toUpperCase();
  $('nearby').textContent=enemies.filter(e=>e.userData.alive&&e.userData.islandIndex===currentIsland&&player.position.distanceTo(e.position)<18).length;
  if(activeQuest){$('missionStatus').textContent='📜 Missão: '+islands[activeQuest.islandIndex].name+' — '+activeQuest.progress+'/'+activeQuest.target;}
@@ -1165,13 +1177,15 @@ function gainMastery(amount){
  updateMasteryUI();
  if(unlocked)message('🔓 HABILIDADE LIBERADA: '+unlocked.name+'!');
 }
-function openFruitNPC(){modalOpen=true;$('modal').style.display='flex';$('spinResult').textContent=currentFruit?'Fruta equipada: '+currentFruit+' • Maestria: '+currentMastery()+'. Cada giro custa 100 moedas.':'Você ainda não tem fruta. Cada giro custa 100 moedas.';if(document.pointerLockElement)document.exitPointerLock();}
+function fruitSpinCost(){return Math.ceil(100*Math.pow(1.25,Math.max(0,level-1)));}
+function refreshFruitSpinPrice(){const cost=fruitSpinCost();const formatted=cost.toLocaleString('pt-BR');$('fruitSpinPrice').textContent=formatted+' moedas';$('spinButton').textContent='GIRAR FRUTA — '+formatted+' MOEDAS';}
+function openFruitNPC(){modalOpen=true;$('modal').style.display='flex';refreshFruitSpinPrice();const cost=fruitSpinCost().toLocaleString('pt-BR');$('spinResult').textContent=currentFruit?'Fruta equipada: '+currentFruit+' • Maestria: '+currentMastery()+'. Este giro custa '+cost+' moedas.':'Você ainda não tem fruta. Este giro custa '+cost+' moedas.';if(document.pointerLockElement)document.exitPointerLock();}
 function closeFruitNPC(){modalOpen=false;$('modal').style.display='none';}
 function closeBoatMenu(){modalOpen=false;$('boatModal').style.display='none';}
 function closeModals(){if(pendingFruit)return;if($('accountModal').style.display==='flex'){closeAccountModal();return;}if(adminUIOpen){closeAdminUI();return;}closeFruitNPC();closeBoatMenu();closeQuestNPC();closeShop();}
 function spinFruit(){
- const cost=100;
- if(money<cost){$('spinResult').textContent='Você precisa de 100 moedas. Derrote inimigos para ganhar moedas.';return;}
+ const cost=fruitSpinCost();
+ if(money<cost){$('spinResult').textContent='Você precisa de '+cost.toLocaleString('pt-BR')+' moedas para este giro. Derrote inimigos ou abra baús para ganhar dinheiro.';return;}
  money-=cost;
  let roll=Math.random()*100;let selected=fruitData.find(f=>!f.adminOnly);for(const fruit of fruitData){if(fruit.adminOnly)continue;roll-=fruit.chance;if(roll<0){selected=fruit;break;}}
  attachFruitToHand(selected.name);
@@ -1304,7 +1318,8 @@ function damageEnemy(e,amount,masteryReward=0,killMasteryReward=0){
  if(!e.userData.alive)return;
  const impactColor=currentFruit==='Papel'?0xe5e0d2:currentFruit==='Candy'?0xff9bc8:currentFruit==='Train'?0xf1c37b:0xffdf91;
  spawnImpactEffect(e.position,impactColor);
- e.userData.hp=Math.max(0,e.userData.hp-amount);updateEnemyHealthBar(e);e.scale.set(1.08,1.08,1.08);setTimeout(()=>{if(e.parent)e.scale.set(1,1,1);},100);
+ const dealtDamage=damageForLevel(amount,level);
+ e.userData.hp=Math.max(0,e.userData.hp-dealtDamage);updateEnemyHealthBar(e);e.scale.set(1.08,1.08,1.08);setTimeout(()=>{if(e.parent)e.scale.set(1,1,1);},100);
  if(masteryReward>0)gainMastery(masteryReward);
  if(e.userData.hp<=0&&e.userData.alive){
   e.userData.alive=false;
@@ -1318,11 +1333,12 @@ function damageEnemy(e,amount,masteryReward=0,killMasteryReward=0){
   if(killMasteryReward>0&&currentFruit)gainMastery(killMasteryReward);
   const rewardText='💰 +25 moedas • 🔩 +10 Bolt';
   const masteryText=killMasteryReward>0&&currentFruit?' • +'+killMasteryReward+' maestria de '+currentFruit:'';
-  if(leveledUp){message('⭐ Nível '+level+'!'+(level===MAX_LEVEL?' • NÍVEL MÁXIMO ALCANÇADO!':'')+' '+rewardText+masteryText);}
+  if(leveledUp){message('⭐ Nível '+level+'! Vida máxima: '+maxHealthForLevel()+' • Dano: +'+Math.round((levelMultiplierFor()-1)*100)+'%'+(level===MAX_LEVEL?' • NÍVEL MÁXIMO ALCANÇADO!':'')+' '+rewardText+masteryText);}
   else if(questCompleted)message('🏆 Inimigo derrotado! '+rewardText+masteryText);
   else message('Inimigo derrotado! '+rewardText+masteryText);
   updateHUD();
  }
+ return dealtDamage;
 }
 function updateEnemyRespawns(){
  const now=performance.now();
@@ -1343,7 +1359,7 @@ function updateEnemyRespawns(){
 function playerTakeDamage(amount){
  if(adminUnlocked&&adminInvincible){message('🛡️ Invencibilidade ADM bloqueou o dano!');return;}
  health=Math.max(0,health-amount);updateHUD();
- if(health<=0){health=100;player.position.set(0,PLAYER_Y,17);currentIsland=0;if(flying)finishFlight();message('Você foi derrotado e voltou à Ilha Inicial.');updateHUD();}
+ if(health<=0){health=maxHealthForLevel();player.position.set(0,PLAYER_Y,17);currentIsland=0;if(flying)finishFlight();message('Você foi derrotado e voltou à Ilha Inicial.');updateHUD();}
 }
 function basicAttack(){
  if(!onlineActive||attackCooldown>0||modalOpen||inventoryOpen||travelState||(flying&&!adminFlying))return;
@@ -1356,8 +1372,8 @@ function basicAttack(){
  // que a câmera, o ângulo do personagem ou o primeiro clique impeçam o acerto.
  const target=findTarget(7.2,false);
  if(target){
-  damageEnemy(target,15,0,5);
-  message('👊 SOCÃO! -15 de vida');
+  const dealt=damageEnemy(target,15,0,5);
+  message('👊 SOCÃO! -'+dealt.toLocaleString('pt-BR')+' de vida');
  }else message('👊 Soco! Chegue a até 7 metros de um inimigo.');
 }
 function activateSkill(index){
@@ -1826,7 +1842,7 @@ function onlineSetStatus(messageText){
  if(onlineActive)requirePlayerIdentity();
 }
 function onlineMakeLocalState(){
- return {name:onlinePlayerName,x:player.position.x,y:player.position.y,z:player.position.z,yaw:player.rotation.y,island:currentIsland,fruit:currentFruit||'',level:Math.min(MAX_LEVEL,Math.max(1,level)),health:health,adminFlying:!!adminFlying,flying:!!flying,openedChests:[...openedTreasureChestIds]};
+ return {name:onlinePlayerName,x:player.position.x,y:player.position.y,z:player.position.z,yaw:player.rotation.y,island:currentIsland,fruit:currentFruit||'',level:Math.min(MAX_LEVEL,Math.max(1,level)),health:health,maxHealth:maxHealthForLevel(),adminFlying:!!adminFlying,flying:!!flying,openedChests:[...openedTreasureChestIds]};
 }
 function onlineSendToHost(packet){if(onlineHostConnection&&onlineHostConnection.open){try{onlineHostConnection.send(packet);}catch(err){onlineSetStatus('Falha ao enviar dados. Tente reconectar.');}}}
 function onlineBroadcast(packet,exceptId=null){for(const [id,conn] of onlineConnections){if(id!==exceptId&&conn.open){try{conn.send(packet);}catch(err){}}}}
@@ -1839,15 +1855,15 @@ function createOnlineHealthBar(group){
  sprite.scale.set(2.45,.5,1);sprite.position.y=5.8;group.add(sprite);
  return {canvas,ctx,texture,sprite,last:-1};
 }
-function drawOnlineHealthBar(bar,hp){
- hp=THREE.MathUtils.clamp(Number(hp)||0,0,100);
- if(Math.abs(hp-bar.last)<1)return;bar.last=hp;
+function drawOnlineHealthBar(bar,hp,maxHp=100){
+ maxHp=Math.max(1,Number(maxHp)||100);hp=THREE.MathUtils.clamp(Number(hp)||0,0,maxHp);
+ const signature=hp+'/'+maxHp;if(signature===bar.last)return;bar.last=signature;
  const c=bar.canvas,ctx=bar.ctx;ctx.clearRect(0,0,c.width,c.height);
  ctx.fillStyle='rgba(9,20,25,.88)';ctx.beginPath();ctx.roundRect(3,4,154,24,8);ctx.fill();
  ctx.fillStyle='#4e2828';ctx.beginPath();ctx.roundRect(9,10,142,12,5);ctx.fill();
- const w=142*hp/100;ctx.fillStyle=hp>55?'#61c979':hp>25?'#e6b951':'#e65d59';
+ const ratio=hp/maxHp;const w=142*ratio;ctx.fillStyle=ratio>.55?'#61c979':ratio>.25?'#e6b951':'#e65d59';
  if(w>0){ctx.beginPath();ctx.roundRect(9,10,w,12,5);ctx.fill();}
- ctx.fillStyle='#fff';ctx.font='bold 10px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(Math.ceil(hp)+' HP',80,6);
+ ctx.fillStyle='#fff';ctx.font='bold 10px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(Math.ceil(hp)+' / '+Math.ceil(maxHp)+' HP',80,6);
  bar.texture.needsUpdate=true;
 }
 function createOnlineAvatar(id,name){
@@ -1874,9 +1890,9 @@ function onlineApplyRoster(players){
   const id=st.id;seen.add(id);
   if(!onlineRemoteModels.has(id))onlineRemoteModels.set(id,createOnlineAvatar(id,st.name));
   const model=onlineRemoteModels.get(id);
-  model.target={x:Number(st.x)||0,y:THREE.MathUtils.clamp(Number(st.y)||PLAYER_Y,PLAYER_Y,160),z:Number(st.z)||0,yaw:Number(st.yaw)||0,island:Math.max(0,Math.min(islands.length-1,Number(st.island)||0)),fruit:String(st.fruit||'').slice(0,24)};
+  model.target={x:Number(st.x)||0,y:THREE.MathUtils.clamp(Number(st.y)||PLAYER_Y,PLAYER_Y,160),z:Number(st.z)||0,yaw:Number(st.yaw)||0,island:Math.max(0,Math.min(islands.length-1,Number(st.island)||0)),fruit:String(st.fruit||'').slice(0,24),level:Math.max(1,Math.min(MAX_LEVEL,Math.floor(Number(st.level)||1)))};
   model.name=String(st.name||'Aventureiro').slice(0,16);
-  model.health=THREE.MathUtils.clamp(Number.isFinite(Number(st.health))?Number(st.health):100,0,100);drawOnlineHealthBar(model.healthBar,model.health);
+  model.maxHealth=THREE.MathUtils.clamp(Number(st.maxHealth)||maxHealthForLevel(st.level||1),100,maxHealthForLevel(MAX_LEVEL));model.health=THREE.MathUtils.clamp(Number.isFinite(Number(st.health))?Number(st.health):model.maxHealth,0,model.maxHealth);drawOnlineHealthBar(model.healthBar,model.health,model.maxHealth);
   const label=model.nameLabel;
   if(label&&label.userData.lastName!==model.name){model.group.remove(label);const newLabel=makeLabel(model.name);newLabel.scale.set(5.2,1.3,1);newLabel.position.y=5.15;newLabel.userData.lastName=model.name;model.group.add(newLabel);model.nameLabel=newLabel;}
  }
@@ -1898,7 +1914,8 @@ function onlineHostHandleConnection(conn){
   if(!data||typeof data!=='object')return;
   if(data.type==='state'){
    const st=data.state||{};
-   onlineRemoteStates.set(conn.peer,{id:conn.peer,name:String(st.name||'Aventureiro').slice(0,16),x:THREE.MathUtils.clamp(Number(st.x)||0,-650,650),y:THREE.MathUtils.clamp(Number(st.y)||PLAYER_Y,PLAYER_Y,180),z:THREE.MathUtils.clamp(Number(st.z)||0,-650,650),yaw:Number(st.yaw)||0,island:Math.max(0,Math.min(islands.length-1,Number(st.island)||0)),fruit:String(st.fruit||'').slice(0,24),level:Math.max(1,Number(st.level)||1),health:THREE.MathUtils.clamp(Number.isFinite(Number(st.health))?Number(st.health):100,0,100)});
+   const remoteLevel=Math.max(1,Math.min(MAX_LEVEL,Math.floor(Number(st.level)||1))),remoteMaxHealth=THREE.MathUtils.clamp(Number(st.maxHealth)||maxHealthForLevel(remoteLevel),100,maxHealthForLevel(MAX_LEVEL));
+   onlineRemoteStates.set(conn.peer,{id:conn.peer,name:String(st.name||'Aventureiro').slice(0,16),x:THREE.MathUtils.clamp(Number(st.x)||0,-650,650),y:THREE.MathUtils.clamp(Number(st.y)||PLAYER_Y,PLAYER_Y,180),z:THREE.MathUtils.clamp(Number(st.z)||0,-650,650),yaw:Number(st.yaw)||0,island:Math.max(0,Math.min(islands.length-1,Number(st.island)||0)),fruit:String(st.fruit||'').slice(0,24),level:remoteLevel,maxHealth:remoteMaxHealth,health:THREE.MathUtils.clamp(Number.isFinite(Number(st.health))?Number(st.health):remoteMaxHealth,0,remoteMaxHealth)});
   }else if(data.type==='action'){
    const seq=Number(data.seq)||0;onlineBroadcast({type:'action',from:conn.peer,action:data.action,detail:data.detail||{},seq});
    onlineShowRemoteAction(conn.peer,data.action,data.detail||{},seq);
@@ -2004,8 +2021,9 @@ function onlineApplyPvPDamage(id,action,detail,seq){
  if(distance>reach||Math.abs(model.group.position.y-player.position.y)>12)return;
  const impactColor=detail.fruit==='Candy'?0xffa6d1:detail.fruit==='Train'?0xb87843:detail.fruit==='Papel'?0xe5e0d2:0x90d9ee;
  spawnImpactEffect(player.position,impactColor);
+ damage=damageForLevel(damage,detail.attackerLevel||model.target.level||1);
  playerTakeDamage(damage);
- message('⚔️ '+model.name+' acertou você! -'+damage+' de vida');
+ message('⚔️ '+model.name+' acertou você! -'+damage.toLocaleString('pt-BR')+' de vida');
 }
 function onlineShowRemoteAction(id,action,detail,seq=0){
  if(action==='chestOpen'){
@@ -2027,7 +2045,7 @@ function onlineShowRemoteAction(id,action,detail,seq=0){
 }
 function sendOnlineAction(action,detail={}){
  if(!onlineActive)return;
- const packet={type:'action',action,detail,seq:++onlineLocalActionSequence};
+ const packet={type:'action',action,detail:{...detail,attackerLevel:level},seq:++onlineLocalActionSequence};
  if(onlineIsHost){onlineBroadcast({...packet,from:onlinePeer.id});}else onlineSendToHost(packet);
 }
 function onlineUpdate(delta){
@@ -2060,12 +2078,12 @@ let cloudClient=null,cloudUser=null,cloudSaveTimer=null,cloudLastSignature='',cl
 function accountMessage(text){const el=$('accountMessage');if(el)el.textContent=text;}
 function openAccountModal(){modalOpen=true;$('accountModal').style.display='flex';if(document.pointerLockElement)document.exitPointerLock();}
 function closeAccountModal(){modalOpen=false;$('accountModal').style.display='none';if(onlineActive&&!playerIdentityAuthenticated){playerIdentityPrompted=false;requirePlayerIdentity();}}
-function cloudProfileRow(){return {user_id:cloudUser.id,display_name:(onlinePlayerName||'Aventureiro').slice(0,16),money:Math.max(0,Math.floor(money)),bolt:Math.max(0,Math.floor(bolt)),xp:Math.max(0,Math.floor(xp)),level:Math.min(MAX_LEVEL,Math.max(1,Math.floor(level))),health:Math.max(0,Math.min(100,Math.floor(health))),fruit:currentFruit||null,mastery:masteryByFruit,stored_fruits:storedFruits,kills:Math.max(0,Math.floor(kills))};}
+function cloudProfileRow(){return {user_id:cloudUser.id,display_name:(onlinePlayerName||'Aventureiro').slice(0,16),money:Math.max(0,Math.floor(money)),bolt:Math.max(0,Math.floor(bolt)),xp:Math.max(0,Math.floor(xp)),level:Math.min(MAX_LEVEL,Math.max(1,Math.floor(level))),health:Math.max(0,Math.min(maxHealthForLevel(),Math.floor(health))),fruit:currentFruit||null,mastery:masteryByFruit,stored_fruits:storedFruits,kills:Math.max(0,Math.floor(kills))};}
 async function loadCloudProfile(){
  if(!cloudClient||!cloudUser)return;
  const {data,error}=await cloudClient.from('player_profiles').select('*').eq('user_id',cloudUser.id).maybeSingle();
  if(error){accountMessage('Login feito, mas não consegui ler o perfil. Confira o arquivo SQL e as políticas de acesso. '+error.message);return;}
- if(data){money=Math.max(0,Number(data.money)||0);bolt=Math.max(0,Number(data.bolt)||0);xp=Math.max(0,Number(data.xp)||0);level=Math.min(MAX_LEVEL,Math.max(1,Math.floor(Number(data.level)||1)));health=Math.max(1,Math.min(100,Number(data.health)||100));kills=Math.max(0,Number(data.kills)||0);currentFruit=data.fruit&&fruitByName[data.fruit]?data.fruit:null;
+ if(data){money=Math.max(0,Number(data.money)||0);bolt=Math.max(0,Number(data.bolt)||0);xp=Math.max(0,Number(data.xp)||0);level=Math.min(MAX_LEVEL,Math.max(1,Math.floor(Number(data.level)||1)));health=Math.max(1,Math.min(maxHealthForLevel(),Number(data.health)||maxHealthForLevel()));kills=Math.max(0,Number(data.kills)||0);currentFruit=data.fruit&&fruitByName[data.fruit]?data.fruit:null;
   if(level>=MAX_LEVEL)xp=0;
   if(data.mastery&&typeof data.mastery==='object')for(const name of fruitNames)if(Number.isFinite(Number(data.mastery[name])))masteryByFruit[name]=Math.max(0,Number(data.mastery[name]));
   storedFruits.splice(0,storedFruits.length,...(Array.isArray(data.stored_fruits)?data.stored_fruits.filter(n=>fruitByName[n]):[]));
