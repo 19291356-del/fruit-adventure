@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FRUIT ADVENTURE — VERSÃO 18 ONLINE</title>
+<title>FRUIT ADVENTURE — VERSÃO 19 ONLINE</title>
 <style>
 *{box-sizing:border-box}body{margin:0;overflow:hidden;background:#183746;color:#fff;font-family:Arial,sans-serif}canvas{display:block}
 #hud,#info,#help{position:absolute;background:rgba(19,48,59,.86);border:1px solid rgba(195,235,225,.58);box-shadow:0 10px 28px #12334455;backdrop-filter:blur(7px)}
@@ -54,12 +54,10 @@
 #fruitOddsNote{font-size:11px;color:#9fb9b7;margin-top:-6px}
 #onlineStatus{margin-top:7px;padding:7px 8px;border-radius:8px;background:rgba(38,91,87,.86);border:1px solid #86c5ac;color:#e4fff0;font-size:11px;font-weight:bold;text-align:left;line-height:1.35}
 #onlineConnectionCount{font-size:10px;color:#c3e0d7;text-align:left;margin-top:4px}
-#connectingOverlay{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(7,24,33,.72);backdrop-filter:blur(5px)}
-#connectingCard{width:min(410px,94vw);padding:26px 22px;border-radius:20px;text-align:center;background:linear-gradient(145deg,#24545d,#132e40);border:1px solid #a0dbc1;box-shadow:0 18px 70px #0009}
-#connectingCard h2{margin:8px 0;color:#d8f5e4;font-size:22px}#connectingCard p{color:#d0e8df;font-size:14px;line-height:1.5}
-.connectingMark{font-size:42px;filter:drop-shadow(0 0 12px #79d8c6)}
-#onlineLoadingText{margin:16px 0;padding:11px;border-radius:10px;background:#102c37;color:#bfe9d4;font-size:13px;font-weight:bold}
-#connectingCard small{color:#a9c6bd;font-size:11px}
+#connectingOverlay{position:fixed;inset:0;z-index:100;display:flex;align-items:flex-start;justify-content:center;padding:12px;background:transparent;backdrop-filter:none;pointer-events:none}
+#connectingCard{width:min(360px,calc(100vw - 24px));padding:9px 13px;border-radius:13px;text-align:center;background:rgba(20,65,75,.96);border:1px solid rgba(180,237,210,.85);box-shadow:0 8px 24px #07303e44;pointer-events:none}
+#connectingCard h2,#connectingCard p,#connectingCard small,.connectingMark{display:none}
+#onlineLoadingText{margin:0;padding:7px 9px;border-radius:8px;background:transparent;color:#e5fff0;font-size:12px;font-weight:bold}
 @media(max-width:700px){#connectingCard{padding:19px 16px}#shopCard{padding:14px}#shopFruitList{grid-template-columns:1fr}#shopFruitList .shopFruitRow{gap:7px}.shopBuy{padding:7px 8px;font-size:10px}#card{padding:15px}#fruitChoices{grid-template-columns:repeat(3,minmax(0,1fr));max-height:230px}.fruitCard{font-size:11px}}
 #spinResult{min-height:28px;color:#f1d38a;font-weight:bold;margin:12px 0}
 button{border:0;border-radius:10px;padding:12px 18px;font-weight:bold;cursor:pointer;font-size:14px;transition:filter .16s ease,transform .16s ease,box-shadow .16s ease}button:hover{filter:brightness(1.12);transform:translateY(-1px);box-shadow:0 5px 13px #06141b44}button:active{transform:translateY(0);filter:brightness(.98)}#spinButton{background:#82c9a8;color:#102b25;width:100%}#closeButton{background:#344b54;color:#fff;margin-top:9px;width:100%}
@@ -134,7 +132,7 @@ button{border:0;border-radius:10px;padding:12px 18px;font-weight:bold;cursor:poi
 <div id="message">Explore as ilhas!</div>
 <div id="hint"></div>
 <div id="smokeOverlay"></div>
-<div id="help">WASD: andar · Mouse: câmera · Clique/F: soco · 1–5: habilidades · Q: 1ª habilidade · E: interagir · Espaço: pular · Shift: correr · Botão direito: ADM</div>
+<div id="help">WASD: andar · Mouse: câmera · Clique/F: soco · 1–5: habilidades · Q: 1ª habilidade · E: interagir · Espaço: pular · Shift: correr</div>
 <div id="inventoryToggle"><button id="inventoryOpenButton">🎒 INVENTÁRIO <small>(I)</small></button></div>
 <section id="inventoryPanel" aria-label="Inventário do jogador">
  <div id="inventoryHeader"><span>🎒 INVENTÁRIO</span><button id="inventoryClose" aria-label="Fechar inventário">×</button></div>
@@ -308,6 +306,36 @@ function addHouse(island,angle,houseIndex){
  g.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
  scene.add(g);
 }
+function addTreasureChest(island,islandIndex,chestIndex){
+ const palettes={
+  praia:{wood:0x81512e,trim:0xb9783f,gold:0xe8bd62},
+  floresta:{wood:0x59452e,trim:0x8b6b43,gold:0xc9a45b},
+  candy:{wood:0x9a5578,trim:0xd98bb7,gold:0xffd36c},
+  vulcao:{wood:0x55413a,trim:0x98523d,gold:0xe0a34b},
+  papel:{wood:0x74847b,trim:0xa9b7a7,gold:0xe6d59a}
+ };
+ const pal=palettes[island.theme]||palettes.praia;
+ const g=new THREE.Group(),wood=mat(pal.wood,.86),trim=mat(pal.trim,.65,.08),gold=mat(pal.gold,.42,.42);
+ addBox(g,3.35,1.42,2.25,wood,0,.74,0);
+ addBox(g,3.42,.16,2.32,trim,0,1.47,0);
+ for(const x of [-1.48,1.48]){
+  addBox(g,.12,1.32,.14,gold,x,.76,1.12);
+  addBox(g,.12,1.32,.14,gold,x,.76,-1.12);
+ }
+ const lid=new THREE.Group();lid.position.set(0,1.48,-1.02);g.add(lid);
+ addBox(lid,3.4,.78,2.2,wood,0,.36,1.02);
+ addBox(lid,3.46,.13,2.24,gold,0,.76,1.02);
+ addBox(g,.45,.58,.16,gold,0,1.02,1.2);
+ const angle=.62+islandIndex*1.13+(chestIndex===1?Math.PI:0),radius=island.r*.34;
+ g.position.set(island.x+Math.cos(angle)*radius,2.05,island.z+Math.sin(angle)*radius);
+ g.rotation.y=-angle+.4;
+ const id='chest-'+islandIndex+'-'+chestIndex,reward=75+islandIndex*35+chestIndex*25;
+ g.userData={chestId:id,islandIndex,reward,opened:false,lid};
+ const label=makeLabel('BAÚ DE MOEDAS');label.scale.set(5.1,1.25,1);label.position.set(0,4.45,0);g.add(label);g.userData.label=label;
+ if(openedTreasureChestIds.has(id)){g.userData.opened=true;lid.rotation.x=-1.08;label.visible=false;}
+ g.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
+ scene.add(g);treasureChests.push(g);
+}
 function makeLabel(text){
  const c=document.createElement('canvas');c.width=512;c.height=128;const ctx=c.getContext('2d');
  ctx.fillStyle='rgba(12,31,39,.78)';ctx.roundRect(8,8,496,112,24);ctx.fill();
@@ -318,6 +346,9 @@ function addStaticNpcHealthBar(group,y=4.65){
  const c=document.createElement('canvas');c.width=256;c.height=64;const ctx=c.getContext('2d');ctx.fillStyle='rgba(12,20,22,.82)';ctx.beginPath();ctx.roundRect(7,12,242,39,12);ctx.fill();ctx.fillStyle='#315a3c';ctx.beginPath();ctx.roundRect(15,20,226,22,7);ctx.fill();ctx.fillStyle='#62c778';ctx.beginPath();ctx.roundRect(15,20,226,22,7);ctx.fill();ctx.fillStyle='#fff';ctx.font='bold 17px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('100 / 100',128,31);const tex=new THREE.CanvasTexture(c);const sprite=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthWrite:false}));sprite.scale.set(3.1,.78,1);sprite.position.y=y;group.add(sprite);return sprite;
 }
 const breakables=[];
+const treasureChests=[];
+const openedTreasureChestIds=new Set();
+try{const savedOpened=JSON.parse(localStorage.getItem('fruitAdventureOpenedChests')||'[]');if(Array.isArray(savedOpened))for(const id of savedOpened)openedTreasureChestIds.add(String(id));}catch(err){}
 islands.forEach((island,index)=>{
  const base=new THREE.Mesh(new THREE.CylinderGeometry(island.r*.91,island.r,7,56),mat(island.side));
  base.position.set(island.x,-1.45,island.z);base.castShadow=true;base.receiveShadow=true;scene.add(base);
@@ -348,6 +379,8 @@ islands.forEach((island,index)=>{
  addHouse(island,-.72,index*2);
  addHouse(island,2.35,index*2+1);
  addHouse(island,-2.7,index*2+2);
+ // Dois baús de moedas por ilha, longe das casas e dos NPCs.
+ for(let chestIndex=0;chestIndex<2;chestIndex++)addTreasureChest(island,index,chestIndex);
  // Barcos e ancoradouros são criados depois das ilhas.
 });
 
@@ -818,6 +851,30 @@ const cooldowns={};
 function currentMastery(){return currentFruit?masteryByFruit[currentFruit]:0;}
 function message(text){$('message').textContent=text;messageTime=2.7;}
 const ADMIN_ACCESS_CODE='20305052';
+function nearestTreasureChest(maxDistance=6.2){
+ let best=null,bestDistance=maxDistance;
+ for(const chest of treasureChests){
+  if(chest.userData.islandIndex!==currentIsland||chest.userData.opened)continue;
+  const distance=player.position.distanceTo(chest.position);
+  if(distance<bestDistance){best=chest;bestDistance=distance;}
+ }
+ return best;
+}
+function markTreasureChestOpened(chest){
+ if(!chest||chest.userData.opened)return false;
+ chest.userData.opened=true;chest.userData.lid.rotation.x=-1.08;
+ if(chest.userData.label)chest.userData.label.visible=false;
+ openedTreasureChestIds.add(chest.userData.chestId);
+ try{localStorage.setItem('fruitAdventureOpenedChests',JSON.stringify([...openedTreasureChestIds]));}catch(err){}
+ return true;
+}
+function openTreasureChest(chest){
+ if(!chest)return;
+ if(!markTreasureChestOpened(chest)){message('Este baú já foi aberto.');return;}
+ const reward=chest.userData.reward;money+=reward;updateHUD();
+ message('🎁 BAÚ ABERTO! Você ganhou '+reward.toLocaleString('pt-BR')+' moedas!');
+ sendOnlineAction('chestOpen',{chestId:chest.userData.chestId});
+}
 function completeAllFruitMasteries(){
  for(const fruit of fruitData){const maxNeed=Math.max(0,...fruit.skills.map(skill=>skill.need));masteryByFruit[fruit.name]=maxNeed;}
  try{localStorage.setItem('fruitAdventureMastery',JSON.stringify(masteryByFruit));}catch(err){}
@@ -1103,6 +1160,7 @@ function interact(){
  if(pendingFruit)return;
  if(modalOpen){closeModals();return;}
  const fruitDrop=nearestFruitDrop(5.2);if(fruitDrop){pickUpFruitDrop(fruitDrop);return;}
+ const chest=nearestTreasureChest(6.2);if(chest){openTreasureChest(chest);return;}
  if(currentIsland===0&&player.position.distanceTo(shopNpc.position)<5.8){openShop();return;}
  if(currentIsland===0&&player.position.distanceTo(npc.position)<5.8){openFruitNPC();return;}
  if(currentIsland===0&&player.position.distanceTo(questNpc.position)<5.8){openQuestNPC();return;}
@@ -1602,7 +1660,7 @@ function updateCamera(){
  if(travelState&&travelBoat){camera.position.set(travelBoat.position.x+7,travelBoat.position.y+8,travelBoat.position.z+12);camera.lookAt(travelBoat.position.x,travelBoat.position.y+1,travelBoat.position.z);return;}
  const dist=(flying||adminFlying)?13:10,h=dist*Math.cos(pitch);camera.position.set(player.position.x+Math.sin(yaw)*h,player.position.y+3.3+Math.sin(pitch)*dist,player.position.z+Math.cos(yaw)*h);camera.lookAt(player.position.x,player.position.y+2.1,player.position.z);
 }
-function updateHint(){let t='';if(inventoryOpen||modalOpen||pendingFruit){$('hint').style.display='none';return;}const drop=nearestFruitDrop(5.2);if(drop)t='Passe por cima para pegar '+drop.userData.fruitName;else if(currentIsland===0&&player.position.distanceTo(shopNpc.position)<6)t='Aperte E para comprar frutas na loja';else if(currentIsland===0&&player.position.distanceTo(npc.position)<6)t='Aperte E para girar uma fruta no Mestre das Frutas';else if(currentIsland===0&&player.position.distanceTo(questNpc.position)<6)t='Aperte E para receber missões e ganhar dinheiro';else if(nearestBoat())t='Aperte E para escolher um barco e viajar para outra ilha';$('hint').textContent=t;$('hint').style.display=t?'block':'none';}
+function updateHint(){let t='';if(inventoryOpen||modalOpen||pendingFruit){$('hint').style.display='none';return;}const drop=nearestFruitDrop(5.2);const chest=nearestTreasureChest(6.2);if(drop)t='Passe por cima para pegar '+drop.userData.fruitName;else if(chest)t='Aperte E para abrir o baú e ganhar '+chest.userData.reward+' moedas';else if(currentIsland===0&&player.position.distanceTo(shopNpc.position)<6)t='Aperte E para comprar frutas na loja';else if(currentIsland===0&&player.position.distanceTo(npc.position)<6)t='Aperte E para girar uma fruta no Mestre das Frutas';else if(currentIsland===0&&player.position.distanceTo(questNpc.position)<6)t='Aperte E para receber missões e ganhar dinheiro';else if(nearestBoat())t='Aperte E para escolher um barco e viajar para outra ilha';$('hint').textContent=t;$('hint').style.display=t?'block':'none';}
 
 addEventListener('keydown',e=>{
  if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();
@@ -1662,7 +1720,7 @@ function onlineSetStatus(messageText){
  const overlay=$('connectingOverlay');if(overlay)overlay.style.display=onlineActive?'none':'flex';
 }
 function onlineMakeLocalState(){
- return {name:onlinePlayerName,x:player.position.x,y:player.position.y,z:player.position.z,yaw:player.rotation.y,island:currentIsland,fruit:currentFruit||'',level:level,health:health,adminFlying:!!adminFlying,flying:!!flying};
+ return {name:onlinePlayerName,x:player.position.x,y:player.position.y,z:player.position.z,yaw:player.rotation.y,island:currentIsland,fruit:currentFruit||'',level:level,health:health,adminFlying:!!adminFlying,flying:!!flying,openedChests:[...openedTreasureChestIds]};
 }
 function onlineSendToHost(packet){if(onlineHostConnection&&onlineHostConnection.open){try{onlineHostConnection.send(packet);}catch(err){onlineSetStatus('Falha ao enviar dados. Tente reconectar.');}}}
 function onlineBroadcast(packet,exceptId=null){for(const [id,conn] of onlineConnections){if(id!==exceptId&&conn.open){try{conn.send(packet);}catch(err){}}}}
@@ -1704,6 +1762,7 @@ function createOnlineAvatar(id,name){
 function onlineApplyRoster(players){
  if(!Array.isArray(players))return;
  const seen=new Set();
+ for(const st of players){if(Array.isArray(st?.openedChests))for(const chestId of st.openedChests){const chest=treasureChests.find(c=>c.userData.chestId===String(chestId));if(chest)markTreasureChestOpened(chest);}}
  for(const st of players){
   if(!st||typeof st.id!=='string'||st.id===onlinePeer?.id)continue;
   const id=st.id;seen.add(id);
@@ -1843,6 +1902,11 @@ function onlineApplyPvPDamage(id,action,detail,seq){
  message('⚔️ '+model.name+' acertou você! -'+damage+' de vida');
 }
 function onlineShowRemoteAction(id,action,detail,seq=0){
+ if(action==='chestOpen'){
+  const chest=treasureChests.find(c=>c.userData.chestId===String(detail.chestId||''));
+  if(chest)markTreasureChestOpened(chest);
+  return;
+ }
  if(action==='fruitDrop'){
   const n=String(detail.fruitName||'');if(!fruitByName[n])return;if(detail.adminOnly&&!adminUnlocked)return;
   const existing=fruitDrops.find(d=>d.userData.dropId===detail.dropId);if(!existing)spawnFruitDrop(n,{x:Number(detail.x),z:Number(detail.z),islandIndex:Number(detail.islandIndex)||0,dropId:String(detail.dropId||''),adminOnly:!!detail.adminOnly,falling:!!detail.falling,startY:Number(detail.startY),fallSpeed:Number(detail.fallSpeed),sync:false});return;
