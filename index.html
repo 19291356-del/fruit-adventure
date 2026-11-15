@@ -1,0 +1,1975 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FRUIT ADVENTURE — VERSÃO 18 ONLINE</title>
+<style>
+*{box-sizing:border-box}body{margin:0;overflow:hidden;background:#183746;color:#fff;font-family:Arial,sans-serif}canvas{display:block}
+#hud,#info,#help{position:absolute;background:rgba(19,48,59,.86);border:1px solid rgba(195,235,225,.58);box-shadow:0 10px 28px #12334455;backdrop-filter:blur(7px)}
+#hud{top:14px;left:14px;width:250px;padding:13px 15px;border-radius:15px}#hud .stat{font-size:15px;margin:7px 0}#hud .bar{height:12px;margin-top:6px}.currencyRow{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}.currencyStat{min-width:0;padding:8px 7px;border-radius:9px;font-size:12px;font-weight:bold;line-height:1.35;border:1px solid #ffffff38;box-shadow:inset 0 1px 0 #ffffff22}.currencyStat b{display:block;margin-top:3px;font-size:15px;color:#fff}.moneyStat{background:linear-gradient(135deg,#796337,#4d472f)}.boltStat{background:linear-gradient(135deg,#477985,#2e5362)}
+.stat{font-size:14px;margin:7px 0}.bar{height:10px;background:#263941;border-radius:8px;overflow:hidden;margin-top:4px}.fill{height:100%;width:100%;transition:width .2s}#hp{background:#c85b59}#xp{background:#bca45c}
+#info{top:14px;right:14px;padding:12px 15px;border-radius:12px;text-align:right;min-width:175px;font-size:13px;line-height:1.7}
+#help{bottom:14px;left:50%;transform:translateX(-50%);padding:10px 16px;border-radius:12px;text-align:center;font-size:12px;white-space:nowrap}
+#skillsPanel{position:absolute;right:14px;bottom:78px;width:265px;max-height:60vh;overflow:auto;padding:12px 14px;border-radius:12px;background:rgba(14,35,45,.92);border:1px solid rgba(160,210,205,.38);box-shadow:0 8px 25px #06141b66;font-size:12px;line-height:1.55}
+#skillsPanel b{color:#b8e7d3;display:block;margin-bottom:5px;font-size:13px}
+#skillsMastery{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 8px;padding:7px 9px;border-radius:8px;background:linear-gradient(100deg,#355e69,#263f49);border:1px solid #759d9a;color:#f2df9c;font-size:12px;font-weight:bold;letter-spacing:.35px}
+#skillsMastery .masteryTrack{height:6px;flex:1;max-width:95px;background:#182e35;border-radius:8px;overflow:hidden}
+#skillsMastery .masteryFill{height:100%;background:#86c7d5;border-radius:8px}
+.skillRow{display:flex;justify-content:space-between;align-items:center;gap:8px;border-top:1px solid #ffffff18;padding:4px 0}.skillRow>span{display:flex;flex-direction:column}.skillRow.locked{color:#aab5b8}.skillRow small{white-space:nowrap;color:#ead49a}.skillRow .skillDesc{white-space:normal;color:#a8c0c1;font-size:10px;font-weight:normal}
+#boatModal{position:absolute;inset:0;background:#071923bb;display:none;align-items:center;justify-content:center;padding:16px;z-index:5}
+#fruitDecisionModal{position:absolute;inset:0;background:#071923cc;display:none;align-items:center;justify-content:center;padding:16px;z-index:12}
+#fruitDecisionCard{width:min(410px,94vw);background:linear-gradient(145deg,#294d45,#142c2e);border:1px solid #b8d7a3;border-radius:18px;padding:23px;box-shadow:0 18px 60px #000b;text-align:center}
+#fruitDecisionCard h2{margin:0 0 10px;color:#e0efb2}#fruitDecisionCard p{color:#e1eee0;line-height:1.5}#fruitDecisionCard button{display:block;width:100%;margin-top:10px}#eatHeldFruitButton{background:#b8d58b;color:#1d3020}#storeHeldFruitButton{background:#6faeb0;color:#102d34}#fruitDecisionCard small{display:block;color:#b9d0c3;margin-top:13px;font-size:11px}
+#boatCard{width:min(430px,95vw);background:linear-gradient(145deg,#1a3945,#10252f);border:1px solid #8bb8aa;border-radius:18px;padding:23px;box-shadow:0 18px 60px #0009;text-align:center}
+#boatCard h2{margin:0 0 8px;color:#b8e7d3}#boatCard p{color:#d4e2df;line-height:1.5}
+#boatChoices{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:16px 0}
+.destinationButton{background:#345866;color:#fff;border:1px solid #759b9c}.destinationButton:hover{background:#477889}
+#boatClose{background:#344b54;color:#fff;width:100%}
+#smokeOverlay{display:none!important}
+#hint{position:absolute;bottom:76px;left:50%;transform:translateX(-50%);padding:9px 14px;background:#102b37dd;border-radius:9px;font-size:14px;display:none;text-align:center}
+#missionStatus{font-size:12px;line-height:1.45;color:#f0d99b;margin-top:7px;border-top:1px solid #ffffff22;padding-top:7px}
+#questModal{position:absolute;inset:0;background:#071923bb;display:none;align-items:center;justify-content:center;padding:16px;z-index:6}
+#questCard{width:min(430px,95vw);background:linear-gradient(145deg,#263e39,#142c2d);border:1px solid #a7c59b;border-radius:18px;padding:23px;box-shadow:0 18px 60px #0009;text-align:center}
+#questCard h2{margin:0 0 8px;color:#d5e7a8}
+#questCard p{color:#e0e8d7;line-height:1.55}
+#questAccept{background:#b8d58b;color:#1d3020;width:100%;margin-top:10px}
+#questClose{background:#344b54;color:#fff;width:100%;margin-top:8px}
+#shopModal{position:absolute;inset:0;background:#071923c9;display:none;align-items:center;justify-content:center;padding:16px;z-index:6}
+#shopCard{width:min(760px,96vw);max-height:90vh;overflow:auto;background:linear-gradient(145deg,#233f39,#142b2b);border:1px solid #b4d09c;border-radius:18px;padding:22px;box-shadow:0 18px 60px #000a;text-align:center}
+#shopCard h2{margin:0 0 8px;color:#e0eab4}#shopCard p{color:#dce8d5;line-height:1.5}
+#shopFruitList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:14px 0;text-align:left}
+.shopFruitRow{display:flex;align-items:center;gap:9px;padding:9px;background:#203d3a;border:1px solid #54766a;border-radius:10px;min-width:0}
+.shopFruitDot{width:30px;height:30px;flex:0 0 30px;border-radius:50%;box-shadow:inset -6px -6px 8px #0005}
+.shopFruitInfo{flex:1;min-width:0;font-size:12px}.shopFruitInfo small{display:block;color:#b9cdb9;margin-top:3px}
+.shopBuy{padding:8px 10px;background:#b8d58b;color:#1d3020;font-size:11px;white-space:nowrap}
+#shopClose{background:#344b54;color:#fff;width:100%;margin-top:7px}
+#message{position:absolute;top:20%;left:50%;transform:translateX(-50%);font-size:22px;font-weight:bold;text-shadow:0 2px 8px #102b35,0 0 15px #102b3577;text-align:center;pointer-events:none;background:#183d4abb;border:1px solid #c4e7d477;border-radius:12px;padding:9px 15px;max-width:90vw}
+#modal{position:absolute;inset:0;background:#071923bb;display:none;align-items:center;justify-content:center;padding:16px;z-index:5}
+#card{width:min(720px,96vw);max-height:90vh;overflow:auto;background:linear-gradient(145deg,#1a3945,#10252f);border:1px solid #8bb8aa;border-radius:18px;padding:23px;box-shadow:0 18px 60px #0009;text-align:center}
+#card h2{margin:0 0 8px;color:#b8e7d3}#card p{color:#d4e2df;line-height:1.5}#fruitChoices{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:15px 0;max-height:265px;overflow:auto;padding:3px}
+.fruitCard{min-width:0;padding:10px 5px;border-radius:12px;background:#27434c;border:1px solid #607d7b;font-weight:bold;font-size:13px}
+.fruitCard small{color:#dfd4b4;font-size:11px}
+.fruitDot{width:32px;height:32px;border-radius:50%;margin:0 auto 7px;box-shadow:inset -7px -7px 10px #0005}
+#fruitOddsNote{font-size:11px;color:#9fb9b7;margin-top:-6px}
+#onlineStatus{margin-top:7px;padding:7px 8px;border-radius:8px;background:rgba(38,91,87,.86);border:1px solid #86c5ac;color:#e4fff0;font-size:11px;font-weight:bold;text-align:left;line-height:1.35}
+#onlineConnectionCount{font-size:10px;color:#c3e0d7;text-align:left;margin-top:4px}
+#connectingOverlay{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(7,24,33,.72);backdrop-filter:blur(5px)}
+#connectingCard{width:min(410px,94vw);padding:26px 22px;border-radius:20px;text-align:center;background:linear-gradient(145deg,#24545d,#132e40);border:1px solid #a0dbc1;box-shadow:0 18px 70px #0009}
+#connectingCard h2{margin:8px 0;color:#d8f5e4;font-size:22px}#connectingCard p{color:#d0e8df;font-size:14px;line-height:1.5}
+.connectingMark{font-size:42px;filter:drop-shadow(0 0 12px #79d8c6)}
+#onlineLoadingText{margin:16px 0;padding:11px;border-radius:10px;background:#102c37;color:#bfe9d4;font-size:13px;font-weight:bold}
+#connectingCard small{color:#a9c6bd;font-size:11px}
+@media(max-width:700px){#connectingCard{padding:19px 16px}#shopCard{padding:14px}#shopFruitList{grid-template-columns:1fr}#shopFruitList .shopFruitRow{gap:7px}.shopBuy{padding:7px 8px;font-size:10px}#card{padding:15px}#fruitChoices{grid-template-columns:repeat(3,minmax(0,1fr));max-height:230px}.fruitCard{font-size:11px}}
+#spinResult{min-height:28px;color:#f1d38a;font-weight:bold;margin:12px 0}
+button{border:0;border-radius:10px;padding:12px 18px;font-weight:bold;cursor:pointer;font-size:14px;transition:filter .16s ease,transform .16s ease,box-shadow .16s ease}button:hover{filter:brightness(1.12);transform:translateY(-1px);box-shadow:0 5px 13px #06141b44}button:active{transform:translateY(0);filter:brightness(.98)}#spinButton{background:#82c9a8;color:#102b25;width:100%}#closeButton{background:#344b54;color:#fff;margin-top:9px;width:100%}
+@media(max-width:700px){#hud{width:220px;padding:9px 11px}#hud .stat{font-size:13px;margin:5px 0}.currencyStat{font-size:10px;padding:7px 6px}.currencyStat b{font-size:13px}#info{font-size:11px;padding:8px}#help{white-space:normal;width:92%;font-size:11px}#fruitChoices{gap:5px}.fruitCard{font-size:12px}#skillsPanel{right:8px;bottom:90px;width:205px;padding:8px;font-size:10px}#skillsPanel b{font-size:11px}#boatChoices{grid-template-columns:1fr}}
+
+/* Inventário em painel compacto no canto inferior esquerdo. */
+#inventoryToggle{position:absolute;left:14px;bottom:16px;z-index:7}
+#inventoryToggle button{background:linear-gradient(135deg,#3f7180,#244b59);color:#f3fbf8;border:1px solid #a5d6c7;box-shadow:0 6px 18px #06141b88;padding:11px 16px}
+#inventoryPanel{display:none;position:absolute;left:14px;bottom:70px;width:min(350px,calc(100vw - 28px));max-height:min(56vh,390px);z-index:7;overflow:hidden;background:rgba(13,34,44,.97);border:1px solid #8eb8ae;border-radius:15px;box-shadow:0 14px 38px #000a;backdrop-filter:blur(9px)}
+#inventoryHeader{display:flex;align-items:center;justify-content:space-between;padding:11px 13px;background:linear-gradient(110deg,#28505b,#1b3945);font-weight:bold;color:#d7f4e8;letter-spacing:.5px}
+#inventoryClose{padding:4px 10px;background:#405d66;color:#fff;border:1px solid #78989a;font-size:18px;line-height:1.2}
+#inventoryTabs{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;padding:9px 9px 0}
+.invTab{padding:8px 3px;background:#29434c;color:#d3e3df;border:1px solid #58747a;border-radius:8px;font-size:11px}
+.invTab.active{background:#9acdb7;color:#14352e;border-color:#d0f2dd}
+#inventoryContent{padding:11px 13px 14px;overflow:auto;max-height:260px;font-size:13px;line-height:1.5;color:#e4eeea}
+.invGrid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.invStat{padding:9px;background:#203d48;border:1px solid #496773;border-radius:9px}
+.invStat small{display:block;color:#a9c4c4;font-size:10px;text-transform:uppercase;letter-spacing:.4px}
+.invStat strong{font-size:15px;color:#f1f7f3}
+.invRow{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #ffffff1b}
+.invRow:last-child{border-bottom:0}
+.invRow small{display:block;color:#a9c4c4;font-size:11px}
+.invAction{padding:7px 10px;background:#79b69c;color:#102b25;font-size:11px;white-space:nowrap}
+.invAction.equipped{background:#405d66;color:#e6f3ef;border:1px solid #75958f}
+.invEmpty{padding:13px;background:#203d48;border:1px dashed #64858a;border-radius:9px;color:#bed0cc;text-align:center}
+.invSectionTitle{font-weight:bold;color:#b8e7d3;margin:0 0 8px}
+@media(max-width:700px){#inventoryToggle{left:8px;bottom:8px}#inventoryPanel{left:8px;bottom:62px;width:min(330px,calc(100vw - 16px));max-height:48vh}#inventoryContent{max-height:190px}#inventoryToggle button{padding:9px 12px;font-size:12px}.invTab{font-size:9px;padding:7px 1px}}
+
+
+.adminModal{position:absolute;inset:0;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(5,17,24,.84);z-index:30}
+.adminCard{width:min(820px,96vw);max-height:90vh;overflow:auto;padding:22px;border-radius:18px;background:linear-gradient(145deg,#263f55,#101f35);border:1px solid #7eb9db;box-shadow:0 18px 65px #000c;text-align:center}
+.adminCard h2{margin:0 0 8px;color:#c9edff}.adminCard p{color:#d3e2ef;line-height:1.5}
+#adminCodeInput{width:100%;max-width:280px;padding:13px 14px;border-radius:10px;border:1px solid #84a9c4;background:#0e2234;color:#fff;font-size:22px;text-align:center;letter-spacing:5px;margin:10px auto}
+.adminPrimary{background:#76c6ed;color:#102a3a;margin:6px}.adminSecondary{background:#354c61;color:#edf7ff;margin:6px}
+#adminCodeMessage{min-height:22px;color:#ffd28e;font-size:13px}
+#adminFruitGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:15px 0;text-align:left}
+.adminFruitButton{display:flex;align-items:center;gap:8px;padding:9px;background:#1d3a51;border:1px solid #50718a;color:#f3f8fc;border-radius:10px;text-align:left;min-width:0}
+.adminFruitButton:hover{background:#285575}.adminFruitButton .adminFruitDot{width:26px;height:26px;flex:0 0 26px;border-radius:50%;box-shadow:inset -5px -5px 8px #0006}
+.adminFruitButton span{min-width:0;font-size:12px}.adminFruitButton small{display:block;color:#a9c9df;font-size:10px;margin-top:2px}
+.adminActions{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:7px;margin:12px 0}
+#adminState{font-size:12px;color:#9fdbf6;margin:8px 0}
+@media(max-width:650px){.adminCard{padding:13px}#adminFruitGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.adminFruitButton{padding:7px}}
+
+
+#onlineToggle{display:block;width:100%;margin-top:9px;padding:9px 12px;background:linear-gradient(120deg,#277c79,#24566f);border:1px solid #8ed8c6;color:#f2fff9;font-size:12px}
+#onlineModal{position:absolute;inset:0;z-index:30;display:none;align-items:center;justify-content:center;padding:16px;background:#071923d9}
+#onlineCard{width:min(480px,96vw);max-height:90vh;overflow:auto;background:linear-gradient(145deg,#254d52,#142c3b);border:1px solid #8ed8c6;border-radius:18px;padding:22px;box-shadow:0 18px 60px #000b;text-align:center}
+#onlineCard h2{margin:0 0 8px;color:#c9f3df}
+#onlineCard p{color:#d3e7e5;line-height:1.5;font-size:13px}
+#onlineCard input{width:100%;padding:12px;margin:5px 0 10px;border-radius:9px;border:1px solid #719a9b;background:#0f2933;color:#fff;font-size:14px;outline:none}
+#onlineCard .onlineButtons{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+#onlineCard button{width:100%;margin-top:7px}
+#onlineHostButton{background:#9bd8ad;color:#183327}
+#onlineJoinButton{background:#8fc8df;color:#153342}
+#onlineCopyButton{background:#d4bc79;color:#332914}
+#onlineLeaveButton{background:#9b5d5b;color:#fff}
+#onlineCloseButton{background:#344b54;color:#fff}
+#onlineStatus{margin:12px 0;padding:10px;border-radius:9px;background:#102c35;border:1px solid #527a7d;color:#e5f2e8;font-size:12px;line-height:1.5;overflow-wrap:anywhere;min-height:42px}
+#onlineConnectionCount{font-size:12px;color:#b9d7cf;margin-top:6px}
+@media(max-width:650px){#onlineCard{padding:15px}#onlineCard .onlineButtons{grid-template-columns:1fr}}
+
+</style>
+</head>
+<body>
+<div id="hud">
+ <div class="stat" id="level">Nível: 1</div>
+ <div class="stat">❤️ Vida: <span id="health">100</span>/100<div class="bar"><div id="hp" class="fill"></div></div></div>
+ <div class="currencyRow"><div class="currencyStat moneyStat">💰 DINHEIRO<b id="money">0</b></div><div class="currencyStat boltStat">🔩 BOLT<b id="bolt">0</b></div></div>
+</div>
+<div id="info"><b id="islandName">ILHA INICIAL</b><br>Abates: <span id="kills">0</span><br>Inimigos próximos: <span id="nearby">0</span><br>🚤 Barcos: 5<br><span id="missionStatus">📜 Missão: nenhuma</span><div id="onlineStatus">🌐 Conectando ao mundo público...</div><div id="onlineConnectionCount">Aguardando jogadores...</div><button id="accountOpenButton" style="margin-top:7px;padding:8px 10px;background:#395f79;color:#fff;width:100%;font-size:11px">👤 CONTA / ENTRAR</button></div>
+<div id="skillsPanel"><div id="skillsMastery">SEM FRUTA EQUIPADA</div><b>HABILIDADES — TECLAS 1 A 5</b><div id="skillsList">Você ainda não tem fruta.</div></div>
+<div id="message">Explore as ilhas!</div>
+<div id="hint"></div>
+<div id="smokeOverlay"></div>
+<div id="help">WASD: andar · Mouse: câmera · Clique/F: soco · 1–5: habilidades · Q: 1ª habilidade · E: interagir · Espaço: pular · Shift: correr · Botão direito: ADM</div>
+<div id="inventoryToggle"><button id="inventoryOpenButton">🎒 INVENTÁRIO <small>(I)</small></button></div>
+<section id="inventoryPanel" aria-label="Inventário do jogador">
+ <div id="inventoryHeader"><span>🎒 INVENTÁRIO</span><button id="inventoryClose" aria-label="Fechar inventário">×</button></div>
+ <div id="inventoryTabs">
+  <button class="invTab active" data-tab="status">STATUS</button>
+  <button class="invTab" data-tab="items">ITENS</button>
+  <button class="invTab" data-tab="fruits">FRUTAS</button>
+  <button class="invTab" data-tab="accessories">ACESSÓRIOS</button>
+ </div>
+ <div id="inventoryContent"></div>
+</section>
+<div id="modal">
+ <div id="card">
+  <h2>🍈 MESTRE DAS FRUTAS</h2>
+  <p>Gire uma fruta aleatória! Existem <b>20 frutas</b>. Cada tentativa custa <b>100 moedas</b>. A fruta aparece no chão: pegue-a para segurá-la e depois escolha se quer comer ou guardar.</p>
+  <div id="fruitChoices" aria-label="Catálogo das 20 frutas"></div>
+  <div id="fruitOddsNote">As porcentagens mostram a chance de cada fruta sair na roleta. A fruta Buraco Negro é exclusiva do painel ADM.</div>
+  <div id="spinResult">Você ainda não tem fruta.</div>
+  <button id="spinButton">GIRAR FRUTA — 100 MOEDAS</button>
+  <button id="closeButton">FECHAR</button>
+ </div>
+</div>
+<div id="fruitDecisionModal"><div id="fruitDecisionCard"><h2>🍈 VOCÊ PEGOU UMA FRUTA!</h2><p id="pickedFruitName">Você está segurando uma fruta.</p><p>O que deseja fazer com ela?</p><button id="eatHeldFruitButton">🍽️ COMER AGORA</button><button id="storeHeldFruitButton">🎒 ARMAZENAR NO INVENTÁRIO</button><button id="dropHeldFruitButton" style="background:#bd8c55;color:#2b2116">⬇️ SOLTAR NO CHÃO</button><small>A fruta ficará visível na mão até você escolher.</small></div></div>
+<div id="boatModal"><div id="boatCard"><h2>🚤 VIAGEM DE BARCO</h2><p>Escolha uma ilha para navegar. O barco leva você até o destino.</p><div id="boatChoices"></div><button id="boatClose">VOLTAR</button></div></div>
+<div id="questModal"><div id="questCard"><h2>📜 MESTRE DAS MISSÕES</h2><p id="questDescription">Tenho um trabalho para você.</p><p id="questReward" style="color:#f0d99b;font-weight:bold">Recompensa: 100 moedas</p><button id="questAccept">ACEITAR MISSÃO</button><button id="questClose">FECHAR</button></div></div>
+<div id="shopModal"><div id="shopCard"><h2>🏪 LOJA DE FRUTAS</h2><p>As frutas aparecem com chances diferentes. O estoque muda automaticamente a cada 5 minutos. Ao comprar, você come a fruta imediatamente.</p><div id="shopRotationTimer">⏱️ Próxima rotação em 05:00</div><p id="shopBalance" style="color:#f0d99b;font-weight:bold">Seu dinheiro: 0 moedas</p><div id="shopFruitList"></div><button id="shopClose">FECHAR LOJA</button></div></div>
+
+<div id="adminCodeModal" class="adminModal" role="dialog" aria-modal="true" aria-labelledby="adminCodeTitle">
+ <div class="adminCard" style="max-width:420px">
+  <h2 id="adminCodeTitle">🛠 ACESSO ADMINISTRADOR</h2>
+  <p>Digite o código de acesso para abrir as ferramentas de teste.</p>
+  <input id="adminCodeInput" type="password" inputmode="numeric" maxlength="8" autocomplete="off" placeholder="CÓDIGO" aria-label="Código de administrador">
+  <div id="adminCodeMessage">Acesso restrito.</div>
+  <button id="adminCodeSubmit" class="adminPrimary">ENTRAR</button>
+  <button id="adminCodeClose" class="adminSecondary">FECHAR</button>
+ </div>
+</div>
+<div id="adminPanelModal" class="adminModal" role="dialog" aria-modal="true" aria-labelledby="adminPanelTitle">
+ <div class="adminCard">
+  <h2 id="adminPanelTitle">⚡ PAINEL ADMINISTRADOR</h2>
+  <p>Escolha qualquer fruta para equipar. As maestrias ficam completas para você testar todas as habilidades. Buraco Negro é exclusivo deste painel.</p>
+  <div id="adminState">MODO ADM ATIVO</div>
+  <div class="adminActions">
+   <button id="adminFlyToggle" class="adminPrimary">✈️ ATIVAR VOO ADM</button>
+   <button id="adminMasteryButton" class="adminPrimary">⭐ COMPLETAR MAESTRIA</button>
+   <button id="adminRainButton" class="adminPrimary">🌧️ CHOVER 5 FRUTAS</button>
+   <button id="adminInvincibleButton" class="adminPrimary">🛡️ ATIVAR INVENCIBILIDADE</button>
+  </div>
+  <p style="font-size:12px">Durante o voo: <b>WASD</b> para mover, <b>ESPAÇO</b> para subir e <b>C</b> para descer.</p>
+  <div id="adminFruitGrid"></div>
+  <button id="adminPanelClose" class="adminSecondary">FECHAR PAINEL</button>
+ </div>
+</div>
+
+
+
+<div id="accountModal" class="adminModal" role="dialog" aria-modal="true" aria-labelledby="accountTitle">
+ <div class="adminCard" style="max-width:470px">
+  <h2 id="accountTitle">👤 CONTA FRUIT ADVENTURE</h2>
+  <p>Crie uma conta ou entre para sincronizar seus dados na nuvem. Sua senha é processada pelo serviço de autenticação e não é salva no HTML.</p>
+  <input id="accountDisplayName" type="text" maxlength="16" autocomplete="nickname" placeholder="Nome no jogo" style="width:100%;padding:12px;border-radius:9px;border:1px solid #84a9c4;background:#0e2234;color:#fff;margin:5px 0">
+  <input id="accountEmail" type="email" autocomplete="email" placeholder="E-mail" style="width:100%;padding:12px;border-radius:9px;border:1px solid #84a9c4;background:#0e2234;color:#fff;margin:5px 0">
+  <input id="accountPassword" type="password" autocomplete="current-password" minlength="8" placeholder="Senha (mínimo 8 caracteres)" style="width:100%;padding:12px;border-radius:9px;border:1px solid #84a9c4;background:#0e2234;color:#fff;margin:5px 0">
+  <div class="adminActions"><button id="accountSignUp" class="adminPrimary">CRIAR CONTA</button><button id="accountSignIn" class="adminPrimary">ENTRAR</button><button id="accountSignOut" class="adminSecondary">SAIR</button></div>
+  <div id="accountMessage" style="font-size:12px;line-height:1.5;color:#bce4f4;margin:10px 0">Configure o serviço de contas para ativar o salvamento no servidor.</div>
+  <button id="accountClose" class="adminSecondary">FECHAR</button>
+ </div>
+</div>
+
+<div id="connectingOverlay" aria-live="polite">
+ <div id="connectingCard">
+  <div class="connectingMark">🌐</div>
+  <h2>FRUIT ADVENTURE ONLINE</h2>
+  <p>Entrando automaticamente no mundo público.</p>
+  <div id="onlineLoadingText">Conectando ao servidor...</div>
+  <small>O jogo só libera os controles depois da conexão.</small>
+ </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+if(!window.THREE){document.body.innerHTML='<div style="padding:30px;font:20px Arial">Não foi possível carregar o motor 3D. Confira sua conexão com a internet e abra o arquivo novamente.</div>';throw new Error('Three.js não carregou');}
+
+// VERSÃO 18: frutas especiais ADM, ataques variados, transformações, drops compartilhados e contas configuráveis na nuvem.
+// CENA E ILUMINAÇÃO: cenário mais claro, colorido e bem definido.
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x91cce8);
+scene.fog=new THREE.Fog(0x91cce8,900,1900);
+const camera=new THREE.PerspectiveCamera(68,innerWidth/innerHeight,.1,1400);
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(innerWidth,innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.outputEncoding=THREE.sRGBEncoding;
+renderer.toneMapping=THREE.NoToneMapping;
+renderer.toneMappingExposure=1;
+document.body.appendChild(renderer.domElement);
+scene.add(new THREE.HemisphereLight(0xeaf6ff,0x526d46,1.12));
+scene.add(new THREE.AmbientLight(0xffffff,.18));
+const sun=new THREE.DirectionalLight(0xfff4df,1.28);
+sun.position.set(-65,100,45);sun.castShadow=true;
+sun.shadow.mapSize.set(2048,2048);
+sun.shadow.camera.left=-300;sun.shadow.camera.right=300;sun.shadow.camera.top=300;sun.shadow.camera.bottom=-300;
+scene.add(sun);
+
+const mat=(color,roughness=.9,metalness=0)=>new THREE.MeshStandardMaterial({color,roughness,metalness});
+const ocean=new THREE.Mesh(new THREE.PlaneGeometry(1600,1600,48,48),mat(0x217eaa,.62,.02));
+ocean.rotation.x=-Math.PI/2;ocean.position.y=-.12;scene.add(ocean);
+
+const PLAYER_Y=2.05;
+const islands=[
+ {name:'Ilha Inicial',x:0,z:0,r:100,top:0x8fc77d,side:0x9a8060,theme:'praia'},
+ {name:'Ilha da Floresta',x:-220,z:-65,r:84,top:0x6eaa68,side:0x806c55,theme:'floresta'},
+ {name:'Ilha Candy',x:235,z:-85,r:87,top:0xe3adc8,side:0x9a7d91,theme:'candy'},
+ {name:'Ilha do Vulcão',x:-150,z:250,r:83,top:0x96967b,side:0x68615c,theme:'vulcao'},
+ {name:'Ilha de Papel',x:250,z:255,r:79,top:0xcbd9bf,side:0x929c90,theme:'papel'}
+];
+
+function addBox(parent,w,h,d,material,x,y,z){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),material);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;}
+function addTree(x,z,theme){
+ const group=new THREE.Group();
+ const trunkMat=mat(theme==='candy'?0x8b6857:0x72523a);
+ const leafMat=mat(theme==='floresta'?0x478b50:theme==='candy'?0xb77da0:0x5d9958);
+ const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.35,.55,4.4,8),trunkMat);trunk.position.set(0,4.1,0);trunk.rotation.z=(Math.random()-.5)*.16;trunk.castShadow=true;group.add(trunk);
+ if(theme==='praia'){
+  for(let i=0;i<5;i++){const leaf=new THREE.Mesh(new THREE.ConeGeometry(.55,3.4,5),leafMat);leaf.position.set(Math.cos(i*Math.PI*2/5)*1.35,6.1,Math.sin(i*Math.PI*2/5)*1.35);leaf.rotation.z=Math.cos(i*Math.PI*2/5)*.8;leaf.rotation.x=Math.sin(i*Math.PI*2/5)*.8;group.add(leaf);}
+ }else{
+  const crown=new THREE.Mesh(new THREE.SphereGeometry(theme==='floresta'?2.5:2.1,12,10),leafMat);crown.position.set(0,6.2,0);crown.castShadow=true;group.add(crown);
+ }
+ group.position.set(x,0,z);scene.add(group);breakables.push(group);
+}
+function addRock(x,z,size,color=0x777a76){const r=new THREE.Mesh(new THREE.DodecahedronGeometry(size,0),mat(color));r.position.set(x,PLAYER_Y+size*.55,z);r.rotation.set(Math.random(),Math.random(),Math.random());r.castShadow=true;scene.add(r);breakables.push(r);}
+function addHouse(island,angle,houseIndex){
+ const palettes={
+  praia:{wall:0xe2d1ad,roof:0x9a5941,trim:0x70503a,door:0x70472f,glass:0x8ac4cd},
+  floresta:{wall:0x9eaf89,roof:0x465f43,trim:0x604a35,door:0x63462f,glass:0x8bbec0},
+  candy:{wall:0xf0c5d8,roof:0xa95f8e,trim:0x83566e,door:0x966078,glass:0xa7dce5},
+  vulcao:{wall:0x9b8c7c,roof:0x514b49,trim:0x4a403b,door:0x594238,glass:0x83a9ac},
+  papel:{wall:0xd8dfd3,roof:0x71827d,trim:0x68766d,door:0x75877a,glass:0x9bc5c7}
+ };
+ const pal=palettes[island.theme]||palettes.praia;
+ const g=new THREE.Group();
+ const wall=mat(pal.wall),roof=mat(pal.roof),trim=mat(pal.trim),door=mat(pal.door),glass=mat(pal.glass,.38);
+ // Fundação e paredes.
+ addBox(g,8.8,.35,7.8,trim,0,.18,0);
+ addBox(g,8,5.25,7,wall,0,2.95,0);
+ // Telhado em duas águas.
+ const leftRoof=addBox(g,5.35,.48,8.25,roof,-2.05,5.65,0);
+ leftRoof.rotation.z=.58;
+ const rightRoof=addBox(g,5.35,.48,8.25,roof,2.05,5.65,0);
+ rightRoof.rotation.z=-.58;
+ addBox(g,8.3,.22,.22,trim,0,5.02,3.62);
+ // Porta, maçaneta e janelas na fachada.
+ addBox(g,1.48,2.85,.18,door,0,1.63,3.58);
+ const knob=new THREE.Mesh(new THREE.SphereGeometry(.09,8,8),mat(0xd8bd70,.45,.25));knob.position.set(.48,1.65,3.72);g.add(knob);
+ for(const x of [-2.45,2.45]){
+  addBox(g,1.35,1.25,.18,trim,x,3.15,3.59);
+  addBox(g,1.08,.98,.08,glass,x,3.15,3.7);
+  addBox(g,1.25,.08,.1,trim,x,3.15,3.77);
+  addBox(g,.08,1.12,.1,trim,x,3.15,3.77);
+ }
+ // Chaminé pequena e degraus da entrada.
+ addBox(g,.8,1.65,.85,trim,2.65,6.05,-1.65);
+ addBox(g,2.2,.25,1.1,trim,0,.38,4.25);
+ const distance=island.r*(houseIndex===0?.47:.61);
+ g.position.set(island.x+Math.cos(angle)*distance,1.72,island.z+Math.sin(angle)*distance);
+ g.rotation.y=angle+Math.PI;
+ g.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
+ scene.add(g);
+}
+function makeLabel(text){
+ const c=document.createElement('canvas');c.width=512;c.height=128;const ctx=c.getContext('2d');
+ ctx.fillStyle='rgba(12,31,39,.78)';ctx.roundRect(8,8,496,112,24);ctx.fill();
+ ctx.font='bold 42px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#edf4e9';ctx.fillText(text,256,66);
+ const tex=new THREE.CanvasTexture(c);const s=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthWrite:false}));s.scale.set(13,3.25,1);return s;
+}
+function addStaticNpcHealthBar(group,y=4.65){
+ const c=document.createElement('canvas');c.width=256;c.height=64;const ctx=c.getContext('2d');ctx.fillStyle='rgba(12,20,22,.82)';ctx.beginPath();ctx.roundRect(7,12,242,39,12);ctx.fill();ctx.fillStyle='#315a3c';ctx.beginPath();ctx.roundRect(15,20,226,22,7);ctx.fill();ctx.fillStyle='#62c778';ctx.beginPath();ctx.roundRect(15,20,226,22,7);ctx.fill();ctx.fillStyle='#fff';ctx.font='bold 17px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('100 / 100',128,31);const tex=new THREE.CanvasTexture(c);const sprite=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthWrite:false}));sprite.scale.set(3.1,.78,1);sprite.position.y=y;group.add(sprite);return sprite;
+}
+const breakables=[];
+islands.forEach((island,index)=>{
+ const base=new THREE.Mesh(new THREE.CylinderGeometry(island.r*.91,island.r,7,56),mat(island.side));
+ base.position.set(island.x,-1.45,island.z);base.castShadow=true;base.receiveShadow=true;scene.add(base);
+ const top=new THREE.Mesh(new THREE.CylinderGeometry(island.r*.91,island.r*.93,.65,56),mat(island.top));
+ top.position.set(island.x,1.72,island.z);top.receiveShadow=true;scene.add(top);
+ const label=makeLabel(island.name);label.position.set(island.x,13,island.z);scene.add(label);
+ // Decoração distribuída pela ilha, mantendo espaço livre no centro.
+ for(let i=0;i<21;i++){
+  const a=Math.random()*Math.PI*2,r=11+Math.random()*(island.r-15),x=island.x+Math.cos(a)*r,z=island.z+Math.sin(a)*r;
+  if(island.theme==='praia'||island.theme==='floresta')addTree(x,z,island.theme);
+  else if(island.theme==='candy'){
+   const pole=new THREE.Mesh(new THREE.CylinderGeometry(.28,.38,4,10),mat(0xead6c4));pole.position.set(x,4,z);scene.add(pole);
+   const sweet=new THREE.Mesh(new THREE.SphereGeometry(1.25,12,10),mat(i%2?0xc9789d:0xe6b877));sweet.position.set(x,6.2,z);scene.add(sweet);
+  }else if(island.theme==='vulcao')addRock(x,z,1.2+Math.random()*1.8,0x4b4b48);
+  else{
+   const sheet=new THREE.Mesh(new THREE.BoxGeometry(2.4,.15,1.8),mat(i%2?0xd4d9c9:0xc4d3d2));sheet.position.set(x,3.2,z);sheet.rotation.y=Math.random()*2;sheet.rotation.z=(Math.random()-.5)*.3;scene.add(sheet);
+  }
+ }
+ for(let i=0;i<14;i++){
+  const a=Math.random()*Math.PI*2,r=7+Math.random()*(island.r-10);
+  addRock(island.x+Math.cos(a)*r,island.z+Math.sin(a)*r,.55+Math.random()*.8,island.theme==='vulcao'?0x454543:0x777d75);
+ }
+ if(island.theme==='vulcao'){
+  const cone=new THREE.Mesh(new THREE.ConeGeometry(9,15,9),mat(0x53514c));cone.position.set(island.x+3,9,island.z-2);cone.castShadow=true;scene.add(cone);
+  const crater=new THREE.Mesh(new THREE.CylinderGeometry(2.1,2.7,.35,12),mat(0x754d3d));crater.position.set(island.x+3,16.3,island.z-2);scene.add(crater);
+ }
+ // Cada ilha agora tem pequenas casas com fachadas e telhados próprios do tema.
+ addHouse(island,-.72,index*2);
+ addHouse(island,2.35,index*2+1);
+ addHouse(island,-2.7,index*2+2);
+ // Barcos e ancoradouros são criados depois das ilhas.
+});
+
+// BARCOS: cada ilha tem um ancoradouro. Não existem mais portais.
+function makeBoatModel(){
+ const g=new THREE.Group();
+ const wood=mat(0x70472e,.95),edge=mat(0x9a6944,.9),cloth=mat(0xd8d0b5,.95),darkWood=mat(0x49362a,.95);
+ const shape=new THREE.Shape();shape.moveTo(-1.25,-2.4);shape.lineTo(1.25,-2.4);shape.lineTo(1.55,1.25);shape.lineTo(.85,2.35);shape.lineTo(-.85,2.35);shape.lineTo(-1.55,1.25);shape.closePath();
+ const hull=new THREE.Mesh(new THREE.ExtrudeGeometry(shape,{depth:.65,bevelEnabled:true,bevelSegments:2,steps:1,bevelSize:.12,bevelThickness:.12}),wood);
+ hull.rotation.x=Math.PI/2;hull.position.y=.15;hull.castShadow=true;g.add(hull);
+ const rim=new THREE.Mesh(new THREE.BoxGeometry(2.9,.18,4.5),edge);rim.position.set(0,.56,0);g.add(rim);
+ const seat=new THREE.Mesh(new THREE.BoxGeometry(1.9,.2,.48),cloth);seat.position.set(0,.88,.45);g.add(seat);
+ const mast=new THREE.Mesh(new THREE.CylinderGeometry(.09,.13,4.2,8),darkWood);mast.position.set(0,2.45,-.25);g.add(mast);
+ const sail=new THREE.Mesh(new THREE.PlaneGeometry(2.5,2.7),cloth);sail.position.set(.05,2.65,-.2);sail.rotation.y=.12;g.add(sail);
+ const flag=new THREE.Mesh(new THREE.ConeGeometry(.28,.75,4),mat(0x9f5148));flag.position.set(0,4.65,-.25);flag.rotation.z=-Math.PI/2;g.add(flag);
+ return g;
+}
+const boatStations=[];
+const boatAngles=[-Math.PI/2,-.35,.3,Math.PI*.82,Math.PI*.22];
+islands.forEach((land,index)=>{
+ const angle=boatAngles[index]||0;
+ const dock=new THREE.Group();dock.rotation.y=angle;
+ const plankMat=mat(0x806044,.95),ropeMat=mat(0x4b4032,.98);
+ for(let i=0;i<5;i++)addBox(dock,3.8,.28,1.55,plankMat,0,0,i*1.55);
+ for(const x of [-1.65,1.65])for(let z=0;z<7;z+=2.3){const post=new THREE.Mesh(new THREE.CylinderGeometry(.13,.17,1.2,8),ropeMat);post.position.set(x,.52,z);dock.add(post);}
+ dock.position.set(land.x+Math.sin(angle)*(land.r-7),1.8,land.z+Math.cos(angle)*(land.r-7));scene.add(dock);
+ const boat=makeBoatModel();
+ const bx=land.x+Math.sin(angle)*(land.r+1.4),bz=land.z+Math.cos(angle)*(land.r+1.4);
+ boat.position.set(bx,.12,bz);boat.rotation.y=angle;scene.add(boat);
+ const label=makeLabel('BARCO');label.scale.set(5,1.3,1);label.position.set(bx,5.7,bz);scene.add(label);
+ boatStations.push({boat,position:new THREE.Vector3(bx,.12,bz),angle,index});
+});
+
+// PERSONAGEM DO JOGADOR
+const player=new THREE.Group();scene.add(player);
+const skin=mat(0xd2a17e),shirt=mat(0x426f80),pants=mat(0x303d4a),boots=mat(0x262d31),hair=mat(0x302b28);
+addBox(player,1.05,1.35,.62,shirt,0,2.3,0);
+const head=new THREE.Mesh(new THREE.SphereGeometry(.48,16,14),skin);head.position.set(0,3.28,0);head.castShadow=true;player.add(head);
+const hairCap=new THREE.Mesh(new THREE.SphereGeometry(.49,14,10,0,Math.PI*2,0,Math.PI*.48),hair);hairCap.position.set(0,3.42,0);player.add(hairCap);
+for(const x of [-.16,.16]){const eye=new THREE.Mesh(new THREE.SphereGeometry(.055,8,8),mat(0x202326));eye.position.set(x,3.3,.43);player.add(eye);}
+const leftArm=new THREE.Group();leftArm.position.set(-.68,2.75,0);player.add(leftArm);addBox(leftArm,.3,1.05,.34,shirt,0,-.48,0);addBox(leftArm,.28,.28,.3,skin,0,-1.05,0);
+const rightArm=new THREE.Group();rightArm.position.set(.68,2.75,0);player.add(rightArm);addBox(rightArm,.3,1.05,.34,shirt,0,-.48,0);addBox(rightArm,.28,.28,.3,skin,0,-1.05,0);
+const leftLeg=new THREE.Group();leftLeg.position.set(-.29,1.62,0);player.add(leftLeg);addBox(leftLeg,.34,1.55,.38,pants,0,-.78,0);addBox(leftLeg,.38,.25,.58,boots,0,-1.55,.08);
+const rightLeg=new THREE.Group();rightLeg.position.set(.29,1.62,0);player.add(rightLeg);addBox(rightLeg,.34,1.55,.38,pants,0,-.78,0);addBox(rightLeg,.38,.25,.58,boots,0,-1.55,.08);
+player.position.set(0,PLAYER_Y,17);
+
+// NPC E MESA DE FRUTAS
+const npc=new THREE.Group();scene.add(npc);npc.position.set(0,PLAYER_Y,-14);
+addBox(npc,.95,1.35,.6,mat(0x8b7651),0,2.25,0);
+addBox(npc,.32,1.5,.38,mat(0x373e42),-.27,.78,0);addBox(npc,.32,1.5,.38,mat(0x373e42),.27,.78,0);
+const fruitNpcLeftArm=new THREE.Group();fruitNpcLeftArm.position.set(-.62,2.72,0);npc.add(fruitNpcLeftArm);addBox(fruitNpcLeftArm,.3,1.05,.34,mat(0x8b7651),0,-.43,0);addBox(fruitNpcLeftArm,.27,.25,.29,mat(0xc99a78),0,-.98,0);
+const fruitNpcRightArm=new THREE.Group();fruitNpcRightArm.position.set(.62,2.72,0);npc.add(fruitNpcRightArm);addBox(fruitNpcRightArm,.3,1.05,.34,mat(0x8b7651),0,-.43,0);addBox(fruitNpcRightArm,.27,.25,.29,mat(0xc99a78),0,-.98,0);
+const npcHead=new THREE.Mesh(new THREE.SphereGeometry(.46,16,12),mat(0xc99a78));npcHead.position.set(0,3.25,0);npc.add(npcHead);
+addBox(npc,1.15,.18,.8,mat(0x46392e),0,3.68,0);
+const hatTop=new THREE.Mesh(new THREE.CylinderGeometry(.35,.35,.45,12),mat(0x564735));hatTop.position.set(0,3.94,0);npc.add(hatTop);
+for(const x of [-.15,.15]){const eye=new THREE.Mesh(new THREE.SphereGeometry(.05,8,8),mat(0x202020));eye.position.set(x,3.28,.41);npc.add(eye);}
+const npcLabel=makeLabel('MESTRE DAS FRUTAS');npcLabel.position.set(0,6.6,-14);scene.add(npcLabel);addStaticNpcHealthBar(npc,4.55);
+const table=addBox(scene,4.8,.35,2.1,mat(0x75543b),0,2.55,-9.3); // balcão
+for(const x of [-1.8,1.8])for(const z of [-.65,.65])addBox(scene,.22,1.15,.22,mat(0x62462f),x,1.85,-9.3+z);
+
+// NPC que entrega missões e recompensa o jogador em moedas.
+const questNpc=new THREE.Group();scene.add(questNpc);questNpc.position.set(10,PLAYER_Y,-13);
+const questCoat=mat(0x58784e),questPants=mat(0x35433b),questSkin=mat(0xc99a78),questBoots=mat(0x292d2b);
+addBox(questNpc,1.0,1.4,.62,questCoat,0,2.25,0);
+const questHead=new THREE.Mesh(new THREE.SphereGeometry(.46,16,12),questSkin);questHead.position.set(0,3.28,0);questNpc.add(questHead);
+addBox(questNpc,.95,.16,.65,mat(0x423b2e),0,3.69,0);
+const questHat=new THREE.Mesh(new THREE.CylinderGeometry(.39,.47,.24,12),mat(0x67543a));questHat.position.y=3.82;questNpc.add(questHat);
+for(const x of [-.15,.15]){const eye=new THREE.Mesh(new THREE.SphereGeometry(.05,8,8),mat(0x202020));eye.position.set(x,3.3,.42);questNpc.add(eye);}
+const questLeftArm=new THREE.Group();questLeftArm.position.set(-.67,2.75,0);questNpc.add(questLeftArm);addBox(questLeftArm,.32,1.1,.35,questCoat,0,-.48,0);addBox(questLeftArm,.28,.28,.3,questSkin,0,-1.06,0);
+const questRightArm=new THREE.Group();questRightArm.position.set(.67,2.75,0);questNpc.add(questRightArm);addBox(questRightArm,.32,1.1,.35,questCoat,0,-.48,0);addBox(questRightArm,.28,.28,.3,questSkin,0,-1.06,0);
+const questLeftLeg=new THREE.Group();questLeftLeg.position.set(-.29,1.55,0);questNpc.add(questLeftLeg);addBox(questLeftLeg,.36,1.4,.4,questPants,0,-.69,0);addBox(questLeftLeg,.4,.24,.58,questBoots,0,-1.42,.08);
+const questRightLeg=new THREE.Group();questRightLeg.position.set(.29,1.55,0);questNpc.add(questRightLeg);addBox(questRightLeg,.36,1.4,.4,questPants,0,-.69,0);addBox(questRightLeg,.4,.24,.58,questBoots,0,-1.42,.08);
+const questLabel=makeLabel('MESTRE DAS MISSÕES');questLabel.position.set(10,6.5,-13);scene.add(questLabel);addStaticNpcHealthBar(questNpc,4.55);
+
+// Vendedor de frutas: NPC amigável da loja, próximo aos outros mestres.
+const shopNpc=new THREE.Group();scene.add(shopNpc);shopNpc.position.set(-10,PLAYER_Y,-13);
+const shopCoat=mat(0x426b69),shopPants=mat(0x37454b),shopSkin=mat(0xc99a78),shopGold=mat(0xd3ad60);
+addBox(shopNpc,1.0,1.4,.62,shopCoat,0,2.25,0);
+const shopHead=new THREE.Mesh(new THREE.SphereGeometry(.46,16,12),shopSkin);shopHead.position.set(0,3.28,0);shopNpc.add(shopHead);
+addBox(shopNpc,1.12,.18,.78,shopGold,0,3.58,0);
+const shopHat=new THREE.Mesh(new THREE.CylinderGeometry(.39,.46,.25,12),mat(0x344e49));shopHat.position.y=3.78;shopNpc.add(shopHat);
+for(const x of [-.15,.15]){const eye=new THREE.Mesh(new THREE.SphereGeometry(.05,8,8),mat(0x202020));eye.position.set(x,3.3,.42);shopNpc.add(eye);}
+const shopArmL=new THREE.Group();shopArmL.position.set(-.67,2.75,0);shopNpc.add(shopArmL);addBox(shopArmL,.32,1.1,.35,shopCoat,0,-.48,0);addBox(shopArmL,.28,.28,.3,shopSkin,0,-1.06,0);
+const shopArmR=new THREE.Group();shopArmR.position.set(.67,2.75,0);shopNpc.add(shopArmR);addBox(shopArmR,.32,1.1,.35,shopCoat,0,-.48,0);addBox(shopArmR,.28,.28,.3,shopSkin,0,-1.06,0);
+const shopLegL=new THREE.Group();shopLegL.position.set(-.29,1.55,0);shopNpc.add(shopLegL);addBox(shopLegL,.36,1.4,.4,shopPants,0,-.69,0);addBox(shopLegL,.4,.24,.58,mat(0x292d2e),0,-1.42,.08);
+const shopLegR=new THREE.Group();shopLegR.position.set(.29,1.55,0);shopNpc.add(shopLegR);addBox(shopLegR,.36,1.4,.4,shopPants,0,-.69,0);addBox(shopLegR,.4,.24,.58,mat(0x292d2e),0,-1.42,.08);
+const shopLabel=makeLabel('LOJA DE FRUTAS');shopLabel.position.set(-10,6.5,-13);scene.add(shopLabel);addStaticNpcHealthBar(shopNpc,4.55);
+
+const fruitData=[
+ {name:'Papel',chance:17,color:0xe2ddcd,secondary:0xb7c9c1,skills:[
+  {name:'Embrulhamento',need:0,desc:'Casulo de papel • 5 dano',type:'bind',damage:5,color:0xe2ddcd,radius:3},
+  {name:'Gol',need:25,desc:'Chute de bola de papel • 20 dano',type:'projectile',damage:20,color:0xd7d2c2},
+  {name:'Voo',need:100,desc:'Voe sobre um papel • 30 segundos',type:'utility',damage:0,color:0xe2ddcd}
+ ]},
+ {name:'Candy',chance:11,color:0xd77da8,secondary:0xf0d6b2,skills:[
+  {name:'Corte doce',need:0,desc:'Ataque com pirulito • 15 dano',type:'strike',damage:15,color:0xf17bb2},
+  {name:'Açúcar',need:50,desc:'Corrida rápida • 10 por acerto',type:'dash',damage:10,color:0xf2a7cf},
+  {name:'Rosquinha',need:200,desc:'Espada de doce • 50 dano',type:'strike',damage:50,color:0xffd0e5}
+ ]},
+ {name:'Train',chance:7,color:0xb87843,secondary:0x504b47,skills:[
+  {name:'Fumaça',need:0,desc:'Visão cinzenta • 0 dano',type:'utility',damage:0,color:0x9ba3a5},
+  {name:'Esmagamento',need:75,desc:'Dois trens • 30 dano',type:'special',damage:30,color:0xb87843},
+  {name:'Atropelamento',need:150,desc:'Trem em alta velocidade • 60 dano',type:'special',damage:60,color:0x9d6940},
+  {name:'Transformação',need:300,desc:'Vire um trem • 60 segundos, 40 por acerto',type:'special',damage:40,color:0xb87843},
+  {name:'Trem Fantasma',need:500,desc:'Locomotiva espectral • 75 dano',type:'meteor',damage:75,color:0x91c9d9,radius:9}
+ ]},
+ {name:'Brasa',chance:7,color:0xe45b32,secondary:0xffc15c,skills:[
+  {name:'Faísca ardente',need:0,desc:'Projétil de fogo • 18 dano',type:'projectile',damage:18,color:0xff7438},
+  {name:'Explosão solar',need:50,desc:'Explosão ao redor do alvo • 32 dano',type:'burst',damage:32,color:0xffa13b,radius:5},
+  {name:'Chuva de brasas',need:150,desc:'Rajada explosiva • 48 dano',type:'meteor',damage:48,color:0xff512f,radius:6}
+ ]},
+ {name:'Geada',chance:6,color:0x75c6de,secondary:0xdaf7ff,skills:[
+  {name:'Estilhaço gélido',need:0,desc:'Lança gelo • 18 dano',type:'projectile',damage:18,color:0x8de4ff},
+  {name:'Prisão congelante',need:50,desc:'Congela o inimigo • 25 dano',type:'bind',damage:25,color:0x9cecff,radius:3},
+  {name:'Nevasca',need:150,desc:'Área de gelo • 45 dano',type:'burst',damage:45,color:0xc9f6ff,radius:6},
+  {name:'Forma Glacial',need:300,desc:'Transforma em guardião de gelo • 38 dano por colisão, 45 s',type:'transform',damage:38,color:0x9cecff,duration:45},
+  {name:'Avalanche',need:450,desc:'Onda de cristais • 72 dano',type:'meteor',damage:72,color:0xbff6ff,radius:9}
+ ]},
+ {name:'Trovão',chance:5,color:0xe6ca45,secondary:0x8c83dc,skills:[
+  {name:'Faísca elétrica',need:0,desc:'Raio rápido • 20 dano',type:'beam',damage:20,color:0xffe45b},
+  {name:'Passo elétrico',need:50,desc:'Avanço veloz • 28 dano',type:'dash',damage:28,color:0xffed72},
+  {name:'Tempestade',need:150,desc:'Descarga em área • 48 dano',type:'burst',damage:48,color:0xb9a5ff,radius:6}
+ ]},
+ {name:'Vendaval',chance:5,color:0x8bd0b9,secondary:0xd8f3e5,skills:[
+  {name:'Corte de vento',need:0,desc:'Lâmina de ar • 16 dano',type:'projectile',damage:16,color:0xc7f5e5},
+  {name:'Redemoinho',need:50,desc:'Giro de vento • 30 dano',type:'wave',damage:30,color:0x8de4c5,radius:5},
+  {name:'Tornado',need:150,desc:'Prende e atinge inimigos • 45 dano',type:'bind',damage:45,color:0x6ec9ae,radius:4}
+ ]},
+ {name:'Rocha',chance:5,color:0x9b8c78,secondary:0xd1c3a5,skills:[
+  {name:'Pedregulho',need:0,desc:'Arremessa uma pedra • 20 dano',type:'projectile',damage:20,color:0xa99a83},
+  {name:'Punho sísmico',need:50,desc:'Golpe pesado • 32 dano',type:'strike',damage:32,color:0xb5a184},
+  {name:'Terremoto',need:150,desc:'Abalo em área • 50 dano',type:'burst',damage:50,color:0x897961,radius:6}
+ ]},
+ {name:'Maré',chance:5,color:0x3d9ed1,secondary:0x9ee4ee,skills:[
+  {name:'Jato d’água',need:0,desc:'Jato pressurizado • 18 dano',type:'projectile',damage:18,color:0x45c8ed},
+  {name:'Onda crescente',need:50,desc:'Onda frontal • 30 dano',type:'wave',damage:30,color:0x38aee0,radius:5},
+  {name:'Tsunami',need:150,desc:'Grande onda em área • 48 dano',type:'burst',damage:48,color:0x188ec5,radius:7}
+ ]},
+ {name:'Eclipse',chance:4,color:0x51456f,secondary:0xc2a4e3,skills:[
+  {name:'Sombra cortante',need:0,desc:'Projétil sombrio • 20 dano',type:'projectile',damage:20,color:0x7960a8},
+  {name:'Passo sombrio',need:50,desc:'Investida de sombra • 30 dano',type:'dash',damage:30,color:0x9a75cf},
+  {name:'Noite total',need:150,desc:'Explosão sombria • 46 dano',type:'burst',damage:46,color:0x4b376d,radius:6}
+ ]},
+ {name:'Aurora',chance:4,color:0xf5d76d,secondary:0xf3a6d3,skills:[
+  {name:'Raio prismático',need:0,desc:'Disparo luminoso • 18 dano',type:'beam',damage:18,color:0xffe68b},
+  {name:'Reflexo luminoso',need:50,desc:'Feixe de luz • 30 dano',type:'projectile',damage:30,color:0xfff3bc},
+  {name:'Explosão aurora',need:150,desc:'Clarão em área • 50 dano',type:'burst',damage:50,color:0xf4a7d8,radius:6},
+  {name:'Asas da Aurora',need:300,desc:'Transforma com asas de luz • 34 dano por colisão, 45 s',type:'transform',damage:34,color:0xffe68b,duration:45},
+  {name:'Nova Colorida',need:450,desc:'Explosão de luz em anéis • 72 dano',type:'meteor',damage:72,color:0xf4a7d8,radius:9}
+ ]},
+ {name:'Magma',chance:4,color:0xa84d32,secondary:0xf3a044,skills:[
+  {name:'Rocha incandescente',need:0,desc:'Projétil de magma • 24 dano',type:'projectile',damage:24,color:0xff793e},
+  {name:'Poça de magma',need:50,desc:'Explosão quente • 35 dano',type:'burst',damage:35,color:0xe65b32,radius:5},
+  {name:'Erupção',need:150,desc:'Erupção em área • 55 dano',type:'meteor',damage:55,color:0xff4b25,radius:7},
+  {name:'Titã de Magma',need:300,desc:'Transforma em titã incandescente • 48 dano por colisão, 45 s',type:'transform',damage:48,color:0xff793e,duration:45},
+  {name:'Coração do Vulcão',need:450,desc:'Erupção gigante • 80 dano',type:'meteor',damage:80,color:0xff4b25,radius:10}
+ ]},
+ {name:'Cipó',chance:4,color:0x42834a,secondary:0xa7c96d,skills:[
+  {name:'Chicote de cipó',need:0,desc:'Chicote natural • 18 dano',type:'strike',damage:18,color:0x74b95a},
+  {name:'Raízes presas',need:50,desc:'Raízes prendem o alvo • 30 dano',type:'bind',damage:30,color:0x639e48,radius:3},
+  {name:'Jardim selvagem',need:150,desc:'Explosão de raízes • 45 dano',type:'burst',damage:45,color:0x4f9d4d,radius:6}
+ ]},
+ {name:'Prisma',chance:3,color:0x9c7bd5,secondary:0x7ed8d3,skills:[
+  {name:'Estilhaço prisma',need:0,desc:'Estilhaço cristalino • 20 dano',type:'projectile',damage:20,color:0xc5a9ff},
+  {name:'Lança cristal',need:50,desc:'Lança de cristal • 38 dano',type:'strike',damage:38,color:0x89dfe0},
+  {name:'Chuva de cristais',need:150,desc:'Cristais em área • 50 dano',type:'burst',damage:50,color:0xd4aaff,radius:6},
+  {name:'Prisão Prismática',need:250,desc:'Cúpula de cristais • 42 dano',type:'bind',damage:42,color:0x9c7bd5,radius:5},
+  {name:'Refração Suprema',need:450,desc:'Feixe de cores em linha • 76 dano',type:'beam',damage:76,color:0x7ed8d3,radius:10}
+ ]},
+ {name:'Órbita',chance:2,color:0x596b9d,secondary:0xd3b4ee,skills:[
+  {name:'Orbe gravitacional',need:0,desc:'Orbe de energia • 18 dano',type:'projectile',damage:18,color:0x8da8ed},
+  {name:'Gravidade intensa',need:50,desc:'Prende o inimigo • 30 dano',type:'bind',damage:30,color:0xb79be8,radius:4},
+  {name:'Colapso orbital',need:150,desc:'Colapso em área • 55 dano',type:'burst',damage:55,color:0x5965be,radius:7},
+  {name:'Buraco de Minhoca',need:300,desc:'Puxa adversários para um ponto • 42 dano',type:'pull',damage:42,color:0xb79be8,radius:8},
+  {name:'Chuva Orbital',need:450,desc:'Fragmentos caem do céu • 78 dano',type:'meteor',damage:78,color:0x8da8ed,radius:9}
+ ]},
+ {name:'Toxina',chance:3,color:0x79a63f,secondary:0xc2dc69,skills:[
+  {name:'Dardo tóxico',need:0,desc:'Dardo venenoso • 18 dano',type:'projectile',damage:18,color:0xa3d64d},
+  {name:'Nuvem venenosa',need:50,desc:'Nuvem em área • 30 dano',type:'burst',damage:30,color:0x85bd35,radius:5},
+  {name:'Maré tóxica',need:150,desc:'Explosão venenosa • 48 dano',type:'burst',damage:48,color:0x668f2d,radius:7}
+ ]},
+ {name:'Eco',chance:3,color:0x6eabc0,secondary:0xd4e4e8,skills:[
+  {name:'Pulso sonoro',need:0,desc:'Pulso de som • 16 dano',type:'projectile',damage:16,color:0x9ce2ef},
+  {name:'Onda de choque',need:50,desc:'Onda expansiva • 32 dano',type:'wave',damage:32,color:0x74c5dc,radius:5},
+  {name:'Estrondo',need:150,desc:'Grande explosão sonora • 48 dano',type:'burst',damage:48,color:0xd6f4fa,radius:6}
+ ]},
+ {name:'Aço',chance:2,color:0x7c8c96,secondary:0xc8d1d5,skills:[
+  {name:'Lâmina metálica',need:0,desc:'Lâmina arremessada • 18 dano',type:'projectile',damage:18,color:0xc7d6df},
+  {name:'Punho de aço',need:50,desc:'Soco reforçado • 35 dano',type:'strike',damage:35,color:0x9eabb3},
+  {name:'Chuva de lâminas',need:150,desc:'Lâminas em área • 52 dano',type:'burst',damage:52,color:0xe0e6e9,radius:6},
+  {name:'Armadura de Aço',need:300,desc:'Transforma em guardião metálico • 42 dano por colisão, 45 s',type:'transform',damage:42,color:0xc7d6df,duration:45},
+  {name:'Arsenal Orbital',need:450,desc:'Anéis de lâminas giratórios • 78 dano',type:'meteor',damage:78,color:0xe0e6e9,radius:9}
+ ]},
+ {name:'Draco',chance:1,color:0x4d995c,secondary:0xd0a15e,skills:[
+  {name:'Garra dracônica',need:0,desc:'Golpe de garra • 24 dano',type:'strike',damage:24,color:0x75bf69},
+  {name:'Sopro dracônico',need:50,desc:'Rajada de fogo • 38 dano',type:'projectile',damage:38,color:0xf18c45},
+  {name:'Rugido do dragão',need:150,desc:'Impacto em área • 58 dano',type:'burst',damage:58,color:0xd65d48,radius:7},
+  {name:'Forma Dracônica',need:300,desc:'Transforma em dragão • 45 dano por colisão, 60 s',type:'transform',damage:45,color:0x75bf69,duration:60},
+  {name:'Chama Ancestral',need:500,desc:'Grande sopro de fogo • 82 dano',type:'meteor',damage:82,color:0xf18c45,radius:10}
+ ]},
+ {name:'Areia',chance:2,color:0xc6a36e,secondary:0xf0d7a3,skills:[
+  {name:'Dardo de areia',need:0,desc:'Disparo de areia • 16 dano',type:'projectile',damage:16,color:0xd6b57c},
+  {name:'Prisão de areia',need:50,desc:'Areia prende o alvo • 25 dano',type:'bind',damage:25,color:0xc49b5e,radius:3},
+  {name:'Tempestade de areia',need:150,desc:'Tempestade em área • 45 dano',type:'burst',damage:45,color:0xe4c58d,radius:7}
+ ]},
+ {name:'Buraco Negro',chance:0,adminOnly:true,rarity:'ADM',price:0,color:0x151020,secondary:0x9a63dd,skills:[
+  {name:'Orbe do Vazio',need:0,desc:'Esfera gravitacional • 30 dano',type:'blackhole',damage:30,color:0x21112f,radius:5},
+  {name:'Sucção',need:75,desc:'Atrai adversários • 42 dano',type:'pull',damage:42,color:0x7d4bb0,radius:8},
+  {name:'Singularidade',need:175,desc:'Colapso gravitacional • 65 dano',type:'burst',damage:65,color:0x25123e,radius:8},
+  {name:'Forma do Vazio',need:300,desc:'Transforma em entidade do vazio • 40 dano por colisão, 60 s',type:'transform',damage:40,color:0x6c3da0,duration:60},
+  {name:'Horizonte de Eventos',need:500,desc:'Grande onda gravitacional • 90 dano',type:'meteor',damage:90,color:0x4b236f,radius:11}
+ ]}
+];
+const fruitNames=fruitData.map(f=>f.name);
+const fruitByName=Object.fromEntries(fruitData.map(f=>[f.name,f]));
+const fruitSpecs=Object.fromEntries(fruitData.map(f=>[f.name,{color:f.color,secondary:f.secondary}]));
+const fruitSkills=Object.fromEntries(fruitData.map(f=>[f.name,f.skills]));
+// Raridades e preços da loja. Comprar uma fruta a consome imediatamente.
+const rarityByFruit={
+ 'Papel':'Comum','Candy':'Comum','Brasa':'Comum','Areia':'Comum',
+ 'Geada':'Incomum','Vendaval':'Incomum','Rocha':'Incomum','Cipó':'Incomum','Maré':'Incomum','Eco':'Incomum',
+ 'Trovão':'Rara','Magma':'Rara','Toxina':'Rara','Eclipse':'Rara','Prisma':'Rara',
+ 'Train':'Lendária','Aurora':'Lendária','Órbita':'Lendária','Aço':'Lendária',
+ 'Draco':'Mítica','Buraco Negro':'ADM'
+};
+const rarityPrices={'Comum':250,'Incomum':600,'Rara':1200,'Lendária':2500,'Mítica':5000};
+fruitData.forEach(f=>{f.rarity=f.adminOnly?'ADM':(rarityByFruit[f.name]||'Comum');f.price=rarityPrices[f.rarity]||0;});
+
+// LOJA ROTATIVA: cada fruta tem uma chance de entrar no estoque a cada rotação.
+// O estoque e o horário ficam salvos para não reiniciar ao fechar ou reabrir o jogo.
+const SHOP_REFRESH_MS=5*60*1000;
+const shopChanceByRarity={'Comum':70,'Incomum':40,'Rara':20,'Lendária':8,'Mítica':3};
+const SHOP_STORAGE_KEY='fruitAdventureRotatingShopV1';
+function generateShopStock(){
+ let selected=[];
+ // Gera um estoque aleatório. Repetimos apenas se vierem menos de quatro frutas.
+ for(let attempt=0;attempt<100;attempt++){
+  selected=fruitData.filter(f=>!f.adminOnly&&Math.random()*100<shopChanceByRarity[f.rarity]).map(f=>f.name);
+  if(selected.length>=4)break;
+ }
+ if(selected.length<4){
+  selected=fruitData.filter(f=>!f.adminOnly).map(f=>f.name).sort(()=>Math.random()-.5).slice(0,4);
+ }
+ return selected;
+}
+function createShopState(){return {stock:generateShopStock(),refreshAt:Date.now()+SHOP_REFRESH_MS};}
+function loadShopState(){
+ try{
+  const saved=JSON.parse(localStorage.getItem(SHOP_STORAGE_KEY)||'null');
+  if(saved&&Array.isArray(saved.stock)&&Number.isFinite(saved.refreshAt)&&saved.refreshAt>Date.now()&&saved.stock.length>=1&&saved.stock.every(n=>fruitNames.includes(n)))return saved;
+ }catch(err){}
+ const fresh=createShopState();
+ try{localStorage.setItem(SHOP_STORAGE_KEY,JSON.stringify(fresh));}catch(err){}
+ return fresh;
+}
+let shopState=loadShopState();
+let shopStock=new Set(shopState.stock);
+const fruitDrops=[];
+let heldFruitModel=null,pendingFruit=null;
+function spawnFruitDrop(name,options={}){
+ if(!fruitByName[name])return null;
+ const drop=makeFruitModel(name);
+ const islandIndex=Number.isInteger(options.islandIndex)?options.islandIndex:currentIsland;
+ const land=islands[islandIndex]||islands[currentIsland],dir=forwardVector();
+ if(Number.isFinite(options.x)&&Number.isFinite(options.z))drop.position.set(options.x,PLAYER_Y+.72,options.z);
+ else drop.position.copy(player.position).addScaledVector(dir,3.8),drop.position.y=PLAYER_Y+.72;
+ const ox=drop.position.x-land.x,oz=drop.position.z-land.z,dist=Math.hypot(ox,oz),limit=land.r-5;
+ if(dist>limit){drop.position.x=land.x+ox/dist*limit;drop.position.z=land.z+oz/dist*limit;}
+ drop.rotation.z=(Math.random()-.5)*.22;drop.userData.fruitName=name;drop.userData.islandIndex=islandIndex;drop.userData.baseY=drop.position.y;
+ drop.userData.adminOnly=!!options.adminOnly||!!fruitByName[name].adminOnly;
+ drop.userData.dropId=options.dropId||('drop-'+Date.now()+'-'+Math.random().toString(36).slice(2,9));
+ const halo=new THREE.Mesh(new THREE.TorusGeometry(1.05,.045,7,28),new THREE.MeshBasicMaterial({color:fruitSpecs[name].secondary,transparent:true,opacity:.8}));halo.rotation.x=Math.PI/2;halo.position.y=-.55;drop.add(halo);
+ const label=makeLabel((drop.userData.adminOnly?'ADM • ':'')+name.toUpperCase()+' • PASSE POR CIMA');label.scale.set(5.8,1.45,1);label.position.y=1.85;drop.add(label);
+ scene.add(drop);fruitDrops.push(drop);
+ if(options.sync!==false&&onlineActive){sendOnlineAction('fruitDrop',{fruitName:name,x:drop.position.x,z:drop.position.z,islandIndex,dropId:drop.userData.dropId,adminOnly:drop.userData.adminOnly,falling:drop.userData.falling,startY:drop.position.y,fallSpeed:drop.userData.fallSpeed});}
+ return drop;
+}
+function removeFruitDropById(dropId){
+ const found=fruitDrops.find(d=>d.userData.dropId===dropId);
+ if(found){scene.remove(found);const i=fruitDrops.indexOf(found);if(i>=0)fruitDrops.splice(i,1);}
+}
+function nearestFruitDrop(maxDistance=5){
+ let found=null,best=maxDistance;
+ for(const drop of fruitDrops){if(drop.userData.islandIndex!==currentIsland)continue;if(drop.userData.adminOnly&&!adminUnlocked)continue;const d=player.position.distanceTo(drop.position);if(d<best){best=d;found=drop;}}
+ return found;
+}
+function updateFruitDropPickup(){
+ if(!onlineActive||pendingFruit||modalOpen||inventoryOpen||travelState)return;
+ const drop=nearestFruitDrop(2.1);
+ if(drop)pickUpFruitDrop(drop);
+}
+function equipAndEatFruit(name,notify=true){
+ const previous=currentFruit;
+ currentFruit=name;
+ try{localStorage.setItem('fruitAdventureEquipped',name);}catch(err){}
+ saveFruitCollection();renderedFruit=null;renderedMastery=-1;updateHUD();
+ if(notify){message(previous&&previous!==name?'🍈 Você comeu '+name+'! A fruta '+previous+' foi substituída.':'🍈 Você comeu a fruta '+name+'!');}
+}
+function removeHeldFruit(){if(heldFruitModel){if(heldFruitModel.parent)heldFruitModel.parent.remove(heldFruitModel);heldFruitModel=null;}}
+function attachFruitToHand(name){
+ removeHeldFruit();
+ const holder=new THREE.Group();
+ holder.position.set(0,-.83,.37);holder.rotation.set(-.22,.12,-.12);
+ const fruitModel=makeFruitModel(name);fruitModel.scale.setScalar(.63);fruitModel.position.y=-.02;holder.add(fruitModel);
+ rightArm.add(holder);heldFruitModel=holder;
+}
+function openFruitDecision(name){
+ pendingFruit=name;modalOpen=true;
+ $('pickedFruitName').textContent='Você está segurando: '+name;
+ $('fruitDecisionModal').style.display='flex';
+ if(document.pointerLockElement)document.exitPointerLock();
+}
+function pickUpFruitDrop(drop){
+ if(!drop||!drop.parent||pendingFruit||(drop.userData.adminOnly&&!adminUnlocked))return;
+ const name=drop.userData.fruitName,dropId=drop.userData.dropId;
+ scene.remove(drop);const idx=fruitDrops.indexOf(drop);if(idx>=0)fruitDrops.splice(idx,1);
+ if(onlineActive&&dropId)sendOnlineAction('fruitPickup',{dropId});
+ attachFruitToHand(name);openFruitDecision(name);
+ message('Você pegou '+name+'. Escolha comer ou armazenar.');
+}
+function finishFruitDecision(){
+ pendingFruit=null;modalOpen=false;$('fruitDecisionModal').style.display='none';removeHeldFruit();
+}
+function eatHeldFruit(){
+ if(!pendingFruit)return;const name=pendingFruit;finishFruitDecision();equipAndEatFruit(name,true);
+}
+function storeHeldFruit(){
+ if(!pendingFruit)return;const name=pendingFruit;storedFruits.push(name);saveFruitCollection();finishFruitDecision();
+ renderInventory();message('🎒 '+name+' foi guardada no inventário!');
+}
+function dropHeldFruit(){
+ if(!pendingFruit)return;const name=pendingFruit;finishFruitDecision();spawnFruitDrop(name,{adminOnly:!!fruitByName[name].adminOnly});message('⬇️ '+name+' foi solta no chão. Quem passar por cima poderá pegá-la.');
+}
+function dropEquippedFruit(){
+ if(!currentFruit){message('Você não tem fruta equipada para soltar.');return;}
+ const name=currentFruit;currentFruit=null;try{localStorage.removeItem('fruitAdventureEquipped');}catch(e){}
+ renderedFruit=null;renderedMastery=-1;spawnFruitDrop(name,{adminOnly:!!fruitByName[name].adminOnly});updateHUD();renderInventory();message('⬇️ '+name+' foi solta no chão!');
+}
+function eatStoredFruit(index){
+ if(!Number.isInteger(index)||index<0||index>=storedFruits.length)return;
+ const name=storedFruits.splice(index,1)[0];saveFruitCollection();equipAndEatFruit(name,false);
+ renderInventory();message('🍈 Você comeu '+name+' guardada!'+(currentFruit?' Sua fruta equipada agora é '+name+'.':''));
+}
+document.getElementById('eatHeldFruitButton').addEventListener('click',eatHeldFruit);
+document.getElementById('storeHeldFruitButton').addEventListener('click',storeHeldFruit);
+document.getElementById('dropHeldFruitButton').addEventListener('click',dropHeldFruit);
+function renderFruitChoices(){
+ const holder=document.getElementById('fruitChoices');if(!holder)return;
+ holder.innerHTML=fruitData.filter(f=>!f.adminOnly).map(f=>`<div class="fruitCard"><div class="fruitDot" style="background:#${f.color.toString(16).padStart(6,'0')}"></div>${f.name}<br><small>${f.chance}%</small></div>`).join('');
+}
+function makeFruitModel(name){
+ const spec=fruitSpecs[name],g=new THREE.Group();
+ const geo=['Prisma','Aço','Rocha'].includes(name)?new THREE.DodecahedronGeometry(.72,1):new THREE.SphereGeometry(.7,18,14);
+ const body=new THREE.Mesh(geo,mat(spec.color,.78));body.scale.set(1,1.12,1);g.add(body);
+ if(name==='Buraco Negro'){body.material=new THREE.MeshBasicMaterial({color:0x07040e});for(let i=0;i<3;i++){const r=new THREE.Mesh(new THREE.TorusGeometry(.88+i*.15,.055,8,28),new THREE.MeshBasicMaterial({color:i%2?0xb68aff:0x7042ad}));r.rotation.set(.4+i*.5,i*.7,0);g.add(r);}}
+ const stem=new THREE.Mesh(new THREE.CylinderGeometry(.055,.09,.35,8),mat(0x655039));stem.position.y=.78;g.add(stem);
+ const leaf=new THREE.Mesh(new THREE.SphereGeometry(.22,10,8),mat(spec.secondary));leaf.scale.set(1.5,.45,.8);leaf.position.set(.2,.82,0);leaf.rotation.z=.3;g.add(leaf);
+ if(name==='Papel')for(let i=0;i<3;i++){const stripe=new THREE.Mesh(new THREE.TorusGeometry(.72,.035,5,24),mat(0xc1c8bd));stripe.rotation.y=i*.9;g.add(stripe);}
+ if(name==='Candy'){const stripe=new THREE.Mesh(new THREE.TorusGeometry(.73,.09,7,24),mat(0xf3dfc6));stripe.rotation.set(.7,.2,.3);g.add(stripe);}
+ if(name==='Train'){const stripe=new THREE.Mesh(new THREE.TorusGeometry(.73,.055,6,24),mat(0x4c4740));stripe.rotation.y=.8;g.add(stripe);}
+ if(!['Papel','Candy','Train'].includes(name)){for(let i=0;i<3;i++){const stripe=new THREE.Mesh(new THREE.TorusGeometry(.72,.035,5,22),mat(spec.secondary));stripe.rotation.set(i*.7,(i+1)*.65,.3*i);g.add(stripe);}}
+ return g;
+}
+['Papel','Candy','Train'].forEach((name,i)=>{
+ const f=makeFruitModel(name);f.position.set((i-1)*1.35,3.35,-9.25);f.scale.setScalar(.8);scene.add(f);
+ const l=makeLabel(name);l.scale.set(4.3,1.1,1);l.position.set((i-1)*1.35,5,-9.25);scene.add(l);
+});
+
+// INIMIGOS/NPCS DE COMBATE: corpo completo, barras de vida e poderes de cada ilha.
+const enemies=[];
+const enemyPowers=[
+ {name:'Rajada de areia',color:0xc5a56a,damage:8},
+ {name:'Raízes',color:0x4d9b54,damage:9},
+ {name:'Bala doce',color:0xe78db8,damage:8},
+ {name:'Magma',color:0xd65d35,damage:11},
+ {name:'Papel cortante',color:0xdce1d6,damage:9}
+];
+function makeEnemyHealthBar(enemy){
+ const canvas=document.createElement('canvas');canvas.width=256;canvas.height=64;const ctx=canvas.getContext('2d');
+ const tex=new THREE.CanvasTexture(canvas);tex.needsUpdate=true;
+ const sprite=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthWrite:false}));sprite.scale.set(3.1,.78,1);sprite.position.set(0,4.55,0);enemy.add(sprite);
+ enemy.userData.healthCanvas=canvas;enemy.userData.healthContext=ctx;enemy.userData.healthTexture=tex;enemy.userData.healthSprite=sprite;
+ updateEnemyHealthBar(enemy);
+}
+function updateEnemyHealthBar(enemy){
+ const ctx=enemy.userData.healthContext;if(!ctx)return;const c=enemy.userData.healthCanvas;ctx.clearRect(0,0,c.width,c.height);
+ ctx.fillStyle='rgba(12,20,22,.82)';ctx.beginPath();ctx.roundRect(7,12,242,39,12);ctx.fill();
+ ctx.fillStyle='#5a2626';ctx.beginPath();ctx.roundRect(15,20,226,22,7);ctx.fill();
+ const pct=Math.max(0,Math.min(1,enemy.userData.hp/enemy.userData.maxHp));ctx.fillStyle=pct>.5?'#58bf70':pct>.25?'#e0b34c':'#df5b55';
+ ctx.beginPath();ctx.roundRect(15,20,226*pct,22,7);ctx.fill();
+ ctx.fillStyle='#fff';ctx.font='bold 17px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(Math.max(0,Math.ceil(enemy.userData.hp))+' / '+enemy.userData.maxHp,128,31);
+ enemy.userData.healthTexture.needsUpdate=true;
+}
+function createEnemy(x,z,islandIndex){
+ const e=new THREE.Group();
+ const palettes=[
+  {shirt:0x8c6748,pants:0x3b4549,skin:0xc89671,detail:0xe0c17c},
+  {shirt:0x47764b,pants:0x354b37,skin:0xb98161,detail:0x9ab66c},
+  {shirt:0xb85f91,pants:0x67445e,skin:0xe0ae91,detail:0xf4d1a6},
+  {shirt:0x9a4936,pants:0x403b39,skin:0xb98265,detail:0xd58b53},
+  {shirt:0x8e9b91,pants:0x4d5655,skin:0xc99b7c,detail:0xdde2d8}
+ ];
+ const pal=palettes[islandIndex];
+ addBox(e,.98,1.38,.58,mat(pal.shirt),0,2.28,0);
+ const headMesh=new THREE.Mesh(new THREE.SphereGeometry(.4,14,12),mat(pal.skin));headMesh.position.set(0,3.25,0);e.add(headMesh);
+ addBox(e,1.08,.16,.78,mat(pal.detail),0,3.55,0);
+ // Braços articulados com mãos.
+ const armL=new THREE.Group();armL.position.set(-.66,2.78,0);e.add(armL);addBox(armL,.31,1.05,.34,mat(pal.shirt),0,-.46,0);addBox(armL,.27,.25,.29,mat(pal.skin),0,-1.0,0);
+ const armR=new THREE.Group();armR.position.set(.66,2.78,0);e.add(armR);addBox(armR,.31,1.05,.34,mat(pal.shirt),0,-.46,0);addBox(armR,.27,.25,.29,mat(pal.skin),0,-1.0,0);
+ // Pernas e botas.
+ const legL=new THREE.Group();legL.position.set(-.29,1.57,0);e.add(legL);addBox(legL,.36,1.38,.4,mat(pal.pants),0,-.68,0);addBox(legL,.4,.24,.58,mat(0x292d2e),0,-1.4,.08);
+ const legR=new THREE.Group();legR.position.set(.29,1.57,0);e.add(legR);addBox(legR,.36,1.38,.4,mat(pal.pants),0,-.68,0);addBox(legR,.4,.24,.58,mat(0x292d2e),0,-1.4,.08);
+ e.position.set(x,PLAYER_Y,z);
+ e.userData={hp:65,maxHp:65,alive:true,attack:Math.random(),islandIndex,speed:1.8+Math.random()*.7,powerCooldown:2+Math.random()*2,walk:Math.random()*6,armL,armR,legL,legR,homeX:x,homeZ:z,powerName:enemyPowers[islandIndex].name};
+ e.traverse(o=>{if(o.isMesh)o.castShadow=true});scene.add(e);makeEnemyHealthBar(e);enemies.push(e);return e;
+}
+islands.forEach((island,idx)=>{
+ const count=idx===0?6:5;
+ for(let i=0;i<count;i++){const a=(i/count)*Math.PI*2+.5,r=island.r*.55;createEnemy(island.x+Math.cos(a)*r,island.z+Math.sin(a)*r,idx);}
+});
+const enemyProjectiles=[];
+function launchEnemyPower(enemy){
+ const power=enemyPowers[enemy.userData.islandIndex];let geometry;
+ if(enemy.userData.islandIndex===1)geometry=new THREE.ConeGeometry(.55,1.4,7);
+ else if(enemy.userData.islandIndex===4)geometry=new THREE.BoxGeometry(.95,.25,.95);
+ else if(enemy.userData.islandIndex===3)geometry=new THREE.IcosahedronGeometry(.6,1);
+ else geometry=new THREE.SphereGeometry(.55,12,10);
+ const projectile=new THREE.Mesh(geometry,mat(power.color,.72));projectile.position.copy(enemy.position);projectile.position.y+=2.25;projectile.castShadow=true;scene.add(projectile);
+ const dir=new THREE.Vector3(player.position.x-projectile.position.x,0,player.position.z-projectile.position.z).normalize();
+ enemyProjectiles.push({obj:projectile,dir,speed:11,life:3,damage:power.damage,islandIndex:enemy.userData.islandIndex});
+ message('⚠️ O inimigo usou '+power.name+'!');
+}
+function updateEnemyProjectiles(delta){
+ if(!onlineActive||inventoryOpen||modalOpen)return;
+ for(let i=enemyProjectiles.length-1;i>=0;i--){const p=enemyProjectiles[i];p.obj.position.addScaledVector(p.dir,p.speed*delta);p.life-=delta;p.obj.rotation.x+=delta*3;p.obj.rotation.y+=delta*4;
+  if(p.islandIndex===currentIsland&&p.obj.position.distanceTo(player.position.clone().add(new THREE.Vector3(0,1.8,0)))<1.55){playerTakeDamage(p.damage);scene.remove(p.obj);enemyProjectiles.splice(i,1);continue;}
+  if(p.life<=0||p.islandIndex!==currentIsland){scene.remove(p.obj);enemyProjectiles.splice(i,1);}
+ }
+}
+
+// ESTADO DO JOGO
+let currentFruit=null,money=0,bolt=0,xp=0,level=1,health=100,kills=0;
+try{const savedBolt=Number(localStorage.getItem('fruitAdventureBolt')||0);if(Number.isFinite(savedBolt))bolt=Math.max(0,Math.floor(savedBolt));}catch(err){}
+function saveBolt(){try{localStorage.setItem('fruitAdventureBolt',String(bolt));}catch(err){}}
+let activeQuest=null,completedQuests=0;
+let currentIsland=0,yaw=0,pitch=.28,locked=false,jumping=false,velocityY=0;
+let attackCooldown=0,messageTime=0,modalOpen=false,walkTime=0;
+let flying=false,flightTimer=0,flightBoard=null,sugarTimer=0,sugarAura=null,smokeTimer=0;
+let transformTimer=0,transformModel=null,transformHitTimer=0,transformBreakTimer=0,transformationFruit='',transformationDamage=40,transformationSkillIndex=3;
+let travelState=null,travelBoat=null;
+const keys={},projectiles=[],visualEffects=[];
+let punchTimer=0,punchSide=1;
+const masteryByFruit=Object.fromEntries(fruitNames.map(name=>[name,0]));
+try{const saved=JSON.parse(localStorage.getItem('fruitAdventureMastery')||'{}');for(const n of fruitNames)if(Number.isFinite(saved[n]))masteryByFruit[n]=Math.max(0,saved[n]);}catch(err){}
+let adminUnlocked=false,adminFlying=false,adminFlightAura=null,adminUIOpen=false,adminInvincible=false;
+try{adminUnlocked=localStorage.getItem('fruitAdventureAdmin')==='1';adminInvincible=adminUnlocked&&localStorage.getItem('fruitAdventureInvincible')==='1';}catch(err){}
+const storedFruits=[];
+try{const bag=JSON.parse(localStorage.getItem('fruitAdventureBag')||'[]');if(Array.isArray(bag))for(const name of bag)if(fruitNames.includes(name))storedFruits.push(name);}catch(err){}
+try{const savedEquipped=localStorage.getItem('fruitAdventureEquipped');if(fruitNames.includes(savedEquipped))currentFruit=savedEquipped;}catch(err){}
+// Remove uma fruta equipada que versões antigas também tenham deixado duplicada no inventário.
+if(currentFruit){const legacyIndex=storedFruits.indexOf(currentFruit);if(legacyIndex>=0)storedFruits.splice(legacyIndex,1);}
+try{localStorage.setItem('fruitAdventureBag',JSON.stringify(storedFruits));}catch(err){}
+let inventoryOpen=false,inventoryTab='status';
+const $=id=>document.getElementById(id);
+let renderedFruit=null,renderedMastery=-1;
+
+const cooldowns={};
+function currentMastery(){return currentFruit?masteryByFruit[currentFruit]:0;}
+function message(text){$('message').textContent=text;messageTime=2.7;}
+const ADMIN_ACCESS_CODE='20305052';
+function completeAllFruitMasteries(){
+ for(const fruit of fruitData){const maxNeed=Math.max(0,...fruit.skills.map(skill=>skill.need));masteryByFruit[fruit.name]=maxNeed;}
+ try{localStorage.setItem('fruitAdventureMastery',JSON.stringify(masteryByFruit));}catch(err){}
+ renderedFruit=null;renderedMastery=-1;updateMasteryUI();
+}
+function renderAdminFruitGrid(){
+ const holder=$('adminFruitGrid');if(!holder)return;
+ holder.innerHTML=fruitData.map(f=>`<button class="adminFruitButton" data-admin-equip="${f.name}"><i class="adminFruitDot" style="background:#${f.color.toString(16).padStart(6,'0')}"></i><span><b>${f.name}</b><small>${f.adminOnly?'EXCLUSIVA ADM':f.rarity+' • ADM: equipar'}</small></span></button>`).join('');
+}
+function openAdminAccess(){
+ if(adminUIOpen||pendingFruit)return;
+ if(modalOpen||inventoryOpen)return;
+ adminUIOpen=true;modalOpen=true;
+ if(document.pointerLockElement)document.exitPointerLock();
+ if(adminUnlocked){openAdminPanel();return;}
+ $('adminCodeInput').value='';$('adminCodeMessage').textContent='Acesso restrito.';
+ $('adminPanelModal').style.display='none';$('adminCodeModal').style.display='flex';
+ setTimeout(()=>$('adminCodeInput').focus(),30);
+}
+function openAdminPanel(){
+ $('adminCodeModal').style.display='none';$('adminPanelModal').style.display='flex';
+ renderAdminFruitGrid();updateAdminButtons();
+}
+function closeAdminUI(){
+ $('adminCodeModal').style.display='none';$('adminPanelModal').style.display='none';
+ adminUIOpen=false;modalOpen=false;
+}
+function submitAdminCode(){
+ const typed=$('adminCodeInput').value.trim();
+ if(typed!==ADMIN_ACCESS_CODE){$('adminCodeMessage').textContent='Código incorreto. Tente novamente.';$('adminCodeInput').select();return;}
+ adminUnlocked=true;
+ try{localStorage.setItem('fruitAdventureAdmin','1');}catch(err){}
+ completeAllFruitMasteries();
+ $('adminCodeMessage').textContent='Acesso liberado!';
+ message('⚡ MODO ADMINISTRADOR ATIVADO!');
+ openAdminPanel();
+}
+function adminEquipFruit(name){
+ if(!adminUnlocked||!fruitByName[name])return;
+ completeAllFruitMasteries();equipAndEatFruit(name,false);
+ message('🍎 ADM: '+name+' equipada com todas as habilidades liberadas!');
+ updateAdminButtons();
+}
+function updateAdminButtons(){
+ const button=$('adminFlyToggle');if(button)button.textContent=adminFlying?'🛬 DESATIVAR VOO ADM':'✈️ ATIVAR VOO ADM';
+ const inv=$('adminInvincibleButton');if(inv)inv.textContent=adminInvincible?'🛡️ DESATIVAR INVENCIBILIDADE':'🛡️ ATIVAR INVENCIBILIDADE';
+ const state=$('adminState');if(state)state.textContent='MODO ADM ATIVO • '+(currentFruit?'FRUTA: '+currentFruit:'SEM FRUTA')+' • '+(adminFlying?'VOANDO':'NO CHÃO')+' • '+(adminInvincible?'INVENCÍVEL':'VULNERÁVEL');
+}
+function toggleAdminInvincibility(){
+ if(!adminUnlocked)return;adminInvincible=!adminInvincible;
+ try{localStorage.setItem('fruitAdventureInvincible',adminInvincible?'1':'0');}catch(e){}
+ updateAdminButtons();message(adminInvincible?'🛡️ INVENCIBILIDADE ATIVADA!':'🛡️ INVENCIBILIDADE DESATIVADA!');
+}
+function adminFruitRain(){
+ if(!adminUnlocked)return;
+ const publicFruits=fruitData.filter(f=>!f.adminOnly);
+ const chosen=[],pool=[...publicFruits];for(let i=0;i<5&&pool.length;i++){const index=Math.floor(Math.random()*pool.length);chosen.push(pool.splice(index,1)[0]);}
+ chosen.forEach((f,i)=>{const a=i/5*Math.PI*2,dist=4.2+(i%2)*1.5;spawnFruitDrop(f.name,{x:player.position.x+Math.cos(a)*dist,z:player.position.z+Math.sin(a)*dist,falling:true,startY:PLAYER_Y+17+(i%3)*3,fallSpeed:17+(i%2)*4});});
+ message('🌧️ Choveram 5 frutas! Passe por cima para pegar.');
+}
+function makeAdminFlightAura(){
+ const g=new THREE.Group();
+ const ringA=new THREE.Mesh(new THREE.TorusGeometry(1.35,.07,8,36),new THREE.MeshBasicMaterial({color:0x7fe6ff,transparent:true,opacity:.9}));ringA.rotation.x=Math.PI/2;ringA.position.y=-.7;g.add(ringA);
+ const ringB=new THREE.Mesh(new THREE.TorusGeometry(1.7,.045,8,36),new THREE.MeshBasicMaterial({color:0xd0a7ff,transparent:true,opacity:.8}));ringB.rotation.y=.8;ringB.position.y=-.5;g.add(ringB);
+ const glow=new THREE.Mesh(new THREE.SphereGeometry(.8,14,12),new THREE.MeshBasicMaterial({color:0x63cfff,transparent:true,opacity:.12,depthWrite:false}));glow.position.y=1.2;g.add(glow);
+ return g;
+}
+function toggleAdminFlight(){
+ if(!adminUnlocked)return;
+ adminFlying=!adminFlying;
+ if(adminFlying){
+  if(flying)finishFlight();
+  jumping=false;velocityY=0;player.position.y=Math.max(player.position.y,8);
+  adminFlightAura=makeAdminFlightAura();player.add(adminFlightAura);
+  $('help').textContent='VOO ADM: WASD mover · Mouse câmera · ESPAÇO subir · C descer · Clique/F soco · 1–5 poderes';
+  message('✈️ VOO ADM ATIVADO! Espaço sobe e C desce.');
+ }else{
+  if(adminFlightAura){player.remove(adminFlightAura);adminFlightAura=null;}
+  const idx=nearestIslandAt(player.position.x,player.position.z),land=islands[idx];currentIsland=idx;
+  const dx=player.position.x-land.x,dz=player.position.z-land.z,d=Math.hypot(dx,dz),limit=land.r-5;
+  if(d>limit){player.position.x=land.x+dx/d*limit;player.position.z=land.z+dz/d*limit;}
+  player.position.y=PLAYER_Y;
+  $('help').textContent='WASD: andar · Mouse: câmera · Clique/F: soco · 1–5: habilidades · Q: 1ª habilidade · E: interagir · Espaço: pular · Shift: correr · Botão direito: ADM';
+  message('🛬 Voo ADM desativado.');
+ }
+ updateAdminButtons();updateHUD();
+}
+$('adminCodeSubmit').addEventListener('click',submitAdminCode);
+$('adminCodeClose').addEventListener('click',closeAdminUI);
+$('adminPanelClose').addEventListener('click',closeAdminUI);
+$('adminFlyToggle').addEventListener('click',toggleAdminFlight);
+$('adminRainButton').addEventListener('click',adminFruitRain);
+$('adminInvincibleButton').addEventListener('click',toggleAdminInvincibility);
+$('adminMasteryButton').addEventListener('click',()=>{if(!adminUnlocked)return;completeAllFruitMasteries();message('⭐ Maestria máxima liberada para todas as frutas!');updateAdminButtons();});
+$('adminFruitGrid').addEventListener('click',e=>{const button=e.target.closest('[data-admin-equip]');if(button)adminEquipFruit(button.dataset.adminEquip);});
+$('adminCodeInput').addEventListener('keydown',e=>{if(e.key==='Enter')submitAdminCode();});
+function renderSkills(){
+ const list=$('skillsList');
+ const masteryLabel=$('skillsMastery');
+ if(!currentFruit){
+  masteryLabel.textContent='SEM FRUTA EQUIPADA';
+  list.textContent='Gire uma fruta no Mestre das Frutas.';
+  renderedFruit=null;renderedMastery=-1;
+  return;
+ }
+ const m=currentMastery();
+ const maxMastery=Math.max(...fruitSkills[currentFruit].map(sk=>sk.need),1);
+ const pct=Math.min(100,m/maxMastery*100);
+ masteryLabel.innerHTML=`<span>MAESTRIA ${m}</span><div class="masteryTrack"><div class="masteryFill" style="width:${pct}%"></div></div>`;
+ if(renderedFruit===currentFruit&&renderedMastery===m)return;
+ renderedFruit=currentFruit;renderedMastery=m;
+ list.innerHTML=fruitSkills[currentFruit].map((sk,i)=>{
+  const unlocked=m>=sk.need;
+  return `<div class="skillRow ${unlocked?'':'locked'}"><span>${i+1}. ${sk.name}<small class="skillDesc">${sk.desc}</small></span><small>${unlocked?'LIBERADA':'🔒 '+sk.need+' maestria'}</small></div>`;
+ }).join('');
+}
+function updateMasteryUI(){renderSkills();}
+function saveFruitCollection(){try{localStorage.setItem('fruitAdventureBag',JSON.stringify(storedFruits));}catch(err){}}
+function renderInventory(){
+ const content=$('inventoryContent');if(!content)return;
+ let html='';
+ if(inventoryTab==='status'){
+  html=`<div class="invGrid">
+   <div class="invStat"><small>Nível</small><strong>${level}</strong></div>
+   <div class="invStat"><small>Vida</small><strong>${Math.floor(health)} / 100</strong></div>
+   <div class="invStat"><small>Experiência</small><strong>${xp} / 100 XP</strong></div>
+   <div class="invStat"><small>Dinheiro</small><strong>💰 ${money.toLocaleString('pt-BR')}</strong></div>
+   <div class="invStat"><small>Bolt</small><strong>🔩 ${bolt.toLocaleString('pt-BR')}</strong></div>
+   <div class="invStat"><small>Ilha atual</small><strong>${islands[currentIsland].name}</strong></div>
+   <div class="invStat"><small>Abates</small><strong>${kills}</strong></div>
+  </div><div class="invRow"><span>Fruta equipada</span><b>${currentFruit||'Nenhuma'}</b></div>`;
+ }else if(inventoryTab==='items'){
+  html='<p class="invSectionTitle">ITENS GUARDADOS</p><div class="invEmpty">📦 Sua mochila está vazia por enquanto.<br><small>Itens coletáveis poderão aparecer em missões, baús e explorações.</small></div><div class="invRow"><span>🚤 Transporte</span><b>Barcos disponíveis nas docas</b></div>';
+ }else if(inventoryTab==='fruits'){
+  html='<p class="invSectionTitle">FRUTAS ARMAZENADAS</p>';
+  html+=`<div class="invRow"><span>Fruta equipada</span><b>${currentFruit||'Nenhuma'}</b></div>`;
+  if(currentFruit)html+='<button class="invAction" id="dropEquippedFruitButton">⬇️ SOLTAR FRUTA EQUIPADA</button>';
+  if(!storedFruits.length)html+='<div class="invEmpty">🍈 Nenhuma fruta guardada.<br><small>Pegue uma fruta no mundo e escolha ARMAZENAR.</small></div>';
+  else html+=storedFruits.map((name,index)=>`<div class="invRow"><span><b>${name}</b><small>Fruta guardada na mochila</small></span><button class="invAction" data-eat-stored="${index}">COMER</button></div>`).join('');
+ }else{
+  html='<p class="invSectionTitle">ACESSÓRIOS</p><div class="invEmpty">🧢 Nenhum acessório encontrado.<br><small>Você poderá encontrar chapéus, capas e outros equipamentos em futuras aventuras.</small></div><div class="invRow"><span>Espaços de acessório</span><b>0 / 2</b></div>';
+ }
+ if(content.dataset.cache!==html){content.innerHTML=html;content.dataset.cache=html;}
+}
+function setInventoryTab(tab){inventoryTab=tab;document.querySelectorAll('.invTab').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));const c=$('inventoryContent');if(c)delete c.dataset.cache;renderInventory();}
+function openInventory(){inventoryOpen=true;$('inventoryPanel').style.display='block';if(document.pointerLockElement)document.exitPointerLock();renderInventory();}
+function closeInventory(){inventoryOpen=false;$('inventoryPanel').style.display='none';}
+function toggleInventory(){if(inventoryOpen)closeInventory();else openInventory();}
+$('inventoryOpenButton').addEventListener('click',toggleInventory);
+$('inventoryClose').addEventListener('click',closeInventory);
+$('inventoryTabs').addEventListener('click',e=>{const tab=e.target.closest('[data-tab]');if(tab)setInventoryTab(tab.dataset.tab);});
+$('inventoryContent').addEventListener('click',e=>{const button=e.target.closest('[data-eat-stored]');if(button){eatStoredFruit(Number(button.dataset.eatStored));return;}if(e.target.closest('#dropEquippedFruitButton'))dropEquippedFruit();});
+
+function formatShopCountdown(ms){
+ const total=Math.max(0,Math.ceil(ms/1000));
+ const minutes=Math.floor(total/60),seconds=total%60;
+ return String(minutes).padStart(2,'0')+':'+String(seconds).padStart(2,'0');
+}
+let lastShopCountdown='';
+function renderShop(){
+ const holder=$('shopFruitList');if(!holder)return;
+ $('shopBalance').textContent='Seu dinheiro: '+money.toLocaleString('pt-BR')+' moedas';
+ const sorted=fruitData.filter(f=>!f.adminOnly).sort((a,b)=>Number(shopStock.has(b.name))-Number(shopStock.has(a.name))||a.price-b.price);
+ holder.innerHTML=sorted.map(f=>{
+  const available=shopStock.has(f.name);
+  const chance=shopChanceByRarity[f.rarity]||0;
+  return `<div class="shopFruitRow"><span class="shopFruitDot" style="background:#${f.color.toString(16).padStart(6,'0')}"></span><span class="shopFruitInfo"><b>${f.name}</b><small>${f.rarity} • ${f.price.toLocaleString('pt-BR')} moedas<br>Chance de aparecer: ${chance}% por rotação</small></span><button class="shopBuy" data-buy-fruit="${f.name}" ${available?'':'disabled'}>${available?'COMPRAR':'FORA DO ESTOQUE'}</button></div>`;
+ }).join('');
+ lastShopCountdown='';updateShopRotation();
+}
+function saveShopState(){try{localStorage.setItem(SHOP_STORAGE_KEY,JSON.stringify(shopState));}catch(err){}}
+function rotateShopStock(){
+ shopState=createShopState();shopStock=new Set(shopState.stock);saveShopState();lastShopCountdown='';
+ if($('shopModal').style.display==='flex')renderShop();
+ message('🏪 A loja recebeu um novo estoque de frutas!');
+}
+function updateShopRotation(){
+ if(Date.now()>=shopState.refreshAt){rotateShopStock();}
+ const countdown=formatShopCountdown(shopState.refreshAt-Date.now());
+ if(countdown!==lastShopCountdown){
+  const timer=$('shopRotationTimer');if(timer)timer.textContent='⏱️ Próxima rotação em '+countdown;
+  lastShopCountdown=countdown;
+ }
+}
+function openShop(){modalOpen=true;$('shopModal').style.display='flex';renderShop();if(document.pointerLockElement)document.exitPointerLock();}
+function closeShop(){modalOpen=false;$('shopModal').style.display='none';}
+function buyFruit(name){
+ const fruit=fruitByName[name];if(!fruit)return;
+ if(!shopStock.has(name)){$('shopBalance').textContent='Essa fruta está fora do estoque. Confira a próxima rotação em '+formatShopCountdown(shopState.refreshAt-Date.now())+'.';return;}
+ if(money<fruit.price){$('shopBalance').textContent='Dinheiro insuficiente! Você precisa de '+fruit.price.toLocaleString('pt-BR')+' moedas.';return;}
+ const previous=currentFruit;money-=fruit.price;equipAndEatFruit(name,false);
+ const result='🛒 Comprou e comeu '+name+'!'+(previous&&previous!==name?' A fruta '+previous+' foi substituída.':'');
+ $('shopBalance').textContent='✅ '+result+' Saldo: '+money.toLocaleString('pt-BR')+' moedas';
+ message(result);updateHUD();
+}
+$('shopFruitList').addEventListener('click',e=>{const button=e.target.closest('[data-buy-fruit]');if(button)buyFruit(button.dataset.buyFruit);});
+$('shopClose').addEventListener('click',closeShop);
+
+function updateHUD(){
+ $('level').textContent='Nível: '+level;
+ $('health').textContent=Math.floor(health);
+ $('money').textContent=money.toLocaleString('pt-BR');
+ $('bolt').textContent=bolt.toLocaleString('pt-BR');
+ $('kills').textContent=kills;
+ $('hp').style.width=health+'%';
+ $('islandName').textContent=islands[currentIsland].name.toUpperCase();
+ $('nearby').textContent=enemies.filter(e=>e.userData.alive&&e.userData.islandIndex===currentIsland&&player.position.distanceTo(e.position)<18).length;
+ if(activeQuest){$('missionStatus').textContent='📜 Missão: '+islands[activeQuest.islandIndex].name+' — '+activeQuest.progress+'/'+activeQuest.target;}
+ else{$('missionStatus').textContent='📜 Missões concluídas: '+completedQuests;}
+ updateMasteryUI();
+ if(adminUnlocked&&adminUIOpen)updateAdminButtons();
+ if(inventoryOpen)renderInventory();
+ if(typeof queueCloudSave==='function')queueCloudSave();
+}
+function openQuestNPC(){
+ modalOpen=true;$('questModal').style.display='flex';
+ if(activeQuest){$('questDescription').textContent='Você já está em uma missão: derrote '+activeQuest.target+' inimigos em '+islands[activeQuest.islandIndex].name+'. Progresso: '+activeQuest.progress+'/'+activeQuest.target+'.';$('questReward').textContent='Recompensa ao completar: '+activeQuest.reward+' moedas';$('questAccept').textContent='CONTINUAR MISSÃO';}
+ else{const reward=100+currentIsland*50;$('questDescription').textContent='Missão: derrote 2 inimigos na '+islands[currentIsland].name+'. Volte aqui ou conclua para receber sua recompensa.';$('questReward').textContent='Recompensa: '+reward+' moedas';$('questAccept').textContent='ACEITAR MISSÃO';}
+ if(document.pointerLockElement)document.exitPointerLock();
+}
+function closeQuestNPC(){modalOpen=false;$('questModal').style.display='none';}
+function acceptQuest(){
+ if(activeQuest){closeQuestNPC();message('Continue sua missão! '+activeQuest.progress+'/'+activeQuest.target);return;}
+ activeQuest={islandIndex:currentIsland,target:2,progress:0,reward:100+currentIsland*50};
+ closeQuestNPC();message('📜 Missão aceita! Derrote 2 inimigos e ganhe '+activeQuest.reward+' moedas.');updateHUD();
+}
+$('questAccept').addEventListener('click',acceptQuest);$('questClose').addEventListener('click',closeQuestNPC);
+function recordQuestKill(islandIndex){
+ if(!activeQuest||activeQuest.islandIndex!==islandIndex)return false;
+ activeQuest.progress++;let completed=false;
+ if(activeQuest.progress>=activeQuest.target){money+=activeQuest.reward;completedQuests++;const reward=activeQuest.reward;activeQuest=null;message('🏆 MISSÃO CONCLUÍDA! +'+reward+' moedas!');completed=true;}
+ else message('📜 Progresso da missão: '+activeQuest.progress+'/'+activeQuest.target);
+ updateHUD();return completed;
+}
+function gainMastery(amount){
+ if(!currentFruit||amount<=0)return;
+ const old=masteryByFruit[currentFruit];masteryByFruit[currentFruit]+=amount;
+ try{localStorage.setItem('fruitAdventureMastery',JSON.stringify(masteryByFruit));}catch(err){}
+ const unlocked=fruitSkills[currentFruit].find(sk=>sk.need>old&&sk.need<=masteryByFruit[currentFruit]);
+ updateMasteryUI();
+ if(unlocked)message('🔓 HABILIDADE LIBERADA: '+unlocked.name+'!');
+}
+function openFruitNPC(){modalOpen=true;$('modal').style.display='flex';$('spinResult').textContent=currentFruit?'Fruta equipada: '+currentFruit+' • Maestria: '+currentMastery()+'. Cada giro custa 100 moedas.':'Você ainda não tem fruta. Cada giro custa 100 moedas.';if(document.pointerLockElement)document.exitPointerLock();}
+function closeFruitNPC(){modalOpen=false;$('modal').style.display='none';}
+function closeBoatMenu(){modalOpen=false;$('boatModal').style.display='none';}
+function closeModals(){if(pendingFruit)return;if($('accountModal').style.display==='flex'){closeAccountModal();return;}if(adminUIOpen){closeAdminUI();return;}closeFruitNPC();closeBoatMenu();closeQuestNPC();closeShop();}
+function spinFruit(){
+ const cost=100;
+ if(money<cost){$('spinResult').textContent='Você precisa de 100 moedas. Derrote inimigos para ganhar moedas.';return;}
+ money-=cost;
+ let roll=Math.random()*100;let selected=fruitData.find(f=>!f.adminOnly);for(const fruit of fruitData){if(fruit.adminOnly)continue;roll-=fruit.chance;if(roll<0){selected=fruit;break;}}
+ attachFruitToHand(selected.name);
+ $('spinResult').textContent='✨ Você girou '+selected.name+'! A fruta veio para sua mão. Escolha comer, armazenar ou soltar.';
+ message('🍈 '+selected.name.toUpperCase()+' VEIO PARA SUA MÃO!');
+ closeFruitNPC();openFruitDecision(selected.name);updateHUD();
+}
+renderFruitChoices();
+$('spinButton').addEventListener('click',spinFruit);$('closeButton').addEventListener('click',closeFruitNPC);$('boatClose').addEventListener('click',closeBoatMenu);
+
+function nearestBoat(){let best=null,dist=10.5;for(const b of boatStations){if(b.index!==currentIsland)continue;const d=player.position.distanceTo(b.position);if(d<dist){dist=d;best=b;}}return best;}
+function openBoatMenu(){
+ modalOpen=true;$('boatModal').style.display='flex';$('boatChoices').innerHTML='';
+ islands.forEach((land,index)=>{if(index===currentIsland)return;const button=document.createElement('button');button.className='destinationButton';button.textContent='🚤 '+land.name;button.addEventListener('click',()=>startBoatTrip(index));$('boatChoices').appendChild(button);});
+ if(document.pointerLockElement)document.exitPointerLock();
+}
+function startBoatTrip(destination){
+ if(travelState)return;
+ const from=boatStations[currentIsland],to=boatStations[destination];if(!from||!to)return;
+ closeBoatMenu();travelBoat=makeBoatModel();travelBoat.position.copy(from.position);travelBoat.rotation.y=from.angle;scene.add(travelBoat);
+ const start=from.position.clone(),end=to.position.clone();travelState={from:start,to:end,destination,elapsed:0,duration:Math.max(3.5,start.distanceTo(end)/28)};
+ player.visible=false;message('🚤 Navegando para '+islands[destination].name+'...');
+}
+function updateBoatTravel(delta){
+ if(!travelState||!travelBoat)return;
+ travelState.elapsed+=delta;const t=Math.min(1,travelState.elapsed/travelState.duration),ease=t*t*(3-2*t);
+ travelBoat.position.lerpVectors(travelState.from,travelState.to,ease);travelBoat.position.y=.18+Math.sin(travelState.elapsed*4)*.12+Math.sin(t*Math.PI)*.7;
+ const dx=travelState.to.x-travelState.from.x,dz=travelState.to.z-travelState.from.z;travelBoat.rotation.y=Math.atan2(dx,dz);
+ if(t>=1){const dest=travelState.destination,land=islands[dest],a=boatStations[dest].angle;scene.remove(travelBoat);travelBoat=null;travelState=null;player.visible=true;currentIsland=dest;
+  player.position.set(land.x+Math.sin(a)*(land.r-11),PLAYER_Y,land.z+Math.cos(a)*(land.r-11));player.rotation.y=a+Math.PI;message('Você chegou à '+land.name+'!');updateHUD();}
+}
+function interact(){
+ if(!onlineActive){message("Aguarde a conexão com o mundo público.");return;}
+ if(pendingFruit)return;
+ if(modalOpen){closeModals();return;}
+ const fruitDrop=nearestFruitDrop(5.2);if(fruitDrop){pickUpFruitDrop(fruitDrop);return;}
+ if(currentIsland===0&&player.position.distanceTo(shopNpc.position)<5.8){openShop();return;}
+ if(currentIsland===0&&player.position.distanceTo(npc.position)<5.8){openFruitNPC();return;}
+ if(currentIsland===0&&player.position.distanceTo(questNpc.position)<5.8){openQuestNPC();return;}
+ const boat=nearestBoat();if(boat){openBoatMenu();return;}
+ message('Aproxime-se de uma fruta, NPC ou barco e aperte E.');
+}
+
+function forwardVector(){return new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));}
+function findTarget(maxDistance=8,forwardOnly=true){
+ let target=null,best=maxDistance;const dir=forwardVector();
+ for(const e of enemies){if(!e.userData.alive||e.userData.islandIndex!==currentIsland)continue;
+  const offset=new THREE.Vector3().subVectors(e.position,player.position),d=offset.length();
+  if(d<best&&( !forwardOnly || offset.normalize().dot(dir)>.05)){best=d;target=e;}
+ }
+ return target;
+}
+function makeTrainModel(color=0xb87843){
+ // Locomotiva a vapor: caldeira cilíndrica, cabine, chaminé, farol,
+ // rodas grandes com eixos e grade frontal. A frente do trem aponta para -Z.
+ const g=new THREE.Group();
+ const bodyMat=mat(color,.82),darkMat=mat(0x282d30,.94),metal=mat(0x777f82,.82),gold=mat(0xc49a56,.72),glass=mat(0x263f4c,.42,.12);
+ addBox(g,1.95,.42,3.55,darkMat,0,.48,.12);
+ addBox(g,1.55,.42,3.15,bodyMat,0,.78,.08);
+ const boiler=new THREE.Mesh(new THREE.CylinderGeometry(.58,.58,2.5,20,1),bodyMat);
+ boiler.rotation.x=Math.PI/2;boiler.position.set(0,1.42,-.32);boiler.castShadow=true;g.add(boiler);
+ const frontCap=new THREE.Mesh(new THREE.CylinderGeometry(.49,.49,.13,20),darkMat);
+ frontCap.rotation.x=Math.PI/2;frontCap.position.set(0,1.42,-1.61);g.add(frontCap);
+ const frontRing=new THREE.Mesh(new THREE.TorusGeometry(.49,.075,8,24),gold);frontRing.position.set(0,1.42,-1.69);g.add(frontRing);
+ // Cabine traseira com janelas visíveis.
+ addBox(g,1.62,1.55,1.08,bodyMat,0,1.67,1.12);
+ addBox(g,1.22,.72,.08,glass,0,1.98,.56);
+ addBox(g,1.78,.18,1.25,darkMat,0,2.49,1.12);
+ // Chaminé alta e larga, assentada na parte frontal da caldeira.
+ const stack=new THREE.Mesh(new THREE.CylinderGeometry(.19,.29,.78,12),darkMat);stack.position.set(0,2.12,-.92);stack.castShadow=true;g.add(stack);
+ const stackTop=new THREE.Mesh(new THREE.CylinderGeometry(.32,.27,.16,12),metal);stackTop.position.set(0,2.56,-.92);g.add(stackTop);
+ const dome=new THREE.Mesh(new THREE.SphereGeometry(.22,12,10),gold);dome.scale.set(1,.7,1);dome.position.set(0,2.04,-.12);g.add(dome);
+ // Farol frontal.
+ const lamp=new THREE.Mesh(new THREE.CylinderGeometry(.2,.2,.14,12),gold);lamp.rotation.x=Math.PI/2;lamp.position.set(0,1.95,-1.77);g.add(lamp);
+ const lampGlass=new THREE.Mesh(new THREE.CircleGeometry(.145,16),new THREE.MeshBasicMaterial({color:0xffe7a1}));lampGlass.position.set(0,1.95,-1.85);lampGlass.rotation.y=Math.PI;g.add(lampGlass);
+ // Para-choque e grade inclinada da frente, que ajudam a diferenciar o trem de um trator.
+ addBox(g,1.45,.2,.23,metal,0,.43,-1.76);
+ for(let i=-2;i<=2;i++){const bar=addBox(g,.075,.78,.095,gold,i*.24,.35,-1.88);bar.rotation.x=-.22;}
+ // Rodas ferroviárias grandes nas laterais e hastes de ligação.
+ for(const side of [-1,1]){
+  for(const z of [-.92,.08,1.08]){
+   const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.43,.43,.2,18),darkMat);wheel.rotation.z=Math.PI/2;wheel.position.set(side*1.02,.47,z);wheel.castShadow=true;g.add(wheel);
+   const hub=new THREE.Mesh(new THREE.CylinderGeometry(.16,.16,.23,12),gold);hub.rotation.z=Math.PI/2;hub.position.set(side*1.04,.47,z);g.add(hub);
+  }
+  const rod=addBox(g,.1,.13,2.15,gold,side*1.14,.48,.08);
+  rod.material=gold;
+  // Pequenos degraus da cabine.
+  addBox(g,.34,.12,.48,metal,side*.88,.83,1.12);
+ }
+ // Dois bafos de vapor sobre a chaminé.
+ for(let i=0;i<2;i++){const puff=new THREE.Mesh(new THREE.SphereGeometry(.22+i*.07,10,8),new THREE.MeshStandardMaterial({color:0xd7dedc,transparent:true,opacity:.38,roughness:1}));puff.position.set((i?-.16:.14),2.92+i*.2,-.92-i*.12);g.add(puff);}
+ return g;
+}
+function addVisualEffect(obj,duration,update=null,finish=null){scene.add(obj);visualEffects.push({obj,duration,life:duration,update,finish});}
+function updateVisualEffects(delta){
+ for(let i=visualEffects.length-1;i>=0;i--){const fx=visualEffects[i];fx.life-=delta;if(fx.update)fx.update(delta,fx);if(fx.life<=0){if(fx.finish)fx.finish();scene.remove(fx.obj);visualEffects.splice(i,1);}}
+}
+function makeCocoon(target){
+ const group=new THREE.Group();
+ for(let i=0;i<7;i++){const sheet=new THREE.Mesh(new THREE.PlaneGeometry(1.18,2.25),mat(i%2?0xe8e5da:0xbfcac4,.98));sheet.position.set(Math.cos(i*Math.PI*2/7)*.48,1.7,Math.sin(i*Math.PI*2/7)*.48);sheet.rotation.y=i*Math.PI*2/7;sheet.rotation.z=(i%2?-.12:.12);group.add(sheet);}
+ const bands=new THREE.Mesh(new THREE.TorusGeometry(.85,.09,6,24),mat(0xf5f0df,.98));bands.position.y=1.2;bands.rotation.x=Math.PI/2;group.add(bands);
+ group.position.copy(target.position);addVisualEffect(group,2.8,(dt,fx)=>{fx.obj.position.y=target.position.y+Math.sin((2.8-fx.life)*5)*.08;fx.obj.rotation.y+=dt*.8;bands.rotation.z+=dt*2;});
+ target.userData.stunned=Math.max(target.userData.stunned||0,2.8);
+}
+function spawnProjectile(obj,damage,speed=25,life=2.2,masteryReward=5){
+ obj.position.copy(player.position);obj.position.y+=2.6;obj.position.addScaledVector(forwardVector(),2.1);scene.add(obj);
+ projectiles.push({obj,dir:forwardVector(),life,damage,speed,masteryReward});
+}
+function makeLollipop(){const g=new THREE.Group();const stick=new THREE.Mesh(new THREE.CylinderGeometry(.07,.07,1.35,8),mat(0xf1e7d9));stick.position.y=-.55;g.add(stick);const candy=new THREE.Mesh(new THREE.SphereGeometry(.55,16,14),mat(0xe45b9c));candy.position.y=.35;g.add(candy);const swirl=new THREE.Mesh(new THREE.TorusGeometry(.28,.045,6,18),mat(0xffe6ba));swirl.position.set(0,.35,.48);g.add(swirl);return g;}
+function makeCandySword(){const g=new THREE.Group();const blade=new THREE.Mesh(new THREE.CylinderGeometry(.12,.22,2.35,8),mat(0xf0a4c5));blade.position.y=1.05;g.add(blade);const tip=new THREE.Mesh(new THREE.ConeGeometry(.22,.55,8),mat(0xffd7e8));tip.position.y=2.48;g.add(tip);const handle=new THREE.Mesh(new THREE.CylinderGeometry(.12,.12,.75,8),mat(0x8e5d42));handle.position.y=-.42;g.add(handle);const guard=new THREE.Mesh(new THREE.TorusGeometry(.35,.09,6,14),mat(0xf5d9a6));guard.position.y=-.05;g.add(guard);return g;}
+function makePaperBall(){const b=new THREE.Mesh(new THREE.IcosahedronGeometry(.58,1),mat(0xe4e0d2,.98));return b;}
+function spawnImpactEffect(position,color=0xffdf91){
+ const group=new THREE.Group();
+ const ring=new THREE.Mesh(new THREE.TorusGeometry(.62,.085,8,28),new THREE.MeshBasicMaterial({color,transparent:true,opacity:.95}));
+ ring.rotation.x=Math.PI/2;ring.position.y=.35;group.add(ring);
+ for(let i=0;i<9;i++){
+  const spark=new THREE.Mesh(new THREE.OctahedronGeometry(.11+Math.random()*.07,0),new THREE.MeshBasicMaterial({color,transparent:true,opacity:.98}));
+  const a=i/9*Math.PI*2;spark.position.set(Math.cos(a)*.45,1.9+Math.random()*.5,Math.sin(a)*.45);spark.userData.velocity=new THREE.Vector3(Math.cos(a)*(2+Math.random()*2),1+Math.random()*2,Math.sin(a)*(2+Math.random()*2));group.add(spark);
+ }
+ group.position.copy(position);addVisualEffect(group,.48,(dt,fx)=>{const t=1-fx.life/.48;ring.scale.setScalar(1+t*1.7);ring.material.opacity=Math.max(0,fx.life/.48);for(const spark of group.children.slice(1)){spark.position.addScaledVector(spark.userData.velocity,dt);spark.material.opacity=Math.max(0,fx.life/.48);}});
+}
+function spawnPunchSlash(){
+ const color=currentFruit==='Papel'?0xe5e0d2:currentFruit==='Candy'?0xffa6d1:currentFruit==='Train'?0xf1c37b:0xc9edf0;
+ const slash=new THREE.Mesh(new THREE.TorusGeometry(1.08,.075,8,28,Math.PI*1.25),new THREE.MeshBasicMaterial({color,transparent:true,opacity:.9}));
+ slash.position.copy(player.position);slash.position.y+=2.15;slash.position.addScaledVector(forwardVector(),1.35);slash.rotation.y=yaw;slash.rotation.z=-.28;
+ addVisualEffect(slash,.28,(dt,fx)=>{slash.rotation.z+=dt*3;slash.scale.setScalar(1+(1-fx.life/.28)*.35);slash.material.opacity=Math.max(0,fx.life/.28);});
+}
+function damageEnemy(e,amount,masteryReward=0,killMasteryReward=0){
+ if(!e.userData.alive)return;
+ const impactColor=currentFruit==='Papel'?0xe5e0d2:currentFruit==='Candy'?0xff9bc8:currentFruit==='Train'?0xf1c37b:0xffdf91;
+ spawnImpactEffect(e.position,impactColor);
+ e.userData.hp=Math.max(0,e.userData.hp-amount);updateEnemyHealthBar(e);e.scale.set(1.08,1.08,1.08);setTimeout(()=>{if(e.parent)e.scale.set(1,1,1);},100);
+ if(masteryReward>0)gainMastery(masteryReward);
+ if(e.userData.hp<=0&&e.userData.alive){
+  e.userData.alive=false;
+  e.userData.respawnAt=performance.now()+10000;
+  scene.remove(e);
+  kills++;money+=25;bolt+=10;xp+=35;saveBolt();
+  const questCompleted=recordQuestKill(e.userData.islandIndex);
+  if(masteryReward>0)gainMastery(5);
+  // Recompensa especial do soco: só concede maestria quando o golpe final
+  // derrota o inimigo e o jogador está com uma fruta equipada.
+  if(killMasteryReward>0&&currentFruit)gainMastery(killMasteryReward);
+  const rewardText='💰 +25 moedas • 🔩 +10 Bolt';
+  const masteryText=killMasteryReward>0&&currentFruit?' • +'+killMasteryReward+' maestria de '+currentFruit:'';
+  if(xp>=100){xp-=100;level++;message('⭐ Nível '+level+'! '+rewardText+masteryText);}
+  else if(questCompleted)message('🏆 Inimigo derrotado! '+rewardText+masteryText);
+  else message('Inimigo derrotado! '+rewardText+masteryText);
+  updateHUD();
+ }
+}
+function updateEnemyRespawns(){
+ const now=performance.now();
+ for(const e of enemies){
+  if(e.userData.alive||!e.userData.respawnAt||now<e.userData.respawnAt)continue;
+  e.userData.hp=e.userData.maxHp;
+  e.userData.alive=true;
+  e.userData.attack=1;
+  e.userData.powerCooldown=2.5;
+  e.userData.stunned=0;
+  e.position.set(e.userData.homeX,PLAYER_Y,e.userData.homeZ);
+  e.visible=true;
+  scene.add(e);
+  delete e.userData.respawnAt;
+  updateEnemyHealthBar(e);
+ }
+}
+function playerTakeDamage(amount){
+ if(adminUnlocked&&adminInvincible){message('🛡️ Invencibilidade ADM bloqueou o dano!');return;}
+ health=Math.max(0,health-amount);updateHUD();
+ if(health<=0){health=100;player.position.set(0,PLAYER_Y,17);currentIsland=0;if(flying)finishFlight();message('Você foi derrotado e voltou à Ilha Inicial.');updateHUD();}
+}
+function basicAttack(){
+ if(!onlineActive||attackCooldown>0||modalOpen||inventoryOpen||travelState||(flying&&!adminFlying))return;
+ attackCooldown=.42;
+ sendOnlineAction('punch',{fruit:currentFruit||''});
+ punchSide*=-1;
+ punchTimer=.28;
+ spawnPunchSlash();
+ // O soco procura o inimigo mais próximo em volta do jogador. Isso evita
+ // que a câmera, o ângulo do personagem ou o primeiro clique impeçam o acerto.
+ const target=findTarget(7.2,false);
+ if(target){
+  damageEnemy(target,15,0,5);
+  message('👊 SOCÃO! -15 de vida');
+ }else message('👊 Soco! Chegue a até 7 metros de um inimigo.');
+}
+function activateSkill(index){
+ if(!onlineActive||modalOpen||inventoryOpen||travelState)return;
+ if(!currentFruit){message('Você ainda não tem fruta! Gire uma no Mestre das Frutas.');return;}
+ const skill=fruitSkills[currentFruit][index];if(!skill){message('Essa fruta não tem habilidade nessa tecla.');return;}
+ if(currentMastery()<skill.need){message('🔒 '+skill.name+' exige '+skill.need+' de maestria.');return;}
+ const key=currentFruit+'_'+index;if((cooldowns[key]||0)>0){message('Habilidade recarregando...');return;}
+ sendOnlineAction('skill',{fruit:currentFruit,skillIndex:index});
+ const target=findTarget(currentFruit==='Papel'&&index===1?19:currentFruit==='Train'&&index>=1?20:12,false);
+ // PAPEL
+ if(currentFruit==='Papel'&&index===0){if(!target){message('Chegue perto de um inimigo para usar Embrulhamento.');return;}cooldowns[key]=3;makeCocoon(target);damageEnemy(target,5,5);message('📄 Embrulhamento! Casulo de papel!');return;}
+ if(currentFruit==='Papel'&&index===1){cooldowns[key]=4;const ball=makePaperBall();spawnProjectile(ball,20,31,2.5,5);message('⚽ Gol! A bola de papel foi chutada!');return;}
+ if(currentFruit==='Papel'&&index===2){if(flying){message('Você já está voando!');return;}cooldowns[key]=8;flying=true;flightTimer=30;flightBoard=new THREE.Group();
+  const base=new THREE.Mesh(new THREE.BoxGeometry(2.4,.18,3.1),mat(0xd6d1c1,.98));flightBoard.add(base);
+  for(let i=0;i<3;i++){const fold=new THREE.Mesh(new THREE.PlaneGeometry(2.5,.8),mat(0xeeeadd,.98));fold.position.set(0,.3,(i-1)*.72);fold.rotation.x=-.35;flightBoard.add(fold);}
+  flightBoard.position.set(0,-.55,0);player.add(flightBoard);gainMastery(2);message('📄 VOO! Você pode voar por 30 segundos!');return;}
+ // CANDY
+ if(currentFruit==='Candy'&&index===0){if(!target){message('Chegue perto de um inimigo para usar Corte doce.');return;}cooldowns[key]=2.2;const lollipop=makeLollipop();lollipop.position.copy(target.position);lollipop.position.y+=2.3;lollipop.rotation.z=-.8;addVisualEffect(lollipop,.65,(dt,fx)=>{fx.obj.rotation.x+=dt*13;fx.obj.rotation.z+=dt*5;});damageEnemy(target,15,5);message('🍭 Corte doce!');return;}
+ if(currentFruit==='Candy'&&index===1){if(sugarTimer>0){message('Açúcar já está ativo!');return;}cooldowns[key]=9;sugarTimer=8;sugarAura=new THREE.Mesh(new THREE.TorusGeometry(1.8,.12,8,32),mat(0xf2a7cf,.8));sugarAura.rotation.x=Math.PI/2;player.add(sugarAura);gainMastery(2);message('🍬 Açúcar! Corrida rápida por 8 segundos!');return;}
+ if(currentFruit==='Candy'&&index===2){if(!target){message('Chegue perto de um inimigo para usar Rosquinha.');return;}cooldowns[key]=5;const sword=makeCandySword();sword.position.copy(player.position);sword.position.y+=.5;sword.position.addScaledVector(forwardVector(),1.2);sword.rotation.x=-.2;addVisualEffect(sword,.7,(dt,fx)=>{fx.obj.position.addScaledVector(forwardVector(),dt*3);fx.obj.rotation.z+=dt*5;});damageEnemy(target,50,5);message('🍩 Rosquinha! Espada de doce!');return;}
+ // TRAIN
+ if(currentFruit==='Train'&&index===0){
+  if(!target){message('Aponte para um inimigo para usar Fumaça.');return;}
+  cooldowns[key]=6;target.userData.stunned=Math.max(target.userData.stunned||0,3.5);gainMastery(2);
+  // A fumaça fica ao redor do NPC atingido. A câmera e a tela do jogador
+  // continuam limpas, sem filtro cinza ou camada translúcida na tela inteira.
+  const cloud=new THREE.Group();
+  for(let i=0;i<8;i++){
+   const puff=new THREE.Mesh(new THREE.SphereGeometry(.7+Math.random()*.55,12,10),new THREE.MeshBasicMaterial({color:i%2?0xadb8bc:0x87969d,transparent:true,opacity:.2,depthWrite:false}));
+   const a=i/8*Math.PI*2;puff.position.set(Math.cos(a)*1.2,1.1+Math.random()*1.2,Math.sin(a)*1.2);puff.scale.y=.75;cloud.add(puff);
+  }
+  cloud.position.copy(target.position);
+  addVisualEffect(cloud,2.8,(dt,fx)=>{fx.obj.rotation.y+=dt*.35;fx.obj.scale.multiplyScalar(1+dt*.12);fx.obj.children.forEach((p,i)=>{p.position.y+=dt*(.14+(i%3)*.035);p.material.opacity=Math.max(0,.2*fx.life/2.8);});});
+  message('🌫️ Fumaça! O efeito envolve o inimigo, sem cobrir sua tela.');return;
+ }
+ if(currentFruit==='Train'&&index===1){if(!target){message('Nenhum inimigo perto para Esmagamento.');return;}cooldowns[key]=7;const side=new THREE.Vector3(-Math.cos(yaw),0,Math.sin(yaw));const a=makeTrainModel(0xb87843),b=makeTrainModel(0xb87843);a.scale.setScalar(.85);b.scale.setScalar(.85);const center=target.position.clone();const startA=center.clone().addScaledVector(side,-6),startB=center.clone().addScaledVector(side,6);a.position.copy(startA);b.position.copy(startB);a.rotation.y=yaw+Math.PI/2;b.rotation.y=yaw-Math.PI/2;
+  const group=new THREE.Group();group.add(a,b);addVisualEffect(group,1.15,(dt,fx)=>{const t=1-fx.life/1.15;a.position.lerpVectors(startA,center.clone().addScaledVector(side,-.9),t);b.position.lerpVectors(startB,center.clone().addScaledVector(side,.9),t);},()=>damageEnemy(target,30,5));message('🚆 Esmagamento! Dois trens prensando o inimigo!');return;}
+ if(currentFruit==='Train'&&index===2){if(!target){message('Aponte para um inimigo para usar Atropelamento.');return;}cooldowns[key]=8;const train=makeTrainModel(0x9d6940);const dir=new THREE.Vector3().subVectors(target.position,player.position).setY(0).normalize();const start=target.position.clone().addScaledVector(dir,-13);train.position.copy(start);train.rotation.y=Math.atan2(-dir.x,-dir.z);addVisualEffect(train,1.25,(dt,fx)=>{const t=1-fx.life/1.25;fx.obj.position.copy(start).addScaledVector(dir,17*t);},()=>damageEnemy(target,60,5));message('🚂 Atropelamento!');return;}
+ if(currentFruit==='Train'&&index===3){if(startFruitTransformation('Train',60,40,3))cooldowns[key]=15;return;}
+ // HABILIDADES DAS 17 FRUTAS NOVAS
+ activateCatalogSkill(skill,target,key);
+}
+function makeCatalogProjectile(color,shape='sphere'){
+ const g=new THREE.Group();
+ const glowing=new THREE.MeshStandardMaterial({color,emissive:color,emissiveIntensity:.34,roughness:.36,metalness:.08});
+ const dark=new THREE.MeshStandardMaterial({color:0x333746,roughness:.7,metalness:.15});
+ const white=new THREE.MeshStandardMaterial({color:0xf5fbff,roughness:.28,metalness:.05});
+ const add=(geo,material,x=0,y=0,z=0)=>{const m=new THREE.Mesh(geo,material);m.position.set(x,y,z);m.castShadow=true;g.add(m);return m;};
+ const addRing=(radius,tube,material,rx=0,ry=0,rz=0)=>{const r=add(new THREE.TorusGeometry(radius,tube,8,28),material);r.rotation.set(rx,ry,rz);return r;};
+ switch(currentFruit){
+  case 'Brasa':{
+   add(new THREE.SphereGeometry(.62,16,14),glowing);
+   for(let i=0;i<5;i++){const flame=add(new THREE.ConeGeometry(.2,.85,7),new THREE.MeshBasicMaterial({color:i%2?0xffd34e:0xff5b24}));const a=i*Math.PI*2/5;flame.position.set(Math.cos(a)*.32,Math.sin(a)*.32,.05);flame.rotation.z=-a;}
+   addRing(.8,.055,new THREE.MeshBasicMaterial({color:0xffc14c,transparent:true,opacity:.85}),.4,.2,0);break;
+  }
+  case 'Geada':{
+   add(new THREE.IcosahedronGeometry(.72,1),white).scale.set(.72,1.35,.72);
+   for(let i=0;i<4;i++){const shard=add(new THREE.ConeGeometry(.17,.78,5),glowing);const a=i*Math.PI/2;shard.position.set(Math.cos(a)*.5,Math.sin(a)*.5,0);shard.rotation.z=-a;}
+   addRing(.86,.045,new THREE.MeshBasicMaterial({color:0x9cecff,transparent:true,opacity:.9}),.8,0,.3);break;
+  }
+  case 'Trovão':{
+   add(new THREE.SphereGeometry(.42,12,10),new THREE.MeshBasicMaterial({color:0xfff5a6}));
+   for(let j=0;j<3;j++){const pts=[];for(let i=0;i<6;i++)pts.push(new THREE.Vector3((Math.random()-.5)*.45,(i-2.5)*.28,(Math.random()-.5)*.45));const boltMesh=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),14,.065,5,false),new THREE.MeshBasicMaterial({color:j%2?0x87bfff:0xffec62}));g.add(boltMesh);}
+   break;
+  }
+  case 'Vendaval':{
+   add(new THREE.SphereGeometry(.3,12,10),glowing);
+   for(let i=0;i<3;i++)addRing(.48+i*.19,.07,new THREE.MeshBasicMaterial({color,transparent:true,opacity:.8}),i*.85,i*1.1,.4);
+   break;
+  }
+  case 'Rocha':{
+   const rock=add(new THREE.DodecahedronGeometry(.82,1),new THREE.MeshStandardMaterial({color,roughness:1}));rock.rotation.set(.4,.6,.2);
+   for(let i=0;i<4;i++){const chip=add(new THREE.DodecahedronGeometry(.2,0),dark);const a=i*Math.PI/2;chip.position.set(Math.cos(a)*.62,Math.sin(a)*.5,Math.sin(a)*.62);}
+   break;
+  }
+  case 'Maré':{
+   const water=add(new THREE.SphereGeometry(.58,18,14),new THREE.MeshPhysicalMaterial({color,transparent:true,opacity:.82,roughness:.12,metalness:.05}));water.scale.set(.68,.68,1.45);
+   addRing(.78,.12,new THREE.MeshBasicMaterial({color:0xc4f9ff,transparent:true,opacity:.75}),Math.PI/2,0,0);
+   for(let i=0;i<3;i++)add(new THREE.SphereGeometry(.12,8,8),white,(i-1)*.42,.45-i*.2,.2);break;
+  }
+  case 'Eclipse':{
+   add(new THREE.SphereGeometry(.65,18,14),new THREE.MeshStandardMaterial({color:0x211e3d,emissive:color,emissiveIntensity:.25,roughness:.3}));
+   addRing(.95,.07,new THREE.MeshBasicMaterial({color:0xbca2ff,transparent:true,opacity:.95}),.35,.5,.1);
+   addRing(1.12,.035,new THREE.MeshBasicMaterial({color:0x483a75,transparent:true,opacity:.9}),1.1,.3,.4);break;
+  }
+  case 'Aurora':{
+   add(new THREE.OctahedronGeometry(.58,1),glowing);
+   [0xff7ca8,0xffd36e,0x7ce8c0,0x76bfff,0xc49cff].forEach((c,i)=>addRing(.72+i*.08,.035,new THREE.MeshBasicMaterial({color:c,transparent:true,opacity:.8}),i*.42,i*.55,.2));break;
+  }
+  case 'Magma':{
+   const lava=add(new THREE.DodecahedronGeometry(.7,1),new THREE.MeshStandardMaterial({color:0x6d3427,emissive:0xc83d1b,emissiveIntensity:.55,roughness:.8}));lava.rotation.set(.3,.6,.4);
+   for(let i=0;i<5;i++){const crack=add(new THREE.TetrahedronGeometry(.17,0),new THREE.MeshBasicMaterial({color:0xffa13b}));crack.position.set((Math.random()-.5)*.8,(Math.random()-.5)*.8,.5);}
+   addRing(.85,.08,new THREE.MeshBasicMaterial({color:0xff572d,transparent:true,opacity:.8}),.8,.1,.2);break;
+  }
+  case 'Cipó':{
+   add(new THREE.SphereGeometry(.34,12,10),glowing);
+   for(let i=0;i<3;i++){const pts=[new THREE.Vector3(0,-.65,0),new THREE.Vector3(Math.cos(i*2.1)*.75,-.1,.25),new THREE.Vector3(Math.sin(i*2.1)*.65,.45,-.25),new THREE.Vector3(Math.cos(i*2.1)*.6,.85,0)];g.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),18,.075,6,false),new THREE.MeshStandardMaterial({color:0x367d43,roughness:1})));}
+   break;
+  }
+  case 'Prisma':{
+   add(new THREE.OctahedronGeometry(.72,1),new THREE.MeshPhysicalMaterial({color,metalness:.35,roughness:.16,transparent:true,opacity:.9}));
+   for(let i=0;i<3;i++){const shard=add(new THREE.ConeGeometry(.16,.9,5),white);shard.rotation.z=i*2.1;shard.position.set(Math.cos(i*2.1)*.55,Math.sin(i*2.1)*.45,0);}break;
+  }
+  case 'Órbita':{
+   add(new THREE.SphereGeometry(.5,16,14),new THREE.MeshStandardMaterial({color:0x232a58,emissive:color,emissiveIntensity:.32}));
+   addRing(.92,.055,new THREE.MeshBasicMaterial({color:0x9bb8ff,transparent:true,opacity:.9}),.7,.2,.5);
+   addRing(1.08,.035,new THREE.MeshBasicMaterial({color:0xe1c6ff,transparent:true,opacity:.85}),1.1,.7,.3);
+   add(new THREE.SphereGeometry(.16,10,8),white,.92,.15,0);break;
+  }
+  case 'Toxina':{
+   const drop=add(new THREE.SphereGeometry(.56,16,12),new THREE.MeshStandardMaterial({color,emissive:0x174c2c,emissiveIntensity:.4,transparent:true,opacity:.9}));drop.scale.set(.72,1.2,.72);
+   add(new THREE.ConeGeometry(.22,.55,10),glowing,0,.72,0);
+   for(let i=0;i<4;i++)add(new THREE.SphereGeometry(.12,8,8),new THREE.MeshBasicMaterial({color:0x9dff75,transparent:true,opacity:.8}),(Math.random()-.5)*1.3,(Math.random()-.5)*1.1,.25);break;
+  }
+  case 'Eco':{
+   add(new THREE.SphereGeometry(.38,14,12),glowing);
+   for(let i=0;i<4;i++)addRing(.48+i*.22,.045,new THREE.MeshBasicMaterial({color,transparent:true,opacity:.85-i*.12}),Math.PI/2,i*.45,i*.3);break;
+  }
+  case 'Aço':{
+   const blade=add(new THREE.BoxGeometry(.22,1.55,.16),new THREE.MeshStandardMaterial({color:0xdce7ec,metalness:.85,roughness:.2}));blade.rotation.z=-.55;
+   const guard=add(new THREE.BoxGeometry(.78,.12,.18),new THREE.MeshStandardMaterial({color:0x8c9da5,metalness:.8,roughness:.24}));guard.position.y=-.25;
+   add(new THREE.CylinderGeometry(.09,.11,.55,8),dark,0,-.65,0);break;
+  }
+  case 'Draco':{
+   add(new THREE.SphereGeometry(.55,16,12),new THREE.MeshStandardMaterial({color,emissive:0x8c261b,emissiveIntensity:.35}));
+   for(let i=0;i<2;i++){const wing=add(new THREE.ConeGeometry(.48,1.05,4),glowing,(i?1:-1)*.65,.1,0);wing.rotation.z=(i?1:-1)*Math.PI/2;}
+   for(let i=0;i<3;i++){const spike=add(new THREE.ConeGeometry(.13,.48,5),dark,0,.55-i*.27,.45);spike.rotation.x=-.55;}break;
+  }
+  case 'Buraco Negro':{
+   add(new THREE.SphereGeometry(.62,18,16),new THREE.MeshBasicMaterial({color:0x080510}));
+   for(let i=0;i<4;i++){const ring=addRing(.72+i*.16,.055,new THREE.MeshBasicMaterial({color:i%2?0xc49aff:0x7543b0,transparent:true,opacity:.86}),.45+i*.27,i*.5,0);}
+   for(let i=0;i<9;i++){const star=add(new THREE.OctahedronGeometry(.09,0),new THREE.MeshBasicMaterial({color:0xe4d3ff}));const a=i/9*Math.PI*2;star.position.set(Math.cos(a)*1.1,Math.sin(a)*1.1,.1);}
+   break;
+  }
+  case 'Areia':{
+   add(new THREE.SphereGeometry(.5,14,12),new THREE.MeshStandardMaterial({color,roughness:1}));
+   for(let i=0;i<3;i++)addRing(.65+i*.16,.08,new THREE.MeshBasicMaterial({color:i%2?0xf1d59a:0xb88c50,transparent:true,opacity:.72}),i*.85,1.1-i*.4,.2);
+   for(let i=0;i<7;i++)add(new THREE.SphereGeometry(.08,6,6),new THREE.MeshBasicMaterial({color:0xf2d9a5}),(Math.random()-.5)*1.4,(Math.random()-.5)*1.2,(Math.random()-.5)*1.4);break;
+  }
+  default:{
+   const geo=shape==='crystal'?new THREE.OctahedronGeometry(.72,1):shape==='blade'?new THREE.ConeGeometry(.35,1.5,6):shape==='wave'?new THREE.TorusGeometry(.75,.2,8,20):new THREE.SphereGeometry(.62,14,12);
+   add(geo,glowing);addRing(.82,.055,new THREE.MeshBasicMaterial({color,transparent:true,opacity:.8}),Math.PI/2,0,0);
+  }
+ }
+ return g;
+}
+function makeCatalogBurst(center,color,radius){
+ const group=new THREE.Group();
+ const basic=new THREE.MeshBasicMaterial({color,transparent:true,opacity:.9});
+ const ring=new THREE.Mesh(new THREE.TorusGeometry(radius,.14,8,44),basic);ring.rotation.x=Math.PI/2;ring.position.y=.25;group.add(ring);
+ const dome=new THREE.Mesh(new THREE.SphereGeometry(radius*.55,16,12),new THREE.MeshBasicMaterial({color,transparent:true,opacity:.13,depthWrite:false}));dome.position.y=1.3;group.add(dome);
+ if(currentFruit==='Eco'||currentFruit==='Vendaval'){
+  for(let i=0;i<3;i++){const wave=new THREE.Mesh(new THREE.TorusGeometry(radius*(.35+i*.2),.055,6,40),new THREE.MeshBasicMaterial({color,transparent:true,opacity:.75-i*.16}));wave.rotation.x=Math.PI/2;wave.position.y=.45+i*.18;group.add(wave);}
+ }else if(currentFruit==='Magma'||currentFruit==='Brasa'){
+  for(let i=0;i<10;i++){const flame=new THREE.Mesh(new THREE.ConeGeometry(.22,.8,6),new THREE.MeshBasicMaterial({color:i%2?0xffd34e:0xff592e,transparent:true,opacity:.9}));const a=i/10*Math.PI*2;flame.position.set(Math.cos(a)*radius*.65,.25,Math.sin(a)*radius*.65);flame.rotation.z=-a;group.add(flame);}
+ }else if(currentFruit==='Prisma'||currentFruit==='Geada'){
+  for(let i=0;i<7;i++){const shard=new THREE.Mesh(new THREE.OctahedronGeometry(.42,1),new THREE.MeshStandardMaterial({color,metalness:.25,roughness:.22,emissive:color,emissiveIntensity:.2}));const a=i/7*Math.PI*2;shard.position.set(Math.cos(a)*radius*.65,.8,Math.sin(a)*radius*.65);shard.rotation.set(a,.4,a*.5);group.add(shard);}
+ }else if(currentFruit==='Toxina'){
+  for(let i=0;i<12;i++){const bubble=new THREE.Mesh(new THREE.SphereGeometry(.18+Math.random()*.16,8,8),new THREE.MeshBasicMaterial({color:0x9dff75,transparent:true,opacity:.65}));const a=Math.random()*Math.PI*2;const r=Math.random()*radius*.8;bubble.position.set(Math.cos(a)*r,.4+Math.random()*2,Math.sin(a)*r);group.add(bubble);}
+ }else if(currentFruit==='Buraco Negro'){
+  const black=new THREE.Mesh(new THREE.SphereGeometry(radius*.34,18,16),new THREE.MeshBasicMaterial({color:0x080510}));black.position.y=1.25;group.add(black);
+  for(let i=0;i<4;i++){const ring=new THREE.Mesh(new THREE.TorusGeometry(radius*(.38+i*.12),.08,8,44),new THREE.MeshBasicMaterial({color:i%2?0xc49aff:0x7b45b8,transparent:true,opacity:.9-i*.12}));ring.rotation.set(.4+i*.45,i*.6,0);ring.position.y=1.2;group.add(ring);}
+ }else if(currentFruit==='Órbita'||currentFruit==='Eclipse'){
+  const orbit=new THREE.Mesh(new THREE.TorusGeometry(radius*.72,.09,8,36),new THREE.MeshBasicMaterial({color:currentFruit==='Eclipse'?0xb7a0ff:0x9bc5ff,transparent:true,opacity:.9}));orbit.rotation.set(.7,.5,.2);orbit.position.y=1;group.add(orbit);
+ }
+ group.position.copy(center);addVisualEffect(group,.85,(dt,fx)=>{const scale=1+(1-fx.life/.85)*.5;fx.obj.scale.setScalar(scale);ring.material.opacity=Math.max(0,fx.life/.85);dome.material.opacity=Math.max(0,.13*fx.life/.85);fx.obj.rotation.y+=dt*.35;});
+}
+function makeFruitStrikeEffect(target,color){
+ const g=new THREE.Group();
+ const basic=new THREE.MeshBasicMaterial({color,transparent:true,opacity:.92});
+ const solid=new THREE.MeshStandardMaterial({color,emissive:color,emissiveIntensity:.2,roughness:.42,metalness:.2});
+ const add=(geo,material,x=0,y=0,z=0)=>{const m=new THREE.Mesh(geo,material);m.position.set(x,y,z);g.add(m);return m;};
+ if(currentFruit==='Cipó'){
+  for(let i=0;i<3;i++){const curve=new THREE.CatmullRomCurve3([new THREE.Vector3(-1.5+i*.5,-.2,0),new THREE.Vector3(-.5,1.4,.2),new THREE.Vector3(.45,-.8,.3),new THREE.Vector3(1.4,.8,0)]);add(new THREE.TubeGeometry(curve,24,.09,7,false),new THREE.MeshStandardMaterial({color:0x347c42,roughness:1}));}
+ }else if(currentFruit==='Aço'||currentFruit==='Prisma'){
+  for(let i=0;i<3;i++){const blade=add(new THREE.ConeGeometry(currentFruit==='Aço'?.18:.28,2.7,5),solid,(i-1)*.68,.15,0);blade.rotation.z=(i-1)*-.42;}
+ }else if(currentFruit==='Rocha'){
+  const fist=add(new THREE.DodecahedronGeometry(1.1,1),solid,0,.4,0);fist.scale.set(1.25,.9,.8);
+  for(let i=0;i<5;i++){const chip=add(new THREE.TetrahedronGeometry(.28,0),solid,(Math.random()-.5)*2,Math.random()*1.4,(Math.random()-.5));}
+ }else if(currentFruit==='Draco'){
+  for(let i=0;i<3;i++){const claw=add(new THREE.ConeGeometry(.22,2.3,5),solid,(i-1)*.62,.1,0);claw.rotation.z=Math.PI+.28*(i-1);}
+  const flash=add(new THREE.TorusGeometry(1.25,.08,6,28),basic,0,1,0);flash.rotation.y=.4;
+ }else if(currentFruit==='Candy'){
+  const lolly=makeLollipop();g.add(lolly);lolly.position.y=.2;lolly.rotation.z=-.8;
+ }else{
+  const slash=add(new THREE.TorusGeometry(1.3,.14,8,30,Math.PI*1.35),basic,0,.5,0);slash.rotation.y=.5;
+  const second=add(new THREE.TorusGeometry(.9,.06,6,24,Math.PI),basic,0,.55,.1);second.rotation.set(.5,1,.2);
+ }
+ g.position.copy(target.position);g.position.y+=1.4;g.rotation.y=yaw;
+ addVisualEffect(g,.58,(dt,fx)=>{fx.obj.rotation.y+=dt*3;fx.obj.scale.setScalar(1+(1-fx.life/.58)*.3);fx.obj.traverse(o=>{if(o.material&&o.material.transparent)o.material.opacity=Math.max(0,fx.life/.58);});});
+}
+function activateCatalogSkill(skill,target,key){
+ const color=skill.color||0x9bd8dd;const damage=skill.damage||0;const reward=5;
+ const cooldown=skill.type==='burst'||skill.type==='meteor'?7:skill.type==='dash'?6:skill.type==='bind'?5:skill.type==='transform'?16:skill.type==='pull'||skill.type==='blackhole'?8:3.8;
+ if(skill.type==='transform'){if(startFruitTransformation(currentFruit,skill.duration||50,damage,fruitSkills[currentFruit].indexOf(skill)))cooldowns[key]=cooldown;return;}
+ if(skill.type==='pull'||skill.type==='blackhole'){
+  cooldowns[key]=cooldown;const center=target?target.position.clone():player.position.clone().addScaledVector(forwardVector(),5);const radius=skill.radius||7;
+  const singularity=new THREE.Group();const core=new THREE.Mesh(new THREE.SphereGeometry(.85,18,16),new THREE.MeshBasicMaterial({color:0x080510}));core.position.y=1.5;singularity.add(core);
+  for(let i=0;i<4;i++){const ring=new THREE.Mesh(new THREE.TorusGeometry(1.25+i*.3,.075,8,40),new THREE.MeshBasicMaterial({color:i%2?0xb68aff:color,transparent:true,opacity:.88}));ring.position.y=1.45;ring.rotation.set(i*.65,i*.8,0);singularity.add(ring);}
+  singularity.position.copy(center);addVisualEffect(singularity,1.25,(dt,fx)=>{fx.obj.rotation.y+=dt*2.8;fx.obj.scale.setScalar(1+(1-fx.life/1.25)*.7);fx.obj.traverse(o=>{if(o.material&&o.material.transparent)o.material.opacity=Math.max(0,.88*fx.life/1.25);});});
+  let hits=0;for(const e of enemies){if(!e.userData.alive||e.userData.islandIndex!==currentIsland)continue;const d=e.position.distanceTo(center);if(d<radius){const pull= new THREE.Vector3().subVectors(center,e.position).setY(0);if(pull.length()>0)e.position.add(pull.normalize().multiplyScalar(Math.min(3,pull.length()*.45)));damageEnemy(e,damage,reward);hits++;}}
+  if(!hits&&skill.type==='blackhole')gainMastery(2);message('🕳️ '+skill.name+'!'+(hits?' '+hits+' alvo(s) atingido(s).':''));return;
+ }
+ if(skill.type==='meteor'){
+  cooldowns[key]=cooldown;
+  const center=target?target.position.clone():player.position.clone().addScaledVector(forwardVector(),8);
+  const meteor=new THREE.Group();
+  const core=new THREE.Mesh(new THREE.DodecahedronGeometry(.72,1),new THREE.MeshStandardMaterial({color,emissive:color,emissiveIntensity:.55,roughness:.35}));meteor.add(core);
+  const tail=new THREE.Mesh(new THREE.ConeGeometry(.48,2.5,9),new THREE.MeshBasicMaterial({color,transparent:true,opacity:.75}));tail.position.y=1.45;tail.rotation.x=Math.PI;meteor.add(tail);
+  for(let i=0;i<3;i++){const ring=new THREE.Mesh(new THREE.TorusGeometry(.9+i*.22,.055,7,28),new THREE.MeshBasicMaterial({color:i%2?0xffffff:color,transparent:true,opacity:.78}));ring.rotation.x=Math.PI/2;meteor.add(ring);}
+  meteor.position.set(center.x,center.y+15,center.z);addVisualEffect(meteor,1.05,(dt,fx)=>{fx.obj.position.y-=dt*22;fx.obj.rotation.y+=dt*5;fx.obj.rotation.z+=dt*2;},()=>{makeCatalogBurst(center,color,skill.radius||7);for(const e of enemies){if(e.userData.alive&&e.userData.islandIndex===currentIsland&&e.position.distanceTo(center)<(skill.radius||7))damageEnemy(e,damage,reward);}});
+  message('☄️ '+skill.name+'!');return;
+ }
+ if(skill.type==='projectile'||skill.type==='beam'){
+  cooldowns[key]=cooldown;
+  const shape=currentFruit==='Prisma'||currentFruit==='Rocha'?'crystal':currentFruit==='Aço'?'blade':currentFruit==='Maré'||currentFruit==='Eco'?'wave':currentFruit==='Toxina'?'toxin':currentFruit==='Buraco Negro'?'blackhole':'sphere';
+  const obj=makeCatalogProjectile(color,shape);spawnProjectile(obj,damage,skill.type==='beam'?43:28,2.6,reward);
+  message('✨ '+skill.name+'!');return;
+ }
+ if(skill.type==='strike'){
+  if(!target){message('Chegue mais perto de um inimigo para usar '+skill.name+'.');return;}
+  cooldowns[key]=cooldown;
+  makeFruitStrikeEffect(target,color);
+  damageEnemy(target,damage,reward);message('⚔️ '+skill.name+'! -'+damage);return;
+ }
+ if(skill.type==='bind'){
+  if(!target){message('Aponte para um inimigo para usar '+skill.name+'.');return;}
+  cooldowns[key]=cooldown;target.userData.stunned=Math.max(target.userData.stunned||0,2.5);
+  const trap=new THREE.Group();
+  if(currentFruit==='Geada'){
+   for(let i=0;i<8;i++){const spike=new THREE.Mesh(new THREE.ConeGeometry(.22,2.7,5),new THREE.MeshStandardMaterial({color:0xb9f1ff,transparent:true,opacity:.86,metalness:.1,roughness:.2}));const a=i/8*Math.PI*2;spike.position.set(Math.cos(a)*1.05,1.35,Math.sin(a)*1.05);spike.rotation.z=Math.cos(a)*.22;spike.rotation.x=Math.sin(a)*.22;trap.add(spike);}
+   const iceRing=new THREE.Mesh(new THREE.TorusGeometry(1.25,.12,7,28),new THREE.MeshBasicMaterial({color:0x8eeaff,transparent:true,opacity:.9}));iceRing.rotation.x=Math.PI/2;iceRing.position.y=.3;trap.add(iceRing);
+  }else if(currentFruit==='Cipó'){
+   for(let i=0;i<5;i++){const a=i/5*Math.PI*2;const curve=new THREE.CatmullRomCurve3([new THREE.Vector3(Math.cos(a)*1.3,0,Math.sin(a)*1.3),new THREE.Vector3(Math.cos(a)*.8,1.2,Math.sin(a)*.8),new THREE.Vector3(Math.cos(a)*.25,2.6,Math.sin(a)*.25)]);trap.add(new THREE.Mesh(new THREE.TubeGeometry(curve,18,.11,7,false),new THREE.MeshStandardMaterial({color:0x367e40,roughness:1})));}
+  }else if(currentFruit==='Órbita'||currentFruit==='Eclipse'){
+   for(let i=0;i<3;i++){const ring=new THREE.Mesh(new THREE.TorusGeometry(1.2+i*.22,.07,7,28),new THREE.MeshBasicMaterial({color:i%2?0xc4a5ff:color,transparent:true,opacity:.9}));ring.rotation.set(i*.8,i*.65,Math.PI/2);ring.position.y=1+i*.2;trap.add(ring);}
+  }else if(currentFruit==='Areia'){
+   for(let i=0;i<4;i++){const ring=new THREE.Mesh(new THREE.TorusGeometry(.8+i*.22,.13,6,26),new THREE.MeshBasicMaterial({color:i%2?0xe9c98e:0xa8793d,transparent:true,opacity:.85}));ring.rotation.x=Math.PI/2;ring.position.y=.45+i*.55;trap.add(ring);}
+  }else{
+   const ring=new THREE.Mesh(new THREE.TorusGeometry(1.25,.13,8,24),new THREE.MeshBasicMaterial({color,transparent:true,opacity:.9}));ring.rotation.x=Math.PI/2;ring.position.y=1.2;trap.add(ring);
+  }
+  trap.position.copy(target.position);addVisualEffect(trap,2.5,(dt,fx)=>{fx.obj.rotation.y+=dt*1.8;fx.obj.scale.setScalar(1+(1-fx.life/2.5)*.25);fx.obj.traverse(o=>{if(o.material&&o.material.transparent)o.material.opacity=Math.max(0,.9*fx.life/2.5);});});
+  if(damage>0)damageEnemy(target,damage,reward);else gainMastery(2);message('⛓️ '+skill.name+'!');return;
+ }
+ if(skill.type==='dash'){
+  cooldowns[key]=cooldown;const start=player.position.clone(),dir=forwardVector(),end=start.clone().addScaledVector(dir,7.5);const land=islands[currentIsland];const ox=end.x-land.x,oz=end.z-land.z,dist=Math.hypot(ox,oz),limit=land.r-4;if(dist>limit){end.x=land.x+ox/dist*limit;end.z=land.z+oz/dist*limit;}player.position.copy(end);
+  let hits=0;for(const e of enemies){if(!e.userData.alive||e.userData.islandIndex!==currentIsland)continue;const from=new THREE.Vector3(e.position.x-start.x,0,e.position.z-start.z);const along=Math.max(0,Math.min(7.5,from.dot(dir)));const closest=start.clone().addScaledVector(dir,along);if(closest.distanceTo(e.position)<3.1){damageEnemy(e,damage,reward);hits++;}}
+  const streak=new THREE.Mesh(new THREE.TorusGeometry(1.35,.16,8,24),new THREE.MeshBasicMaterial({color,transparent:true,opacity:.85}));streak.position.copy(start);streak.position.y+=1.4;streak.rotation.x=Math.PI/2;addVisualEffect(streak,.45,(dt,fx)=>{fx.obj.position.addScaledVector(dir,dt*13);fx.obj.material.opacity=Math.max(0,fx.life/.45);});
+  if(hits===0)gainMastery(2);message('💨 '+skill.name+'!'+(hits?' Acertos: '+hits:''));return;
+ }
+ if(skill.type==='burst'||skill.type==='wave'){
+  cooldowns[key]=cooldown;const center=target?target.position.clone():player.position.clone().addScaledVector(forwardVector(),5);const radius=skill.radius||5;
+  makeCatalogBurst(center,color,radius);let hits=0;
+  for(const e of enemies){if(e.userData.alive&&e.userData.islandIndex===currentIsland&&e.position.distanceTo(center)<radius){damageEnemy(e,damage,reward);hits++;}}
+  if(!hits)gainMastery(2);message('💥 '+skill.name+'!'+(hits?' Acertos: '+hits:''));return;
+ }
+ message('Essa habilidade ainda não está disponível.');
+}
+function useFirstSkill(){activateSkill(0);}
+function updateProjectiles(delta){
+ for(let i=projectiles.length-1;i>=0;i--){const p=projectiles[i];p.obj.position.addScaledVector(p.dir,p.speed*delta);p.obj.rotation.y+=delta*4;p.life-=delta;let hit=false;
+  for(const e of enemies){if(e.userData.alive&&e.userData.islandIndex===currentIsland&&p.obj.position.distanceTo(e.position.clone().add(new THREE.Vector3(0,2,0)))<2.5){damageEnemy(e,p.damage,p.masteryReward);hit=true;break;}}
+  if(hit||p.life<=0){scene.remove(p.obj);projectiles.splice(i,1);}
+ }
+}
+function nearestIslandAt(x,z){let best=0,bestD=Infinity;islands.forEach((land,i)=>{const d=Math.hypot(x-land.x,z-land.z);if(d<bestD){bestD=d;best=i;}});return best;}
+function finishFlight(){flying=false;if(flightBoard){player.remove(flightBoard);flightBoard=null;}const idx=nearestIslandAt(player.position.x,player.position.z),land=islands[idx];currentIsland=idx;const dx=player.position.x-land.x,dz=player.position.z-land.z,d=Math.hypot(dx,dz),lim=land.r-7;if(d>lim){player.position.x=land.x+dx/d*lim;player.position.z=land.z+dz/d*lim;}player.position.y=PLAYER_Y;message('O voo terminou. Você pousou na '+land.name+'.');updateHUD();}
+function movePlayer(delta){
+ if(!onlineActive||modalOpen||inventoryOpen||travelState)return;
+ let f=0,s=0;if(keys.KeyW||keys.ArrowUp)f++;if(keys.KeyS||keys.ArrowDown)f--;if(keys.KeyD||keys.ArrowRight)s++;if(keys.KeyA||keys.ArrowLeft)s--;
+ const moving=f!==0||s!==0;
+ if(moving){const len=Math.hypot(f,s);f/=len;s/=len;let speed=(keys.ShiftLeft||keys.ShiftRight)?13:8;if(flying||adminFlying)speed=17;if(sugarTimer>0)speed=18;if(transformTimer>0)speed=22;
+  const dx=-Math.sin(yaw)*f+Math.cos(yaw)*s,dz=-Math.cos(yaw)*f-Math.sin(yaw)*s;
+  player.position.x+=dx*speed*delta;player.position.z+=dz*speed*delta;player.rotation.y=Math.atan2(dx,dz);walkTime+=delta*10;
+  leftLeg.rotation.x=Math.sin(walkTime)*.55;rightLeg.rotation.x=-Math.sin(walkTime)*.55;leftArm.rotation.x=-Math.sin(walkTime)*.35;rightArm.rotation.x=Math.sin(walkTime)*.35;
+ }else{leftLeg.rotation.x*=.8;rightLeg.rotation.x*=.8;leftArm.rotation.x*=.8;rightArm.rotation.x*=.8;}
+ if(adminFlying){
+  const vertical=(keys.Space?1:0)-((keys.KeyC||keys.ControlLeft)?1:0);
+  player.position.y=THREE.MathUtils.clamp(player.position.y+vertical*18*delta,4,150);
+  player.position.x=THREE.MathUtils.clamp(player.position.x,-420,420);
+  player.position.z=THREE.MathUtils.clamp(player.position.z,-420,420);
+  currentIsland=nearestIslandAt(player.position.x,player.position.z);
+ }else if(flying){player.position.y=9+Math.sin(performance.now()*.004)*.45;flightTimer-=delta;if(flightTimer<=0)finishFlight();currentIsland=nearestIslandAt(player.position.x,player.position.z);}
+ else{
+  const land=islands[currentIsland],dx=player.position.x-land.x,dz=player.position.z-land.z,r=Math.hypot(dx,dz),limit=land.r-3.8;
+  if(r>limit){player.position.x=land.x+dx/r*limit;player.position.z=land.z+dz/r*limit;}
+  if(jumping){player.position.y+=velocityY*delta;velocityY-=24*delta;if(player.position.y<=PLAYER_Y){player.position.y=PLAYER_Y;jumping=false;velocityY=0;}}
+ }
+}
+function updateSugar(delta){
+ if(sugarTimer<=0)return;sugarTimer-=delta;
+ if(sugarAura)sugarAura.rotation.z+=delta*2;
+ for(const e of enemies){if(!e.userData.alive||e.userData.islandIndex!==currentIsland)continue;const d=player.position.distanceTo(e.position);e.userData.sugarHit=(e.userData.sugarHit||0)-delta;
+  if(d<3&&e.userData.sugarHit<=0){e.userData.sugarHit=.7;damageEnemy(e,10,5);message('🍬 Açúcar: 10 de dano!');}
+ }
+ // No modo online, cada colisão da corrida também pode atingir outro jogador.
+ if(onlineActive)for(const [id,model] of onlineRemoteModels){if(model.target.island!==currentIsland)continue;const d=player.position.distanceTo(model.group.position);if(d<3.2&&performance.now()>(model.sugarPvpAt||0)){model.sugarPvpAt=performance.now()+700;sendOnlineAction('skill',{fruit:'Candy',skillIndex:1});}}
+ if(sugarTimer<=0){if(sugarAura){player.remove(sugarAura);sugarAura=null;}message('O efeito de Açúcar terminou.');}
+}
+function makeFruitTransformation(name){
+ if(name==='Train'){const train=makeTrainModel(0xb87843);train.scale.set(1.15,1.15,1.35);train.position.set(0,.15,0);return train;}
+ const g=new THREE.Group();
+ const color=fruitSpecs[name]?.color||0x8a5ac2,second=fruitSpecs[name]?.secondary||0xc4a5ff;
+ const bodyMat=new THREE.MeshStandardMaterial({color,roughness:.42,metalness:.12,emissive:color,emissiveIntensity:.12});
+ const glow=new THREE.MeshBasicMaterial({color:second,transparent:true,opacity:.7});
+ const body=new THREE.Mesh(new THREE.SphereGeometry(1.15,16,14),bodyMat);body.scale.set(.95,1.35,.7);body.position.y=1.35;g.add(body);
+ const head=new THREE.Mesh(new THREE.SphereGeometry(.64,14,12),bodyMat);head.position.y=2.9;g.add(head);
+ for(const side of [-1,1]){
+  const arm=new THREE.Mesh(new THREE.CapsuleGeometry(.22,.95,5,8),bodyMat);arm.position.set(side*1.25,1.5,0);arm.rotation.z=side*.2;g.add(arm);
+  const leg=new THREE.Mesh(new THREE.CapsuleGeometry(.24,.9,5,8),bodyMat);leg.position.set(side*.42,.15,0);g.add(leg);
+ }
+ if(['Draco','Magma'].includes(name)){for(const side of [-1,1]){const wing=new THREE.Mesh(new THREE.ConeGeometry(.9,2.2,4),glow);wing.position.set(side*1.45,2.0,.1);wing.rotation.z=side*Math.PI/2;g.add(wing);}const tail=new THREE.Mesh(new THREE.ConeGeometry(.35,2.2,7),bodyMat);tail.position.set(0,.65,1.4);tail.rotation.x=Math.PI/2;g.add(tail);}
+ else if(['Geada','Aurora'].includes(name)){for(let i=0;i<6;i++){const shard=new THREE.Mesh(new THREE.OctahedronGeometry(.38,0),glow);const a=i/6*Math.PI*2;shard.position.set(Math.cos(a)*1.45,1.5+Math.sin(a)*.7,Math.sin(a)*1.45);g.add(shard);}}
+ else if(name==='Aço'){for(let i=0;i<3;i++){const blade=new THREE.Mesh(new THREE.BoxGeometry(.12,2.2,.16),glow);blade.position.set((i-1)*.55,2.0,.65);blade.rotation.z=(i-1)*-.3;g.add(blade);}}
+ else if(name==='Buraco Negro'){const core=new THREE.Mesh(new THREE.SphereGeometry(1.05,18,16),new THREE.MeshBasicMaterial({color:0x080510}));core.position.y=1.65;g.add(core);for(let i=0;i<3;i++){const ring=new THREE.Mesh(new THREE.TorusGeometry(1.45+i*.25,.08,8,32),glow);ring.position.y=1.65;ring.rotation.set(.5+i*.5,i*.8,0);g.add(ring);}}
+ else {for(let i=0;i<3;i++){const ring=new THREE.Mesh(new THREE.TorusGeometry(1.3+i*.17,.07,8,28),glow);ring.position.y=1.2+i*.35;ring.rotation.set(i*.6,.3,0);g.add(ring);}}
+ g.traverse(o=>{if(o.isMesh)o.castShadow=true;});return g;
+}
+function startFruitTransformation(name,duration,damage,skillIndex){
+ if(transformTimer>0){message('Você já está transformado!');return false;}
+ transformationFruit=name;transformationDamage=damage;transformationSkillIndex=skillIndex;transformTimer=duration;transformHitTimer=0;transformBreakTimer=0;
+ for(const child of player.children)child.visible=false;transformModel=makeFruitTransformation(name);player.add(transformModel);gainMastery(2);
+ message('✨ TRANSFORMAÇÃO '+name.toUpperCase()+'!');return true;
+}
+function updateTransform(delta){
+ if(transformTimer<=0)return;transformTimer-=delta;transformHitTimer-=delta;transformBreakTimer-=delta;
+ if(transformModel)transformModel.rotation.y=Math.sin(performance.now()*.003)*.025;
+ if(transformHitTimer<=0){let hit=false;for(const e of enemies){if(e.userData.alive&&e.userData.islandIndex===currentIsland&&player.position.distanceTo(e.position)<3.8){damageEnemy(e,transformationDamage,5);hit=true;}}if(hit)transformHitTimer=.7;}
+ if(onlineActive)for(const [id,model] of onlineRemoteModels){if(model.target.island!==currentIsland)continue;const d=player.position.distanceTo(model.group.position);if(d<3.8&&performance.now()>(model.transformPvpAt||0)){model.transformPvpAt=performance.now()+700;sendOnlineAction('skill',{fruit:transformationFruit,skillIndex:transformationSkillIndex});}}
+ if(transformBreakTimer<=0){for(let i=breakables.length-1;i>=0;i--){const obj=breakables[i];if(!obj.parent){breakables.splice(i,1);continue;}const pos=new THREE.Vector3();obj.getWorldPosition(pos);if(pos.distanceTo(player.position)<3.4){scene.remove(obj);breakables.splice(i,1);const burst=new THREE.Mesh(new THREE.IcosahedronGeometry(.5,0),mat(0x9b8b70));burst.position.copy(pos);addVisualEffect(burst,.35,(dt,fx)=>{fx.obj.scale.multiplyScalar(1+dt*4);});}}
+  transformBreakTimer=.22;}
+ if(transformTimer<=0){transformTimer=0;if(transformModel){player.remove(transformModel);transformModel=null;}for(const child of player.children)child.visible=true;message('A transformação terminou.');transformationFruit='';}
+}
+function updateEnemies(delta){
+ if(!onlineActive||inventoryOpen||modalOpen)return;
+ for(const e of enemies){if(!e.userData.alive||e.userData.islandIndex!==currentIsland)continue;
+  const dx=player.position.x-e.position.x,dz=player.position.z-e.position.z,d=Math.hypot(dx,dz);e.userData.attack-=delta;e.userData.powerCooldown-=delta;e.userData.stunned=Math.max(0,(e.userData.stunned||0)-delta);
+  if(e.userData.stunned<=0&&d>2.3&&d<23){e.position.x+=dx/d*e.userData.speed*delta;e.position.z+=dz/d*e.userData.speed*delta;e.rotation.y=Math.atan2(dx,dz);
+   const land=islands[currentIsland],ox=e.position.x-land.x,oz=e.position.z-land.z,rr=Math.hypot(ox,oz),lim=land.r-5;if(rr>lim){e.position.x=land.x+ox/rr*lim;e.position.z=land.z+oz/rr*lim;}
+   e.userData.walk+=delta*8;const swing=Math.sin(e.userData.walk)*.42;e.userData.legL.rotation.x=swing;e.userData.legR.rotation.x=-swing;e.userData.armL.rotation.x=-swing*.75;e.userData.armR.rotation.x=swing*.75;
+  }else{e.userData.legL.rotation.x*=.82;e.userData.legR.rotation.x*=.82;e.userData.armL.rotation.x*=.82;e.userData.armR.rotation.x*=.82;}
+  if(e.userData.stunned<=0&&d<2.4&&e.userData.attack<=0){playerTakeDamage(7);e.userData.attack=1.15;}
+  else if(e.userData.stunned<=0&&d>=5&&d<15&&e.userData.powerCooldown<=0){launchEnemyPower(e);e.userData.powerCooldown=4.5+Math.random()*1.5;}
+ }
+}
+function updateCamera(){
+ if(travelState&&travelBoat){camera.position.set(travelBoat.position.x+7,travelBoat.position.y+8,travelBoat.position.z+12);camera.lookAt(travelBoat.position.x,travelBoat.position.y+1,travelBoat.position.z);return;}
+ const dist=(flying||adminFlying)?13:10,h=dist*Math.cos(pitch);camera.position.set(player.position.x+Math.sin(yaw)*h,player.position.y+3.3+Math.sin(pitch)*dist,player.position.z+Math.cos(yaw)*h);camera.lookAt(player.position.x,player.position.y+2.1,player.position.z);
+}
+function updateHint(){let t='';if(inventoryOpen||modalOpen||pendingFruit){$('hint').style.display='none';return;}const drop=nearestFruitDrop(5.2);if(drop)t='Passe por cima para pegar '+drop.userData.fruitName;else if(currentIsland===0&&player.position.distanceTo(shopNpc.position)<6)t='Aperte E para comprar frutas na loja';else if(currentIsland===0&&player.position.distanceTo(npc.position)<6)t='Aperte E para girar uma fruta no Mestre das Frutas';else if(currentIsland===0&&player.position.distanceTo(questNpc.position)<6)t='Aperte E para receber missões e ganhar dinheiro';else if(nearestBoat())t='Aperte E para escolher um barco e viajar para outra ilha';$('hint').textContent=t;$('hint').style.display=t?'block':'none';}
+
+addEventListener('keydown',e=>{
+ if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();
+ if(e.repeat)return;
+ if(e.code==='KeyI'&&!modalOpen){toggleInventory();return;}
+ if(inventoryOpen){if(e.code==='Escape')closeInventory();return;}
+ if(modalOpen){if(e.code==='Escape')closeModals();return;}
+ keys[e.code]=true;
+ if(e.code==='KeyE')interact();
+ if(e.code==='KeyF')basicAttack();
+ if(e.code==='KeyQ')useFirstSkill();
+ if(e.code==='Digit1'||e.code==='Numpad1')activateSkill(0);
+ if(e.code==='Digit2'||e.code==='Numpad2')activateSkill(1);
+ if(e.code==='Digit3'||e.code==='Numpad3')activateSkill(2);
+ if(e.code==='Digit4'||e.code==='Numpad4')activateSkill(3);
+ if(e.code==='Digit5'||e.code==='Numpad5')activateSkill(4);
+ if(e.code==='Space'&&!jumping&&!modalOpen&&!flying&&!adminFlying&&!travelState){jumping=true;velocityY=9;}
+ if(e.code==='Escape'&&modalOpen&&!pendingFruit)closeModals();
+});
+addEventListener('keyup',e=>keys[e.code]=false);
+document.addEventListener('contextmenu',e=>{e.preventDefault();openAdminAccess();});
+renderer.domElement.addEventListener('pointerdown',e=>{
+ if(e.button===2){e.preventDefault();openAdminAccess();return;}
+ if(e.button!==0||modalOpen||inventoryOpen||travelState)return;
+ // O primeiro clique também dá o soco e solicita o bloqueio do mouse.
+ if(!locked)renderer.domElement.requestPointerLock();
+ basicAttack();
+});
+document.addEventListener('pointerlockchange',()=>locked=document.pointerLockElement===renderer.domElement);
+document.addEventListener('mousemove',e=>{if(!locked||modalOpen||travelState)return;yaw-=e.movementX*.0022;pitch-=e.movementY*.0018;pitch=Math.max(-.05,Math.min(.72,pitch));});
+
+
+// MULTIPLAYER ONLINE (PeerJS / WebRTC)
+// O PeerServer Cloud faz a sinalização; depois os dados seguem diretamente entre navegadores.
+let onlinePeer=null,onlineHostConnection=null,onlineIsHost=false,onlineActive=false,onlineRoomId='';
+let onlineLastSend=0,onlineAccumulator=0,onlineLocalActionSequence=0;
+const onlineConnections=new Map();
+const onlineRemoteStates=new Map();
+const onlineRemoteModels=new Map();
+const onlineMaxPlayers=8;
+let onlinePlayerName='Aventureiro';
+
+const PUBLIC_WORLD_ID='fruit-adventure-public-world-01';
+let onlineConnecting=false,onlineReconnectTimer=null;
+const onlineLastActionSeq=new Map();
+function onlineStatus(text){const el=$('onlineStatus');if(el)el.textContent=text;const load=$('onlineLoadingText');if(load)load.textContent=text;}
+function onlineName(){
+ try{let saved=localStorage.getItem('fruitAdventurePlayerName');if(saved)return saved.slice(0,16);const made='Aventureiro-'+(100+Math.floor(Math.random()*900));localStorage.setItem('fruitAdventurePlayerName',made);return made;}
+ catch(err){return 'Aventureiro-'+(100+Math.floor(Math.random()*900));}
+}
+function updateOnlineCount(){
+ const count=onlineIsHost?onlineConnections.size+1:(onlineActive?onlineRemoteModels.size+1:0);
+ $('onlineConnectionCount').textContent=onlineActive?('👥 '+count+' jogador(es) conectados'):'Aguardando jogadores...';
+}
+function onlineSetStatus(messageText){
+ onlineStatus(messageText);updateOnlineCount();
+ const overlay=$('connectingOverlay');if(overlay)overlay.style.display=onlineActive?'none':'flex';
+}
+function onlineMakeLocalState(){
+ return {name:onlinePlayerName,x:player.position.x,y:player.position.y,z:player.position.z,yaw:player.rotation.y,island:currentIsland,fruit:currentFruit||'',level:level,health:health,adminFlying:!!adminFlying,flying:!!flying};
+}
+function onlineSendToHost(packet){if(onlineHostConnection&&onlineHostConnection.open){try{onlineHostConnection.send(packet);}catch(err){onlineSetStatus('Falha ao enviar dados. Tente reconectar.');}}}
+function onlineBroadcast(packet,exceptId=null){for(const [id,conn] of onlineConnections){if(id!==exceptId&&conn.open){try{conn.send(packet);}catch(err){}}}}
+function onlineHashColor(id){let h=0;for(let i=0;i<id.length;i++)h=(h*31+id.charCodeAt(i))|0;return [0x4c9ca8,0x9b75b5,0xb58b4b,0x588d69,0xb56f75,0x6685b8,0x9b9a55][Math.abs(h)%7];}
+function createOnlineHealthBar(group){
+ const canvas=document.createElement('canvas');canvas.width=160;canvas.height=32;
+ const ctx=canvas.getContext('2d');
+ const texture=new THREE.CanvasTexture(canvas);
+ const sprite=new THREE.Sprite(new THREE.SpriteMaterial({map:texture,transparent:true,depthWrite:false}));
+ sprite.scale.set(2.45,.5,1);sprite.position.y=5.8;group.add(sprite);
+ return {canvas,ctx,texture,sprite,last:-1};
+}
+function drawOnlineHealthBar(bar,hp){
+ hp=THREE.MathUtils.clamp(Number(hp)||0,0,100);
+ if(Math.abs(hp-bar.last)<1)return;bar.last=hp;
+ const c=bar.canvas,ctx=bar.ctx;ctx.clearRect(0,0,c.width,c.height);
+ ctx.fillStyle='rgba(9,20,25,.88)';ctx.beginPath();ctx.roundRect(3,4,154,24,8);ctx.fill();
+ ctx.fillStyle='#4e2828';ctx.beginPath();ctx.roundRect(9,10,142,12,5);ctx.fill();
+ const w=142*hp/100;ctx.fillStyle=hp>55?'#61c979':hp>25?'#e6b951':'#e65d59';
+ if(w>0){ctx.beginPath();ctx.roundRect(9,10,w,12,5);ctx.fill();}
+ ctx.fillStyle='#fff';ctx.font='bold 10px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(Math.ceil(hp)+' HP',80,6);
+ bar.texture.needsUpdate=true;
+}
+function createOnlineAvatar(id,name){
+ const group=new THREE.Group();
+ const shirtColor=onlineHashColor(id);
+ const shirtMat=mat(shirtColor,.82),pantsMat=mat(0x303d4a,.92),skinMat=mat(0xd2a17e,.9),bootMat=mat(0x262d31,.95);
+ addBox(group,1.05,1.35,.62,shirtMat,0,2.3,0);
+ const h=new THREE.Mesh(new THREE.SphereGeometry(.48,14,12),skinMat);h.position.set(0,3.28,0);group.add(h);
+ const armL=new THREE.Group();armL.position.set(-.68,2.75,0);group.add(armL);addBox(armL,.3,1.05,.34,shirtMat,0,-.48,0);addBox(armL,.28,.28,.3,skinMat,0,-1.05,0);
+ const armR=new THREE.Group();armR.position.set(.68,2.75,0);group.add(armR);addBox(armR,.3,1.05,.34,shirtMat,0,-.48,0);addBox(armR,.28,.28,.3,skinMat,0,-1.05,0);
+ const legL=new THREE.Group();legL.position.set(-.29,1.62,0);group.add(legL);addBox(legL,.34,1.55,.38,pantsMat,0,-.78,0);addBox(legL,.38,.25,.58,bootMat,0,-1.55,.08);
+ const legR=new THREE.Group();legR.position.set(.29,1.62,0);group.add(legR);addBox(legR,.34,1.55,.38,pantsMat,0,-.78,0);addBox(legR,.38,.25,.58,bootMat,0,-1.55,.08);
+ const label=makeLabel(name||'Aventureiro');label.scale.set(5.2,1.3,1);label.position.y=5.15;label.userData.lastName=name||'Aventureiro';group.add(label);
+ const healthBar=createOnlineHealthBar(group);drawOnlineHealthBar(healthBar,100);
+ scene.add(group);
+ return {group,armL,armR,legL,legR,healthBar,nameLabel:label,health:100,target:{x:0,y:PLAYER_Y,z:0,yaw:0,island:0},lastAction:0,name:name||'Aventureiro'};
+}
+function onlineApplyRoster(players){
+ if(!Array.isArray(players))return;
+ const seen=new Set();
+ for(const st of players){
+  if(!st||typeof st.id!=='string'||st.id===onlinePeer?.id)continue;
+  const id=st.id;seen.add(id);
+  if(!onlineRemoteModels.has(id))onlineRemoteModels.set(id,createOnlineAvatar(id,st.name));
+  const model=onlineRemoteModels.get(id);
+  model.target={x:Number(st.x)||0,y:THREE.MathUtils.clamp(Number(st.y)||PLAYER_Y,PLAYER_Y,160),z:Number(st.z)||0,yaw:Number(st.yaw)||0,island:Math.max(0,Math.min(islands.length-1,Number(st.island)||0)),fruit:String(st.fruit||'').slice(0,24)};
+  model.name=String(st.name||'Aventureiro').slice(0,16);
+  model.health=THREE.MathUtils.clamp(Number.isFinite(Number(st.health))?Number(st.health):100,0,100);drawOnlineHealthBar(model.healthBar,model.health);
+  const label=model.nameLabel;
+  if(label&&label.userData.lastName!==model.name){model.group.remove(label);const newLabel=makeLabel(model.name);newLabel.scale.set(5.2,1.3,1);newLabel.position.y=5.15;newLabel.userData.lastName=model.name;model.group.add(newLabel);model.nameLabel=newLabel;}
+ }
+ for(const [id,model] of onlineRemoteModels){if(!seen.has(id)){scene.remove(model.group);onlineRemoteModels.delete(id);}}
+}
+function onlineUpdateRemoteModels(delta){
+ for(const model of onlineRemoteModels.values()){
+  const t=model.target,k=Math.min(1,delta*12);
+  model.group.position.x+=(t.x-model.group.position.x)*k;
+  model.group.position.y+=(t.y-model.group.position.y)*k;
+  model.group.position.z+=(t.z-model.group.position.z)*k;
+  let rot=t.yaw-model.group.rotation.y;while(rot>Math.PI)rot-=Math.PI*2;while(rot< -Math.PI)rot+=Math.PI*2;model.group.rotation.y+=rot*k;
+ }
+}
+function onlineHostHandleConnection(conn){
+ if(onlineConnections.size>=onlineMaxPlayers-1){conn.on('open',()=>{try{conn.send({type:'reject',reason:'A sala já atingiu o limite de jogadores.'});}catch(e){}conn.close();});return;}
+ onlineConnections.set(conn.peer,conn);
+ conn.on('data',data=>{
+  if(!data||typeof data!=='object')return;
+  if(data.type==='state'){
+   const st=data.state||{};
+   onlineRemoteStates.set(conn.peer,{id:conn.peer,name:String(st.name||'Aventureiro').slice(0,16),x:THREE.MathUtils.clamp(Number(st.x)||0,-650,650),y:THREE.MathUtils.clamp(Number(st.y)||PLAYER_Y,PLAYER_Y,180),z:THREE.MathUtils.clamp(Number(st.z)||0,-650,650),yaw:Number(st.yaw)||0,island:Math.max(0,Math.min(islands.length-1,Number(st.island)||0)),fruit:String(st.fruit||'').slice(0,24),level:Math.max(1,Number(st.level)||1),health:THREE.MathUtils.clamp(Number.isFinite(Number(st.health))?Number(st.health):100,0,100)});
+  }else if(data.type==='action'){
+   const seq=Number(data.seq)||0;onlineBroadcast({type:'action',from:conn.peer,action:data.action,detail:data.detail||{},seq});
+   onlineShowRemoteAction(conn.peer,data.action,data.detail||{},seq);
+  }
+ });
+ conn.on('close',()=>{onlineConnections.delete(conn.peer);onlineRemoteStates.delete(conn.peer);onlineBroadcast({type:'left',id:conn.peer});updateOnlineCount();});
+ conn.on('error',()=>{onlineConnections.delete(conn.peer);onlineRemoteStates.delete(conn.peer);updateOnlineCount();});
+ conn.on('open',()=>{onlineSetStatus('Um aventureiro entrou no mundo público!');const players=[{id:onlinePeer.id,...onlineMakeLocalState()},...Array.from(onlineRemoteStates.values())];try{conn.send({type:'roster',players});}catch(e){}});
+}
+function onlineScheduleReconnect(){
+ if(onlineReconnectTimer)return;
+ onlineSetStatus('Conexão interrompida. Procurando o mundo público novamente...');
+ onlineReconnectTimer=setTimeout(()=>{onlineReconnectTimer=null;onlineStop(false);onlineAutoStart();},2800);
+}
+function onlineAutoStart(){
+ if(onlineActive||onlineConnecting)return;
+ if(!window.Peer){onlineSetStatus('Carregando conexão online...');onlineScheduleReconnect();return;}
+ onlineConnecting=true;onlinePlayerName=onlineName();onlineSetStatus('Procurando um servidor público...');
+ try{
+  const peer=new Peer(PUBLIC_WORLD_ID,{debug:0});onlinePeer=peer;
+  peer.on('open',id=>{
+   if(onlinePeer!==peer)return;onlineConnecting=false;onlineIsHost=true;onlineActive=true;onlineRoomId=id;
+   peer.on('connection',onlineHostHandleConnection);
+   onlineSetStatus('🌐 Mundo público ativo. Você está conectado!');message('🌐 Você iniciou o mundo público! Outros jogadores entrarão automaticamente.');
+  });
+  peer.on('error',err=>{
+   if(onlinePeer!==peer)return;
+   if(err?.type==='unavailable-id'){
+    try{peer.destroy();}catch(e){}onlinePeer=null;onlineConnectAsGuest();
+   }else{
+    onlineConnecting=false;onlineSetStatus('Erro na conexão ('+(err?.type||'rede')+'). Tentando novamente...');onlineScheduleReconnect();
+   }
+  });
+  peer.on('disconnected',()=>{
+   if(onlinePeer===peer&&!peer.destroyed){onlineSetStatus('Reconectando ao serviço online...');try{peer.reconnect();}catch(e){onlineConnecting=false;onlineScheduleReconnect();}}
+  });
+ }catch(err){onlineConnecting=false;onlineSetStatus('Não foi possível iniciar o mundo público: '+err.message);onlineScheduleReconnect();}
+}
+function onlineConnectAsGuest(){
+ if(!window.Peer){onlineConnecting=false;onlineSetStatus('A biblioteca de rede não carregou. Verifique a internet.');onlineScheduleReconnect();return;}
+ onlineIsHost=false;onlineSetStatus('Servidor encontrado. Entrando no mundo...');
+ try{
+  const peer=new Peer(undefined,{debug:0});onlinePeer=peer;
+  peer.on('open',()=>{
+   if(onlinePeer!==peer)return;
+   const conn=peer.connect(PUBLIC_WORLD_ID,{reliable:true,serialization:'json'});onlineHostConnection=conn;
+   conn.on('open',()=>{
+    if(onlinePeer!==peer)return;onlineConnecting=false;onlineActive=true;onlineRoomId=PUBLIC_WORLD_ID;
+    try{conn.send({type:'state',state:onlineMakeLocalState()});}catch(e){}
+    onlineSetStatus('🌐 Conectado ao mundo público!');message('🌐 Você entrou no servidor público!');
+   });
+   conn.on('data',data=>onlineGuestHandleData(data));
+   conn.on('close',()=>{if(onlinePeer===peer){onlineActive=false;onlineConnecting=false;onlineScheduleReconnect();}});
+   conn.on('error',()=>{if(onlinePeer===peer){onlineActive=false;onlineConnecting=false;onlineScheduleReconnect();}});
+  });
+  peer.on('error',err=>{
+   if(onlinePeer!==peer)return;
+   onlineConnecting=false;onlineSetStatus('Falha ao entrar no mundo ('+(err?.type||'rede')+'). Tentando novamente...');onlineScheduleReconnect();
+  });
+ }catch(err){onlineConnecting=false;onlineSetStatus('Falha de rede: '+err.message);onlineScheduleReconnect();}
+}
+function onlineGuestHandleData(data){
+ if(!data||typeof data!=='object')return;
+ if(data.type==='roster')onlineApplyRoster(data.players);
+ else if(data.type==='action')onlineShowRemoteAction(data.from,data.action,data.detail||{},Number(data.seq)||0);
+ else if(data.type==='left'){const model=onlineRemoteModels.get(data.id);if(model){scene.remove(model.group);onlineRemoteModels.delete(data.id);}}
+ else if(data.type==='reject'){onlineSetStatus(data.reason||'Entrada recusada.');onlineStop(false);}
+}
+function onlineApplyPvPDamage(id,action,detail,seq){
+ const model=onlineRemoteModels.get(id);if(!model||!onlineActive)return;
+ if(model.target.island!==currentIsland)return;
+ const numericSeq=Number(seq)||0;
+ const previous=onlineLastActionSeq.get(id)||0;
+ if(numericSeq&&numericSeq<=previous)return;
+ if(numericSeq)onlineLastActionSeq.set(id,numericSeq);
+ let damage=0,reach=7.5;
+ if(action==='punch'){damage=15;reach=7.6;}
+ else if(action==='skill'){
+  const fruit=String(detail.fruit||'');const index=Number(detail.skillIndex);
+  if(!fruit||model.target.fruit!==fruit)return;
+  const skill=fruitSkills[fruit]?.[index];if(!skill)return;
+  damage=Math.max(0,Number(skill.damage)||0);
+  const type=skill.type;
+  if(fruit==='Candy'&&index===1)reach=3.6; // Açúcar: dano apenas ao encostar durante a corrida.
+  else if(fruit==='Train'&&index===1)reach=8.5; // Esmagamento: dois trens convergem sobre o alvo.
+  else if(fruit==='Train'&&index===2)reach=17; // Atropelamento: alcance frontal do trem.
+  else if(fruit==='Train'&&index===3)reach=4.2; // Transformação: dano por colisão.
+  else if(type==='strike'||type==='bind')reach=8.5;
+  else if(type==='dash')reach=11;
+  else if(type==='projectile')reach=23;
+  else if(type==='beam')reach=27;
+  else if(type==='meteor')reach=24;
+  else if(type==='special')reach=12;
+  else if(type==='transform')reach=4.5;
+  else if(type==='pull'||type==='blackhole')reach=skill.radius||12;
+  else if(type==='burst')reach=13;
+  else if(type==='wave')reach=17;
+  else reach=9;
+ }
+ if(damage<=0)return;
+ const dx=model.group.position.x-player.position.x,dz=model.group.position.z-player.position.z;
+ const distance=Math.hypot(dx,dz);
+ if(distance>reach||Math.abs(model.group.position.y-player.position.y)>12)return;
+ const impactColor=detail.fruit==='Candy'?0xffa6d1:detail.fruit==='Train'?0xb87843:detail.fruit==='Papel'?0xe5e0d2:0x90d9ee;
+ spawnImpactEffect(player.position,impactColor);
+ playerTakeDamage(damage);
+ message('⚔️ '+model.name+' acertou você! -'+damage+' de vida');
+}
+function onlineShowRemoteAction(id,action,detail,seq=0){
+ if(action==='fruitDrop'){
+  const n=String(detail.fruitName||'');if(!fruitByName[n])return;if(detail.adminOnly&&!adminUnlocked)return;
+  const existing=fruitDrops.find(d=>d.userData.dropId===detail.dropId);if(!existing)spawnFruitDrop(n,{x:Number(detail.x),z:Number(detail.z),islandIndex:Number(detail.islandIndex)||0,dropId:String(detail.dropId||''),adminOnly:!!detail.adminOnly,falling:!!detail.falling,startY:Number(detail.startY),fallSpeed:Number(detail.fallSpeed),sync:false});return;
+ }
+ if(action==='fruitPickup'){removeFruitDropById(String(detail.dropId||''));return;}
+ const model=onlineRemoteModels.get(id);if(!model)return;
+ onlineApplyPvPDamage(id,action,detail,seq);
+ const color=detail.fruit==='Candy'?0xffa6d1:detail.fruit==='Train'?0xb87843:detail.fruit==='Papel'?0xe5e0d2:0x8ed8c6;
+ const ring=new THREE.Mesh(new THREE.TorusGeometry(action==='skill'?1.35:0.9,.11,8,24),new THREE.MeshBasicMaterial({color,transparent:true,opacity:.9}));
+ ring.rotation.x=Math.PI/2;ring.position.copy(model.group.position);ring.position.y+=.25;addVisualEffect(ring,.45,(dt,fx)=>{ring.scale.setScalar(1+(1-fx.life/.45)*1.4);ring.material.opacity=Math.max(0,fx.life/.45);});
+ const arm=action==='punch'?model.armR:model.armL;if(arm){arm.rotation.x=-1.5;setTimeout(()=>{if(arm.parent)arm.rotation.x=0;},220);}
+}
+function sendOnlineAction(action,detail={}){
+ if(!onlineActive)return;
+ const packet={type:'action',action,detail,seq:++onlineLocalActionSequence};
+ if(onlineIsHost){onlineBroadcast({...packet,from:onlinePeer.id});}else onlineSendToHost(packet);
+}
+function onlineUpdate(delta){
+ onlineUpdateRemoteModels(delta);
+ if(!onlineActive||!onlinePeer||onlinePeer.destroyed)return;
+ onlineAccumulator+=delta;if(onlineAccumulator<.09)return;onlineAccumulator=0;
+ const state=onlineMakeLocalState();
+ if(onlineIsHost){
+  const players=[{id:onlinePeer.id,...state},...Array.from(onlineRemoteStates.values())];
+  onlineApplyRoster(players);
+  const packet={type:'roster',players};onlineBroadcast(packet);
+ }else if(onlineHostConnection?.open){onlineHostConnection.send({type:'state',state});}
+}
+function onlineStop(showMessage=true){
+ onlineActive=false;onlineConnecting=false;onlineIsHost=false;onlineRoomId='';onlineRemoteStates.clear();onlineLastActionSeq.clear();
+ for(const [id,model] of onlineRemoteModels){scene.remove(model.group);}onlineRemoteModels.clear();
+ for(const conn of onlineConnections.values()){try{conn.close();}catch(e){}}onlineConnections.clear();
+ try{if(onlineHostConnection)onlineHostConnection.close();}catch(e){}
+ try{if(onlinePeer&&!onlinePeer.destroyed)onlinePeer.destroy();}catch(e){}
+ onlinePeer=null;onlineHostConnection=null;
+ if(showMessage){onlineSetStatus('Você saiu do mundo público. Atualize a página para voltar.');message('Você saiu do mundo online.');}
+ else onlineSetStatus('Reconectando ao mundo público...');
+}
+
+// CONTAS NA NUVEM: Supabase Auth guarda as senhas; a tabela guarda apenas o perfil do jogo.
+// Antes de usar, preencha a URL e a chave pública (anon/publishable) do seu projeto Supabase.
+const SUPABASE_URL='COLE_A_URL_DO_SEU_PROJETO_SUPABASE';
+const SUPABASE_ANON_KEY='COLE_A_CHAVE_PUBLICA_ANON_OU_PUBLISHABLE';
+let cloudClient=null,cloudUser=null,cloudSaveTimer=null,cloudLastSignature='',cloudQueuedSignature='';
+function accountMessage(text){const el=$('accountMessage');if(el)el.textContent=text;}
+function openAccountModal(){modalOpen=true;$('accountModal').style.display='flex';if(document.pointerLockElement)document.exitPointerLock();}
+function closeAccountModal(){modalOpen=false;$('accountModal').style.display='none';}
+function cloudProfileRow(){return {user_id:cloudUser.id,display_name:(onlinePlayerName||'Aventureiro').slice(0,16),money:Math.max(0,Math.floor(money)),bolt:Math.max(0,Math.floor(bolt)),xp:Math.max(0,Math.floor(xp)),level:Math.max(1,Math.floor(level)),health:Math.max(0,Math.min(100,Math.floor(health))),fruit:currentFruit||null,mastery:masteryByFruit,stored_fruits:storedFruits,kills:Math.max(0,Math.floor(kills))};}
+async function loadCloudProfile(){
+ if(!cloudClient||!cloudUser)return;
+ const {data,error}=await cloudClient.from('player_profiles').select('*').eq('user_id',cloudUser.id).maybeSingle();
+ if(error){accountMessage('Login feito, mas não consegui ler o perfil. Confira o arquivo SQL e as políticas de acesso. '+error.message);return;}
+ if(data){money=Math.max(0,Number(data.money)||0);bolt=Math.max(0,Number(data.bolt)||0);xp=Math.max(0,Number(data.xp)||0);level=Math.max(1,Number(data.level)||1);health=Math.max(1,Math.min(100,Number(data.health)||100));kills=Math.max(0,Number(data.kills)||0);currentFruit=data.fruit&&fruitByName[data.fruit]?data.fruit:null;
+  if(data.mastery&&typeof data.mastery==='object')for(const name of fruitNames)if(Number.isFinite(Number(data.mastery[name])))masteryByFruit[name]=Math.max(0,Number(data.mastery[name]));
+  storedFruits.splice(0,storedFruits.length,...(Array.isArray(data.stored_fruits)?data.stored_fruits.filter(n=>fruitByName[n]):[]));
+ }else{const {error:insertError}=await cloudClient.from('player_profiles').upsert(cloudProfileRow(),{onConflict:'user_id'});if(insertError){accountMessage('Conta conectada, mas não consegui criar o perfil: '+insertError.message);return;}}
+ if(cloudUser.user_metadata?.display_name){onlinePlayerName=String(cloudUser.user_metadata.display_name).slice(0,16);try{localStorage.setItem('fruitAdventurePlayerName',onlinePlayerName);}catch(e){}}
+ try{localStorage.setItem('fruitAdventureEquipped',currentFruit||'');localStorage.setItem('fruitAdventureBag',JSON.stringify(storedFruits));localStorage.setItem('fruitAdventureBolt',String(bolt));localStorage.setItem('fruitAdventureMastery',JSON.stringify(masteryByFruit));}catch(e){}
+ cloudLastSignature=JSON.stringify(cloudProfileRow());updateHUD();renderInventory();accountMessage('Conectado como '+(cloudUser.email||onlinePlayerName)+'. Seu progresso será sincronizado na nuvem.');
+}
+function queueCloudSave(){
+ if(!cloudClient||!cloudUser)return;
+ const row=cloudProfileRow(),signature=JSON.stringify(row);
+ // updateHUD roda continuamente; não reinicie o mesmo temporizador enquanto
+ // a mesma versão do perfil já estiver aguardando salvamento.
+ if(signature===cloudLastSignature||signature===cloudQueuedSignature)return;
+ clearTimeout(cloudSaveTimer);cloudQueuedSignature=signature;
+ cloudSaveTimer=setTimeout(async()=>{
+  cloudSaveTimer=null;cloudQueuedSignature='';
+  if(!cloudClient||!cloudUser)return;
+  const latest=cloudProfileRow(),latestSig=JSON.stringify(latest);
+  if(latestSig===cloudLastSignature)return;
+  const {error}=await cloudClient.from('player_profiles').upsert({...latest,updated_at:new Date().toISOString()},{onConflict:'user_id'});
+  if(error){accountMessage('Não foi possível sincronizar agora: '+error.message);return;}
+  cloudLastSignature=latestSig;
+  // Se o estado mudou durante a requisição, agenda uma gravação nova.
+  if(JSON.stringify(cloudProfileRow())!==cloudLastSignature)queueCloudSave();
+ },1200);
+}
+async function createCloudAccount(){
+ if(!cloudClient){accountMessage('Contas no servidor ainda não estão configuradas. Preencha SUPABASE_URL e SUPABASE_ANON_KEY no início do código e execute o SQL complementar.');return;}
+ const displayName=$('accountDisplayName').value.trim()||'Aventureiro',email=$('accountEmail').value.trim(),password=$('accountPassword').value;
+ if(!email||password.length<8){accountMessage('Informe um e-mail e uma senha com pelo menos 8 caracteres.');return;}
+ const {data,error}=await cloudClient.auth.signUp({email,password,options:{data:{display_name:displayName}}});
+ if(error){accountMessage('Não foi possível criar a conta: '+error.message);return;}
+ if(data.session){cloudUser=data.user;onlinePlayerName=displayName;await loadCloudProfile();}
+ else accountMessage('Conta criada. Confira o e-mail para confirmar o cadastro e depois entre.');
+}
+async function signInCloudAccount(){
+ if(!cloudClient){accountMessage('Contas no servidor ainda não estão configuradas. Preencha SUPABASE_URL e SUPABASE_ANON_KEY no início do código e execute o SQL complementar.');return;}
+ const email=$('accountEmail').value.trim(),password=$('accountPassword').value;
+ if(!email||!password){accountMessage('Digite seu e-mail e senha.');return;}
+ const {data,error}=await cloudClient.auth.signInWithPassword({email,password});
+ if(error){accountMessage('Não foi possível entrar. Confira os dados e tente novamente. '+error.message);return;}
+ cloudUser=data.user;await loadCloudProfile();
+}
+async function signOutCloudAccount(){if(!cloudClient||!cloudUser){accountMessage('Nenhuma conta conectada.');return;}const {error}=await cloudClient.auth.signOut();if(error){accountMessage('Erro ao sair: '+error.message);return;}clearTimeout(cloudSaveTimer);cloudSaveTimer=null;cloudQueuedSignature='';cloudUser=null;cloudLastSignature='';accountMessage('Você saiu da conta.');}
+async function initCloudAccounts(){
+ $('accountOpenButton').addEventListener('click',openAccountModal);$('accountClose').addEventListener('click',closeAccountModal);
+ $('accountSignUp').addEventListener('click',createCloudAccount);$('accountSignIn').addEventListener('click',signInCloudAccount);$('accountSignOut').addEventListener('click',signOutCloudAccount);
+ if(SUPABASE_URL.startsWith('COLE_')||SUPABASE_ANON_KEY.startsWith('COLE_')||!window.supabase?.createClient){accountMessage('Contas no servidor aguardam configuração. O modo online público continua disponível sem conta.');return;}
+ try{cloudClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});const {data,error}=await cloudClient.auth.getSession();if(error)throw error;if(data.session){cloudUser=data.session.user;await loadCloudProfile();}else accountMessage('Servidor de contas conectado. Crie uma conta ou entre para sincronizar seu progresso.');}
+ catch(err){cloudClient=null;accountMessage('Não foi possível conectar ao servidor de contas: '+err.message);}
+}
+
+// O jogo entra automaticamente no mundo público; não há modo solo nem seleção manual de sala.
+initCloudAccounts().finally(()=>onlineAutoStart());
+
+const clock=new THREE.Clock();
+function animate(){requestAnimationFrame(animate);const delta=Math.min(clock.getDelta(),.04);
+ onlineUpdate(delta);
+ updateShopRotation();updateBoatTravel(delta);if(adminFlightAura){adminFlightAura.rotation.y+=delta*.9;adminFlightAura.children[0].rotation.z+=delta*1.7;adminFlightAura.children[1].rotation.x+=delta*1.2;}movePlayer(delta);if(punchTimer>0){punchTimer=Math.max(0,punchTimer-delta);const arm=punchSide>0?rightArm:leftArm;const progress=1-punchTimer/.28;arm.rotation.x=-Math.sin(Math.PI*progress)*2.05;}updateEnemies(delta);updateEnemyRespawns();updateEnemyProjectiles(delta);updateProjectiles(delta);updateVisualEffects(delta);updateSugar(delta);updateTransform(delta);updateFruitDropPickup();updateCamera();updateHint();
+ fruitNpcLeftArm.rotation.x=Math.sin(performance.now()*.0015)*.08;fruitNpcRightArm.rotation.x=-.18+Math.sin(performance.now()*.0015)*.08;questLeftArm.rotation.x=Math.sin(performance.now()*.0012)*.1;questRightArm.rotation.x=-.22+Math.sin(performance.now()*.0012)*.1;shopArmL.rotation.x=Math.sin(performance.now()*.0014)*.09;shopArmR.rotation.x=-.2+Math.sin(performance.now()*.0014)*.09;
+ attackCooldown=Math.max(0,attackCooldown-delta);
+ for(const k of Object.keys(cooldowns))cooldowns[k]=Math.max(0,cooldowns[k]-delta);
+ if(smokeTimer>0)smokeTimer=Math.max(0,smokeTimer-delta);
+ if(messageTime>0){messageTime-=delta;if(messageTime<=0)$('message').textContent='';}
+ for(const drop of fruitDrops){
+  drop.rotation.y+=delta*.85;
+  if(drop.userData.falling){drop.position.y=Math.max(drop.userData.baseY,drop.position.y-drop.userData.fallSpeed*delta);if(drop.position.y<=drop.userData.baseY+.001){drop.position.y=drop.userData.baseY;drop.userData.falling=false;const landing=new THREE.Mesh(new THREE.TorusGeometry(.65,.07,6,22),new THREE.MeshBasicMaterial({color:fruitSpecs[drop.userData.fruitName]?.secondary||0xffffff,transparent:true,opacity:.85}));landing.rotation.x=Math.PI/2;landing.position.set(drop.position.x,drop.userData.baseY+.08,drop.position.z);addVisualEffect(landing,.35,(dt,fx)=>{fx.obj.scale.setScalar(1+(1-fx.life/.35)*1.4);fx.obj.material.opacity=Math.max(0,fx.life/.35);});}}
+  else drop.position.y=drop.userData.baseY+Math.sin(performance.now()*.002+drop.id)*.12;
+ }
+ for(const station of boatStations){station.boat.position.y=.12+Math.sin(performance.now()*.0018+station.index)*.09;}
+ updateHUD();renderer.render(scene,camera);
+}
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
+updateHUD();if(adminUnlocked)completeAllFruitMasteries();animate();
+</script>
+</body>
+</html>
