@@ -1818,7 +1818,7 @@ async function loginLocalPlayerIdentity(){
 }
 function openCloudAccountFromIdentity(){
  if(!cloudClient){$('playerIdentityMessage').textContent='A conta no servidor ainda não está configurada. Use o perfil local ou configure o serviço Supabase.';return;}
- openAccountModal();
+ $('playerIdentityModal').style.display='none';openAccountModal();
 }
 function onlineSetStatus(messageText){
  onlineStatus(messageText);updateOnlineCount();
@@ -2059,7 +2059,7 @@ const SUPABASE_ANON_KEY='COLE_A_CHAVE_PUBLICA_ANON_OU_PUBLISHABLE';
 let cloudClient=null,cloudUser=null,cloudSaveTimer=null,cloudLastSignature='',cloudQueuedSignature='';
 function accountMessage(text){const el=$('accountMessage');if(el)el.textContent=text;}
 function openAccountModal(){modalOpen=true;$('accountModal').style.display='flex';if(document.pointerLockElement)document.exitPointerLock();}
-function closeAccountModal(){modalOpen=false;$('accountModal').style.display='none';}
+function closeAccountModal(){modalOpen=false;$('accountModal').style.display='none';if(onlineActive&&!playerIdentityAuthenticated){playerIdentityPrompted=false;requirePlayerIdentity();}}
 function cloudProfileRow(){return {user_id:cloudUser.id,display_name:(onlinePlayerName||'Aventureiro').slice(0,16),money:Math.max(0,Math.floor(money)),bolt:Math.max(0,Math.floor(bolt)),xp:Math.max(0,Math.floor(xp)),level:Math.min(MAX_LEVEL,Math.max(1,Math.floor(level))),health:Math.max(0,Math.min(100,Math.floor(health))),fruit:currentFruit||null,mastery:masteryByFruit,stored_fruits:storedFruits,kills:Math.max(0,Math.floor(kills))};}
 async function loadCloudProfile(){
  if(!cloudClient||!cloudUser)return;
