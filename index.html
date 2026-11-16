@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FRUIT ADVENTURE — VERSÃO 23 ONLINE</title>
+<title>FRUIT ADVENTURE — VERSÃO 24 ONLINE</title>
 <style>
 *{box-sizing:border-box}body{margin:0;overflow:hidden;background:#183746;color:#fff;font-family:Arial,sans-serif}canvas{display:block}
 #hud,#info,#help{position:absolute;background:rgba(19,48,59,.86);border:1px solid rgba(195,235,225,.58);box-shadow:0 10px 28px #12334455;backdrop-filter:blur(7px)}
@@ -322,7 +322,7 @@ button{border:0;border-radius:10px;padding:12px 18px;font-weight:bold;cursor:poi
 <script>
 if(!window.THREE){document.body.innerHTML='<div style="padding:30px;font:20px Arial">Não foi possível carregar o motor 3D. Confira sua conexão com a internet e abra o arquivo novamente.</div>';throw new Error('Three.js não carregou');}
 
-// VERSÃO 23: editor visual do personagem, aparência sincronizada e controle de ativação do modo ADM.
+// VERSÃO 24: editor visual do personagem, aparência sincronizada e controle de ativação do modo ADM.
 // CENA E ILUMINAÇÃO: cenário mais claro, colorido e bem definido.
 const scene=new THREE.Scene();
 scene.background=new THREE.Color(0x91cce8);
@@ -359,6 +359,24 @@ const islands=[
 ];
 
 function addBox(parent,w,h,d,material,x,y,z){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),material);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;}
+function addHumanFace(parent,skinMaterial,hairMaterial){
+ const face=new THREE.Group();parent.add(face);
+ const eyeWhite=mat(0xf4f0e7,.32),iris=mat(0x65412c,.38),pupil=mat(0x171716,.28),highlight=new THREE.MeshBasicMaterial({color:0xffffff}),mouthMat=mat(0x754846,.75),innerEar=mat(0xa96f63,.8);
+ for(const side of [-1,1]){
+  const eye=new THREE.Mesh(new THREE.SphereGeometry(.075,16,12),eyeWhite);eye.scale.set(1.05,.82,.72);eye.position.set(side*.155,3.35,.424);face.add(eye);
+  const irisMesh=new THREE.Mesh(new THREE.SphereGeometry(.043,12,10),iris);irisMesh.position.set(side*.155,3.345,.481);face.add(irisMesh);
+  const pupilMesh=new THREE.Mesh(new THREE.SphereGeometry(.025,10,8),pupil);pupilMesh.position.set(side*.155,3.345,.515);face.add(pupilMesh);
+  const glint=new THREE.Mesh(new THREE.SphereGeometry(.012,8,6),highlight);glint.position.set(side*.155-.012,3.36,.535);face.add(glint);
+  const brow=new THREE.Mesh(new THREE.CapsuleGeometry(.018,.12,4,8),hairMaterial);brow.rotation.z=Math.PI/2+(side*.09);brow.position.set(side*.16,3.47,.414);brow.userData.appearancePart='hair';face.add(brow);
+  const ear=new THREE.Mesh(new THREE.SphereGeometry(.105,12,10),skinMaterial);ear.scale.set(.62,1.05,.7);ear.position.set(side*.455,3.27,.005);ear.userData.appearancePart='skin';face.add(ear);
+  const earInner=new THREE.Mesh(new THREE.SphereGeometry(.047,10,8),innerEar);earInner.scale.set(.65,1,.5);earInner.position.set(side*.482,3.27,.052);face.add(earInner);
+ }
+ const noseBridge=new THREE.Mesh(new THREE.SphereGeometry(.065,12,10),skinMaterial);noseBridge.scale.set(.62,1.2,.7);noseBridge.position.set(0,3.235,.439);noseBridge.userData.appearancePart='skin';face.add(noseBridge);
+ const noseTip=new THREE.Mesh(new THREE.SphereGeometry(.065,12,10),skinMaterial);noseTip.scale.set(1,.72,1.05);noseTip.position.set(0,3.18,.478);noseTip.userData.appearancePart='skin';face.add(noseTip);
+ const mouthCurve=new THREE.QuadraticBezierCurve3(new THREE.Vector3(-.105,3.055,.425),new THREE.Vector3(0,3.025,.45),new THREE.Vector3(.105,3.055,.425));
+ const mouth=new THREE.Mesh(new THREE.TubeGeometry(mouthCurve,14,.014,6,false),mouthMat);face.add(mouth);
+ return face;
+}
 function addTree(x,z,theme){
  const group=new THREE.Group();
  const trunkMat=mat(theme==='candy'?0x8b6857:0x72523a);
@@ -542,7 +560,7 @@ let playerAppearance=loadPlayerAppearance();
 const player=new THREE.Group();scene.add(player);
 const skin=mat(appearanceColorNumber(playerAppearance.skin)),shirt=mat(appearanceColorNumber(playerAppearance.shirt)),pants=mat(appearanceColorNumber(playerAppearance.pants)),boots=mat(appearanceColorNumber(playerAppearance.boots)),hair=mat(appearanceColorNumber(playerAppearance.hair));
 const playerTorso=addBox(player,1.05,1.35,.62,shirt,0,2.3,0);playerTorso.userData.appearancePart='shirt';
-const head=new THREE.Mesh(new THREE.SphereGeometry(.48,16,14),skin);head.position.set(0,3.28,0);head.castShadow=true;head.userData.appearancePart='skin';player.add(head);
+const head=new THREE.Mesh(new THREE.SphereGeometry(.48,24,18),skin);head.scale.set(.94,1.08,.88);head.position.set(0,3.28,0);head.castShadow=true;head.userData.appearancePart='skin';player.add(head);addHumanFace(player,skin,hair);
 const hairCap=new THREE.Mesh(new THREE.SphereGeometry(.49,14,10,0,Math.PI*2,0,Math.PI*.48),hair);hairCap.position.set(0,3.42,0);hairCap.userData.appearancePart='hair';player.add(hairCap);
 const hairExtras=new THREE.Group();player.add(hairExtras);
 for(let i=0;i<4;i++){const spike=new THREE.Mesh(new THREE.ConeGeometry(.16,.55,7),hair);const a=i*Math.PI/2;spike.position.set(Math.cos(a)*.22,3.72,Math.sin(a)*.18);spike.rotation.z=Math.cos(a)*-.22;spike.rotation.x=Math.sin(a)*.22;hairExtras.add(spike);}
@@ -1162,13 +1180,18 @@ function applyAdminLevel(){
  if(typeof queueCloudSave==='function')queueCloudSave();
 }
 function applyAdminRace(){
- if(!adminUnlocked)return;
- const requested=$('adminRaceSelect').value;
- if(!['Humano','Tubarão','Coelho','Leão','Pássaro'].includes(requested)){message('Escolha uma raça válida.');return;}
+ if(!adminUnlocked){message('Ative o Modo ADM antes de escolher uma raça.');return;}
+ const select=$('adminRaceSelect');
+ const requested=String(select?.value||'').trim();
+ const allowedRaces=['Humano','Tubarão','Coelho','Leão','Pássaro'];
+ if(!allowedRaces.includes(requested)){message('Escolha uma raça válida no seletor do painel ADM.');return;}
  currentRace=requested;
  try{localStorage.setItem('fruitAdventureRace',currentRace);}catch(e){}
+ if(currentRace==='Tubarão')waterDamageTimer=0;
  updateHUD();updateAdminButtons();
- message('🧬 ADM: raça '+currentRace+' aplicada gratuitamente!');
+ if(onlineActive)onlineUpdate(.1);
+ if(typeof queueCloudSave==='function')queueCloudSave();
+ message('🧬 ADM: raça '+currentRace+' aplicada gratuitamente e salva!');
 }
 function deactivateAdminMode(){
  if(!adminUnlocked){closeAdminUI();return;}
@@ -1225,6 +1248,7 @@ function toggleAdminFlight(){
 }
 $('adminCodeSubmit').addEventListener('click',submitAdminCode);
 $('adminDeactivateButton').addEventListener('click',deactivateAdminMode);
+$('adminRaceSelect').addEventListener('change',()=>{if(adminUnlocked)applyAdminRace();});
 $('adminApplyRaceButton').addEventListener('click',applyAdminRace);
 $('adminSetLevelButton').addEventListener('click',applyAdminLevel);
 $('adminCodeClose').addEventListener('click',closeAdminUI);
@@ -1940,15 +1964,28 @@ function movePlayer(delta){
  let f=0,s=0;if(keys.KeyW||keys.ArrowUp)f++;if(keys.KeyS||keys.ArrowDown)f--;if(keys.KeyD||keys.ArrowRight)s++;if(keys.KeyA||keys.ArrowLeft)s--;
  const moving=f!==0||s!==0;
  const landAtStart=isPositionOnIsland(player.position.x,player.position.z),inWater=landAtStart<0;
+ const swimming=inWater&&!flying&&!adminFlying;
  if(moving){
   const len=Math.hypot(f,s);f/=len;s/=len;let speed=(keys.ShiftLeft||keys.ShiftRight)?13:8;
   if(flying||adminFlying)speed=17;if(sugarTimer>0)speed=18;if(transformTimer>0)speed=22;
   if(currentRace==='Coelho')speed*=1.35;
-  if(inWater)speed*=currentRace==='Tubarão'?1.35:.72;
+  if(swimming)speed*=currentRace==='Tubarão'?1.35:.72;
   const dx=-Math.sin(yaw)*f+Math.cos(yaw)*s,dz=-Math.cos(yaw)*f-Math.sin(yaw)*s;
-  player.position.x+=dx*speed*delta;player.position.z+=dz*speed*delta;player.rotation.y=Math.atan2(dx,dz);walkTime+=delta*10;
-  leftLeg.rotation.x=Math.sin(walkTime)*.55;rightLeg.rotation.x=-Math.sin(walkTime)*.55;leftArm.rotation.x=-Math.sin(walkTime)*.35;rightArm.rotation.x=Math.sin(walkTime)*.35;
- }else{leftLeg.rotation.x*=.8;rightLeg.rotation.x*=.8;leftArm.rotation.x*=.8;rightArm.rotation.x*=.8;}
+  player.position.x+=dx*speed*delta;player.position.z+=dz*speed*delta;player.rotation.y=Math.atan2(dx,dz);
+  if(swimming){
+   const phase=performance.now()*.005;
+   leftArm.rotation.x=.42+Math.sin(phase)*.85;rightArm.rotation.x=.42+Math.sin(phase+Math.PI)*.85;
+   leftLeg.rotation.x=Math.sin(phase+Math.PI)*.48;rightLeg.rotation.x=Math.sin(phase)*.48;
+  }else{
+   walkTime+=delta*10;leftLeg.rotation.x=Math.sin(walkTime)*.55;rightLeg.rotation.x=-Math.sin(walkTime)*.55;leftArm.rotation.x=-Math.sin(walkTime)*.35;rightArm.rotation.x=Math.sin(walkTime)*.35;
+  }
+ }else if(swimming){
+  const phase=performance.now()*.0035;
+  leftArm.rotation.x=.25+Math.sin(phase)*.32;rightArm.rotation.x=.25+Math.sin(phase+Math.PI)*.32;
+  leftLeg.rotation.x=Math.sin(phase+Math.PI)*.2;rightLeg.rotation.x=Math.sin(phase)*.2;
+ }else{
+  leftLeg.rotation.x*=.8;rightLeg.rotation.x*=.8;leftArm.rotation.x*=.8;rightArm.rotation.x*=.8;
+ }
  if(adminFlying){
   const vertical=(keys.Space?1:0)-((keys.KeyC||keys.ControlLeft)?1:0);
   player.position.y=THREE.MathUtils.clamp(player.position.y+vertical*18*delta,4,150);
@@ -1960,9 +1997,14 @@ function movePlayer(delta){
   currentIsland=nearestIslandAt(player.position.x,player.position.z);
  }else{
   const landIndex=isPositionOnIsland(player.position.x,player.position.z);
-  if(landIndex>=0){currentIsland=landIndex;waterDamageTimer=0;if(jumping){player.position.y+=velocityY*delta;velocityY-=24*delta;if(player.position.y<=PLAYER_Y){player.position.y=PLAYER_Y;jumping=false;velocityY=0;}}else player.position.y=PLAYER_Y;}
-  else{
-   jumping=false;velocityY=0;player.position.y=PLAYER_Y-.22;
+  if(landIndex>=0){
+   currentIsland=landIndex;waterDamageTimer=0;
+   if(jumping){player.position.y+=velocityY*delta;velocityY-=24*delta;if(player.position.y<=PLAYER_Y){player.position.y=PLAYER_Y;jumping=false;velocityY=0;}}
+   else player.position.y=PLAYER_Y;
+  }else{
+   jumping=false;velocityY=0;
+   // A água cobre o tronco e mantém a cabeça próxima da superfície.
+   player.position.y=-2.85+Math.sin(performance.now()*.0022)*.045;
    if(currentFruit&&currentRace!=='Tubarão'){
     waterDamageTimer-=delta;
     if(waterDamageTimer<=0){playerTakeDamage(8);waterDamageTimer=1;message('🌊 A fruta pesa na água! Você perdeu 8 de vida. A raça Tubarão não sofre esse efeito.');}
@@ -2266,7 +2308,7 @@ function createOnlineAvatar(id,name){
  const group=new THREE.Group();
  const shirtMat=mat(onlineHashColor(id),.82),pantsMat=mat(0x303d4a,.92),skinMat=mat(0xd2a17e,.9),bootMat=mat(0x262d31,.95),hairMat=mat(0x302b28,.9);
  markRemotePart(addBox(group,1.05,1.35,.62,shirtMat,0,2.3,0),'shirt');
- const h=new THREE.Mesh(new THREE.SphereGeometry(.48,14,12),skinMat);h.position.set(0,3.28,0);markRemotePart(h,'skin');group.add(h);
+ const h=new THREE.Mesh(new THREE.SphereGeometry(.48,24,18),skinMat);h.scale.set(.94,1.08,.88);h.position.set(0,3.28,0);markRemotePart(h,'skin');group.add(h);addHumanFace(group,skinMat,hairMat);
  const hairCap=new THREE.Mesh(new THREE.SphereGeometry(.49,14,10,0,Math.PI*2,0,Math.PI*.48),hairMat);hairCap.position.set(0,3.42,0);markRemotePart(hairCap,'hair');group.add(hairCap);
  const hairSpikes=new THREE.Group();group.add(hairSpikes);
  for(let i=0;i<4;i++){const spike=new THREE.Mesh(new THREE.ConeGeometry(.16,.55,7),hairMat);const a=i*Math.PI/2;spike.position.set(Math.cos(a)*.22,3.72,Math.sin(a)*.18);hairSpikes.add(spike);}
@@ -2296,7 +2338,7 @@ function onlineApplyRoster(players){
   const model=onlineRemoteModels.get(id);
   const incomingAppearance=normalizePlayerAppearance(st.appearance),appearanceSignature=JSON.stringify(incomingAppearance);
   if(model.appearanceSignature!==appearanceSignature){applyOnlineAvatarAppearance(model.group,incomingAppearance);model.appearanceSignature=appearanceSignature;}
-  model.target={x:Number(st.x)||0,y:THREE.MathUtils.clamp(Number(st.y)||PLAYER_Y,PLAYER_Y,160),z:Number(st.z)||0,yaw:Number(st.yaw)||0,island:Math.max(0,Math.min(islands.length-1,Number(st.island)||0)),fruit:String(st.fruit||'').slice(0,24),race:['Tubarão','Coelho','Leão','Pássaro'].includes(st.race)?st.race:'Humano',appearance:normalizePlayerAppearance(st.appearance),level:Math.max(1,Math.min(MAX_LEVEL,Math.floor(Number(st.level)||1)))};
+  model.target={x:Number(st.x)||0,y:THREE.MathUtils.clamp(Number.isFinite(Number(st.y))?Number(st.y):PLAYER_Y,-3.6,160),z:Number(st.z)||0,yaw:Number(st.yaw)||0,island:Math.max(0,Math.min(islands.length-1,Number(st.island)||0)),fruit:String(st.fruit||'').slice(0,24),race:['Tubarão','Coelho','Leão','Pássaro'].includes(st.race)?st.race:'Humano',appearance:normalizePlayerAppearance(st.appearance),level:Math.max(1,Math.min(MAX_LEVEL,Math.floor(Number(st.level)||1)))};
   model.name=String(st.name||'Aventureiro').slice(0,16);
   model.maxHealth=THREE.MathUtils.clamp(Number(st.maxHealth)||maxHealthForLevel(st.level||1),100,maxHealthForLevel(MAX_LEVEL));model.health=THREE.MathUtils.clamp(Number.isFinite(Number(st.health))?Number(st.health):model.maxHealth,0,model.maxHealth);drawOnlineHealthBar(model.healthBar,model.health,model.maxHealth);
   const label=model.nameLabel;
@@ -2311,6 +2353,13 @@ function onlineUpdateRemoteModels(delta){
   model.group.position.y+=(t.y-model.group.position.y)*k;
   model.group.position.z+=(t.z-model.group.position.z)*k;
   let rot=t.yaw-model.group.rotation.y;while(rot>Math.PI)rot-=Math.PI*2;while(rot< -Math.PI)rot+=Math.PI*2;model.group.rotation.y+=rot*k;
+  if(t.y<PLAYER_Y-0.8){
+   const phase=performance.now()*.005;
+   model.armL.rotation.x=.42+Math.sin(phase)*.85;model.armR.rotation.x=.42+Math.sin(phase+Math.PI)*.85;
+   model.legL.rotation.x=Math.sin(phase+Math.PI)*.48;model.legR.rotation.x=Math.sin(phase)*.48;
+  }else{
+   model.armL.rotation.x*=.82;model.armR.rotation.x*=.82;model.legL.rotation.x*=.82;model.legR.rotation.x*=.82;
+  }
  }
 }
 function onlineHostHandleConnection(conn){
@@ -2321,7 +2370,7 @@ function onlineHostHandleConnection(conn){
   if(data.type==='state'){
    const st=data.state||{};
    const remoteLevel=Math.max(1,Math.min(MAX_LEVEL,Math.floor(Number(st.level)||1))),remoteMaxHealth=THREE.MathUtils.clamp(Number(st.maxHealth)||maxHealthForLevel(remoteLevel),100,maxHealthForLevel(MAX_LEVEL));
-   onlineRemoteStates.set(conn.peer,{id:conn.peer,name:String(st.name||'Aventureiro').slice(0,16),x:THREE.MathUtils.clamp(Number(st.x)||0,-650,650),y:THREE.MathUtils.clamp(Number(st.y)||PLAYER_Y,PLAYER_Y,180),z:THREE.MathUtils.clamp(Number(st.z)||0,-650,650),yaw:Number(st.yaw)||0,island:Math.max(0,Math.min(islands.length-1,Number(st.island)||0)),fruit:String(st.fruit||'').slice(0,24),race:['Tubarão','Coelho','Leão','Pássaro'].includes(st.race)?st.race:'Humano',appearance:normalizePlayerAppearance(st.appearance),level:remoteLevel,maxHealth:remoteMaxHealth,health:THREE.MathUtils.clamp(Number.isFinite(Number(st.health))?Number(st.health):remoteMaxHealth,0,remoteMaxHealth)});
+   onlineRemoteStates.set(conn.peer,{id:conn.peer,name:String(st.name||'Aventureiro').slice(0,16),x:THREE.MathUtils.clamp(Number(st.x)||0,-650,650),y:THREE.MathUtils.clamp(Number.isFinite(Number(st.y))?Number(st.y):PLAYER_Y,-3.6,180),z:THREE.MathUtils.clamp(Number(st.z)||0,-650,650),yaw:Number(st.yaw)||0,island:Math.max(0,Math.min(islands.length-1,Number(st.island)||0)),fruit:String(st.fruit||'').slice(0,24),race:['Tubarão','Coelho','Leão','Pássaro'].includes(st.race)?st.race:'Humano',appearance:normalizePlayerAppearance(st.appearance),level:remoteLevel,maxHealth:remoteMaxHealth,health:THREE.MathUtils.clamp(Number.isFinite(Number(st.health))?Number(st.health):remoteMaxHealth,0,remoteMaxHealth)});
   }else if(data.type==='action'){
    const seq=Number(data.seq)||0;onlineBroadcast({type:'action',from:conn.peer,action:data.action,detail:data.detail||{},seq});
    onlineShowRemoteAction(conn.peer,data.action,data.detail||{},seq);
