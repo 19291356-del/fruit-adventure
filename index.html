@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FRUIT ADVENTURE — VERSÃO 25 ONLINE</title>
+<title>FRUIT ADVENTURE — VERSÃO 26 ONLINE</title>
 <style>
 *{box-sizing:border-box}body{margin:0;overflow:hidden;background:#183746;color:#fff;font-family:Arial,sans-serif}canvas{display:block}
 #hud,#info,#help{position:absolute;background:rgba(19,48,59,.86);border:1px solid rgba(195,235,225,.58);box-shadow:0 10px 28px #12334455;backdrop-filter:blur(7px)}
@@ -322,7 +322,7 @@ button{border:0;border-radius:10px;padding:12px 18px;font-weight:bold;cursor:poi
 <script>
 if(!window.THREE){document.body.innerHTML='<div style="padding:30px;font:20px Arial">Não foi possível carregar o motor 3D. Confira sua conexão com a internet e abra o arquivo novamente.</div>';throw new Error('Three.js não carregou');}
 
-// VERSÃO 25: editor visual do personagem, aparência sincronizada e controle de ativação do modo ADM.
+// VERSÃO 26: editor visual do personagem, aparência sincronizada e controle de ativação do modo ADM.
 // CENA E ILUMINAÇÃO: cenário mais claro, colorido e bem definido.
 const scene=new THREE.Scene();
 scene.background=new THREE.Color(0x91cce8);
@@ -387,9 +387,9 @@ function addTree(x,z,theme){
  }else{
   const crown=new THREE.Mesh(new THREE.SphereGeometry(theme==='floresta'?2.5:2.1,12,10),leafMat);crown.position.set(0,6.2,0);crown.castShadow=true;group.add(crown);
  }
- group.position.set(x,0,z);scene.add(group);breakables.push(group);
+ group.position.set(x,0,z);scene.add(group);breakables.push(group);addWorldCollider(x,z,theme==='praia'?.95:1.8,'árvore');
 }
-function addRock(x,z,size,color=0x777a76){const r=new THREE.Mesh(new THREE.DodecahedronGeometry(size,0),mat(color));r.position.set(x,PLAYER_Y+size*.55,z);r.rotation.set(Math.random(),Math.random(),Math.random());r.castShadow=true;scene.add(r);breakables.push(r);}
+function addRock(x,z,size,color=0x777a76){const r=new THREE.Mesh(new THREE.DodecahedronGeometry(size,0),mat(color));r.position.set(x,PLAYER_Y+size*.55,z);r.rotation.set(Math.random(),Math.random(),Math.random());r.castShadow=true;scene.add(r);breakables.push(r);addWorldCollider(x,z,Math.max(.7,size*.82),'rocha');}
 function addHouse(island,angle,houseIndex){
  const palettes={
   praia:{wall:0xe2d1ad,roof:0x9a5941,trim:0x70503a,door:0x70472f,glass:0x8ac4cd},
@@ -456,7 +456,7 @@ function addTreasureChest(island,islandIndex,chestIndex){
  const label=makeLabel('BAÚ DE MOEDAS');label.scale.set(5.1,1.25,1);label.position.set(0,4.45,0);g.add(label);g.userData.label=label;
  if(openedTreasureChestIds.has(id)){g.userData.opened=true;lid.rotation.x=-1.08;label.visible=false;}
  g.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
- scene.add(g);treasureChests.push(g);
+ scene.add(g);treasureChests.push(g);addWorldCollider(g.position.x,g.position.z,1.7,'baú');addWorldCollider(g.position.x,g.position.z,1.7,'baú');
 }
 function makeLabel(text){
  const c=document.createElement('canvas');c.width=512;c.height=128;const ctx=c.getContext('2d');
@@ -469,6 +469,36 @@ function addStaticNpcHealthBar(group,y=4.65){
 }
 const breakables=[];
 const enemyHouseColliders=[];
+const worldColliders=[];
+const PLAYER_COLLISION_RADIUS=.82;
+function addWorldCollider(x,z,radius,label='objeto'){
+ if(Number.isFinite(x)&&Number.isFinite(z)&&Number.isFinite(radius)&&radius>0)worldColliders.push({x,z,radius,label});
+}
+function isPlayerBlockedAt(x,z,fromX=x,fromZ=z){
+ for(const obstacle of worldColliders){
+  const min=obstacle.radius+PLAYER_COLLISION_RADIUS,distance=Math.hypot(x-obstacle.x,z-obstacle.z);
+  if(distance<min){
+   const previous=Math.hypot(fromX-obstacle.x,fromZ-obstacle.z);
+   if(previous<min&&distance>previous+.002)continue;
+   return true;
+  }
+ }
+ for(const house of enemyHouseColliders){
+  const bounds=house.userData.enemyCollision||{};
+  const halfWidth=Number(bounds.halfWidth)||4.4,halfDepth=Number(bounds.halfDepth)||3.9,doorWidth=Number(bounds.doorHalfWidth)||.75;
+  const current=house.worldToLocal(new THREE.Vector3(x,PLAYER_Y,z)),previous=house.worldToLocal(new THREE.Vector3(fromX,PLAYER_Y,fromZ));
+  const inside=Math.abs(current.x)<halfWidth+PLAYER_COLLISION_RADIUS&&Math.abs(current.z)<halfDepth+PLAYER_COLLISION_RADIUS;
+  const doorway=current.z>-.55&&current.z<halfDepth+PLAYER_COLLISION_RADIUS&&Math.abs(current.x)<doorWidth+PLAYER_COLLISION_RADIUS;
+  if(inside&&!doorway){
+   const wasInside=Math.abs(previous.x)<halfWidth+PLAYER_COLLISION_RADIUS&&Math.abs(previous.z)<halfDepth+PLAYER_COLLISION_RADIUS;
+   const penetration=Math.min(halfWidth+PLAYER_COLLISION_RADIUS-Math.abs(current.x),halfDepth+PLAYER_COLLISION_RADIUS-Math.abs(current.z));
+   const oldPenetration=Math.min(halfWidth+PLAYER_COLLISION_RADIUS-Math.abs(previous.x),halfDepth+PLAYER_COLLISION_RADIUS-Math.abs(previous.z));
+   if(wasInside&&penetration<oldPenetration-.002)continue;
+   return true;
+  }
+ }
+ return false;
+}
 const treasureChests=[];
 const openedTreasureChestIds=new Set();
 try{const savedOpened=JSON.parse(localStorage.getItem('fruitAdventureOpenedChests')||'[]');if(Array.isArray(savedOpened))for(const id of savedOpened)openedTreasureChestIds.add(String(id));}catch(err){}
@@ -484,10 +514,10 @@ islands.forEach((island,index)=>{
   if(island.theme==='praia'||island.theme==='floresta')addTree(x,z,island.theme);
   else if(island.theme==='candy'){
    const pole=new THREE.Mesh(new THREE.CylinderGeometry(.28,.38,4,10),mat(0xead6c4));pole.position.set(x,4,z);scene.add(pole);
-   const sweet=new THREE.Mesh(new THREE.SphereGeometry(1.25,12,10),mat(i%2?0xc9789d:0xe6b877));sweet.position.set(x,6.2,z);scene.add(sweet);
+   const sweet=new THREE.Mesh(new THREE.SphereGeometry(1.25,12,10),mat(i%2?0xc9789d:0xe6b877));sweet.position.set(x,6.2,z);scene.add(sweet);addWorldCollider(x,z,1.05,'decoração');
   }else if(island.theme==='vulcao')addRock(x,z,1.2+Math.random()*1.8,0x4b4b48);
   else{
-   const sheet=new THREE.Mesh(new THREE.BoxGeometry(2.4,.15,1.8),mat(i%2?0xd4d9c9:0xc4d3d2));sheet.position.set(x,3.2,z);sheet.rotation.y=Math.random()*2;sheet.rotation.z=(Math.random()-.5)*.3;scene.add(sheet);
+   const sheet=new THREE.Mesh(new THREE.BoxGeometry(2.4,.15,1.8),mat(i%2?0xd4d9c9:0xc4d3d2));sheet.position.set(x,3.2,z);sheet.rotation.y=Math.random()*2;sheet.rotation.z=(Math.random()-.5)*.3;scene.add(sheet);addWorldCollider(x,z,1.35,'placa de papel');
   }
  }
  for(let i=0;i<14;i++){
@@ -495,7 +525,7 @@ islands.forEach((island,index)=>{
   addRock(island.x+Math.cos(a)*r,island.z+Math.sin(a)*r,.55+Math.random()*.8,island.theme==='vulcao'?0x454543:0x777d75);
  }
  if(island.theme==='vulcao'){
-  const cone=new THREE.Mesh(new THREE.ConeGeometry(9,15,9),mat(0x53514c));cone.position.set(island.x+3,9,island.z-2);cone.castShadow=true;scene.add(cone);
+  const cone=new THREE.Mesh(new THREE.ConeGeometry(9,15,9),mat(0x53514c));cone.position.set(island.x+3,9,island.z-2);cone.castShadow=true;scene.add(cone);addWorldCollider(island.x+3,island.z-2,7.5,'montanha');
   const crater=new THREE.Mesh(new THREE.CylinderGeometry(2.1,2.7,.35,12),mat(0x754d3d));crater.position.set(island.x+3,16.3,island.z-2);scene.add(crater);
  }
  // Cada ilha agora tem pequenas casas com fachadas e telhados próprios do tema.
@@ -597,7 +627,7 @@ applyPlayerAppearance(playerAppearance);
 player.position.set(0,PLAYER_Y,17);
 
 // NPC E MESA DE FRUTAS
-const npc=new THREE.Group();scene.add(npc);npc.position.set(-21,PLAYER_Y,-20);
+const npc=new THREE.Group();scene.add(npc);npc.position.set(-21,PLAYER_Y,-20);addWorldCollider(-21,-20,.9,'mestre da roleta');
 addBox(npc,.95,1.35,.6,mat(0x8b7651),0,2.25,0);
 addBox(npc,.32,1.5,.38,mat(0x373e42),-.27,.78,0);addBox(npc,.32,1.5,.38,mat(0x373e42),.27,.78,0);
 const fruitNpcLeftArm=new THREE.Group();fruitNpcLeftArm.position.set(-.62,2.72,0);npc.add(fruitNpcLeftArm);addBox(fruitNpcLeftArm,.3,1.05,.34,mat(0x8b7651),0,-.43,0);addBox(fruitNpcLeftArm,.27,.25,.29,mat(0xc99a78),0,-.98,0);
@@ -607,11 +637,11 @@ addBox(npc,1.15,.18,.8,mat(0x46392e),0,3.68,0);
 const hatTop=new THREE.Mesh(new THREE.CylinderGeometry(.35,.35,.45,12),mat(0x564735));hatTop.position.set(0,3.94,0);npc.add(hatTop);
 for(const x of [-.15,.15]){const eye=new THREE.Mesh(new THREE.SphereGeometry(.05,8,8),mat(0x202020));eye.position.set(x,3.28,.41);npc.add(eye);}
 const npcLabel=makeLabel('MESTRE DA ROLETA');npcLabel.position.set(-21,6.6,-20);scene.add(npcLabel);addStaticNpcHealthBar(npc,4.55);
-const table=addBox(scene,4.8,.35,2.1,mat(0x75543b),-21,2.55,-15.3); // balcão
+const table=addBox(scene,4.8,.35,2.1,mat(0x75543b),-21,2.55,-15.3);addWorldCollider(-21,-15.3,2.2,'balcão'); // balcão
 for(const x of [-1.8,1.8])for(const z of [-.65,.65])addBox(scene,.22,1.15,.22,mat(0x62462f),-21+x,1.85,-15.3+z);
 
 // NPC que entrega missões e recompensa o jogador em moedas.
-const questNpc=new THREE.Group();scene.add(questNpc);questNpc.position.set(-14,PLAYER_Y,-5);
+const questNpc=new THREE.Group();scene.add(questNpc);questNpc.position.set(-14,PLAYER_Y,-5);addWorldCollider(-14,-5,.9,'mestre das missões');
 const questCoat=mat(0x58784e),questPants=mat(0x35433b),questSkin=mat(0xc99a78),questBoots=mat(0x292d2b);
 addBox(questNpc,1.0,1.4,.62,questCoat,0,2.25,0);
 const questHead=new THREE.Mesh(new THREE.SphereGeometry(.46,16,12),questSkin);questHead.position.set(0,3.28,0);questNpc.add(questHead);
@@ -640,7 +670,7 @@ addBox(fruitShopBuilding,29,.55,21,shopRoofMat,0,5.75,0);
 const shopSign=makeLabel('CASA DAS FRUTAS');shopSign.scale.set(12,2.3,1);shopSign.position.set(0,6.9,10.4);fruitShopBuilding.add(shopSign);
 fruitShopBuilding.userData.enemyCollision={halfWidth:13.7,halfDepth:9.7,doorHalfWidth:5.4};enemyHouseColliders.push(fruitShopBuilding);
 scene.add(fruitShopBuilding);
-const shopNpc=new THREE.Group();scene.add(shopNpc);shopNpc.position.set(-7,PLAYER_Y,-20);
+const shopNpc=new THREE.Group();scene.add(shopNpc);shopNpc.position.set(-7,PLAYER_Y,-20);addWorldCollider(-7,-20,.9,'vendedor');
 const shopCoat=mat(0x426b69),shopPants=mat(0x37454b),shopSkin=mat(0xc99a78),shopGold=mat(0xd3ad60);
 addBox(shopNpc,1.0,1.4,.62,shopCoat,0,2.25,0);
 const shopHead=new THREE.Mesh(new THREE.SphereGeometry(.46,16,12),shopSkin);shopHead.position.set(0,3.28,0);shopNpc.add(shopHead);
@@ -654,7 +684,7 @@ const shopLegR=new THREE.Group();shopLegR.position.set(.29,1.55,0);shopNpc.add(s
 const shopLabel=makeLabel('VENDEDOR DE FRUTAS');shopLabel.position.set(-7,6.5,-20);scene.add(shopLabel);addStaticNpcHealthBar(shopNpc,4.55);
 
 
-const raceNpc=new THREE.Group();scene.add(raceNpc);raceNpc.position.set(-33,PLAYER_Y,-7);
+const raceNpc=new THREE.Group();scene.add(raceNpc);raceNpc.position.set(-33,PLAYER_Y,-7);addWorldCollider(-33,-7,.9,'vendedor de raças');
 const raceCoat=mat(0x4d657c),raceSkin=mat(0xc99a78),raceGold=mat(0xd8b65e);
 addBox(raceNpc,1.05,1.45,.65,raceCoat,0,2.25,0);
 const raceHead=new THREE.Mesh(new THREE.SphereGeometry(.47,16,12),raceSkin);raceHead.position.y=3.28;raceNpc.add(raceHead);
@@ -1474,20 +1504,22 @@ function openBoatMenu(){
  islands.forEach((land,index)=>{if(index===currentIsland)return;const button=document.createElement('button');button.className='destinationButton';button.textContent='🚤 '+land.name;button.addEventListener('click',()=>startBoatTrip(index));$('boatChoices').appendChild(button);});
  if(document.pointerLockElement)document.exitPointerLock();
 }
-function startBoatTrip(destination){
+function startBoatTrip(){
  if(travelState)return;
- const from=boatStations[currentIsland],to=boatStations[destination];if(!from||!to)return;
+ const from=nearestBoat()||boatStations[currentIsland];if(!from)return;
  closeBoatMenu();travelBoat=makeBoatModel();travelBoat.position.copy(from.position);
- const heading=Math.atan2(to.position.x-from.position.x,to.position.z-from.position.z);
- travelBoat.rotation.y=heading;scene.add(travelBoat);
- travelState={destination,heading,speed:0,elapsed:0};player.visible=false;
- $('boatDrivingHint').style.display='block';message('🚤 Barco pronto! Use WASD para pilotar até '+islands[destination].name+'.');
+ const heading=from.angle;
+ travelBoat.rotation.y=heading+Math.PI;scene.add(travelBoat);
+ travelState={heading,speed:0,elapsed:0};player.visible=false;
+ $('boatDrivingHint').style.display='block';
+ $('boatDrivingHint').textContent='🚤 W/↑: acelerar · S/↓: ré/frear · A/← e D/→: virar · E ou Espaço: desembarcar perto da costa';
+ message('🚤 Você assumiu o volante! Pilote livremente com W A S D. Aperte E perto de uma ilha para desembarcar.');
 }
 function finishBoatAtIsland(index){
- const land=islands[index],station=boatStations[index],angle=station.angle;
+ const land=islands[index],vx=travelBoat.position.x-land.x,vz=travelBoat.position.z-land.z,distance=Math.hypot(vx,vz)||1;
  if(travelBoat){scene.remove(travelBoat);travelBoat=null;}travelState=null;player.visible=true;$('boatDrivingHint').style.display='none';
- currentIsland=index;player.position.set(land.x+Math.sin(angle)*(land.r-12),PLAYER_Y,land.z+Math.cos(angle)*(land.r-12));player.rotation.y=angle+Math.PI;
- message('🏝️ Você chegou à '+land.name+'!');updateHUD();
+ currentIsland=index;player.position.set(land.x+vx/distance*(land.r-12),PLAYER_Y,land.z+vz/distance*(land.r-12));player.rotation.y=Math.atan2(-vx,-vz);
+ message('🏝️ Você desembarcou na '+land.name+'!');updateHUD();
 }
 function tryDisembarkBoat(){
  if(!travelState||!travelBoat)return;
@@ -1511,9 +1543,7 @@ function updateBoatTravel(delta){
  travelBoat.position.x=THREE.MathUtils.clamp(travelBoat.position.x,-780,780);
  travelBoat.position.z=THREE.MathUtils.clamp(travelBoat.position.z,-780,780);
  travelBoat.position.y=.18+Math.sin(travelState.elapsed*4)*.12;
- const destination=islands[travelState.destination];
- const distance=Math.hypot(travelBoat.position.x-destination.x,travelBoat.position.z-destination.z);
- if(distance<=destination.r+8){finishBoatAtIsland(travelState.destination);}
+ // O barco não escolhe nem completa uma rota sozinho: o jogador controla o trajeto.
 }
 function interact(){
  if(!onlineActive){message("Aguarde a conexão com o mundo público.");return;}
@@ -1526,7 +1556,7 @@ function interact(){
  if(currentIsland===0&&player.position.distanceTo(questNpc.position)<6){openQuestNPC();return;}
  if(currentIsland===0&&player.position.distanceTo(raceNpc.position)<7){openRaceShop();return;}
  const otherPlayer=nearestRemotePlayer(9);if(otherPlayer){openTradeWith(otherPlayer.id);return;}
- const boat=nearestBoat();if(boat){openBoatMenu();return;}
+ const boat=nearestBoat();if(boat){startBoatTrip();return;}
  message('Aproxime-se de uma fruta, NPC ou barco e aperte E.');
 }
 
@@ -1971,7 +2001,10 @@ function movePlayer(delta){
   if(currentRace==='Coelho')speed*=1.35;
   if(swimming)speed*=currentRace==='Tubarão'?1.35:.72;
   const dx=-Math.sin(yaw)*f+Math.cos(yaw)*s,dz=-Math.cos(yaw)*f-Math.sin(yaw)*s;
-  player.position.x+=dx*speed*delta;player.position.z+=dz*speed*delta;player.rotation.y=Math.atan2(dx,dz);
+  const stepX=dx*speed*delta,stepZ=dz*speed*delta,oldX=player.position.x,oldZ=player.position.z;
+  if(flying||adminFlying||!isPlayerBlockedAt(oldX+stepX,oldZ,oldX,oldZ))player.position.x+=stepX;
+  if(flying||adminFlying||!isPlayerBlockedAt(player.position.x,oldZ+stepZ,player.position.x,oldZ))player.position.z+=stepZ;
+  player.rotation.y=Math.atan2(dx,dz);
   if(swimming){
    const phase=performance.now()*.005;
    leftArm.rotation.x=.42+Math.sin(phase)*.85;rightArm.rotation.x=.42+Math.sin(phase+Math.PI)*.85;
@@ -2005,9 +2038,9 @@ function movePlayer(delta){
    jumping=false;velocityY=0;
    // A água cobre o tronco e mantém a cabeça próxima da superfície.
    player.position.y=-2.85+Math.sin(performance.now()*.0022)*.045;
-   if(currentFruit&&currentRace!=='Tubarão'){
+   if(currentRace!=='Tubarão'){
     waterDamageTimer-=delta;
-    if(waterDamageTimer<=0){playerTakeDamage(8);waterDamageTimer=1;message('🌊 A fruta pesa na água! Você perdeu 8 de vida. A raça Tubarão não sofre esse efeito.');}
+    if(waterDamageTimer<=0){playerTakeDamage(8);waterDamageTimer=1;message('🌊 Você está perdendo 8 de vida na água! Apenas a raça Tubarão é imune.');}
    }else waterDamageTimer=0;
   }
  }
@@ -2078,7 +2111,7 @@ function updateCamera(){
  if(travelState&&travelBoat){const h=travelState.heading;camera.position.set(travelBoat.position.x-Math.sin(h)*13+5,travelBoat.position.y+8,travelBoat.position.z-Math.cos(h)*13+5);camera.lookAt(travelBoat.position.x,travelBoat.position.y+1,travelBoat.position.z);return;}
  const dist=(flying||adminFlying)?13:10,h=dist*Math.cos(pitch);camera.position.set(player.position.x+Math.sin(yaw)*h,player.position.y+3.3+Math.sin(pitch)*dist,player.position.z+Math.cos(yaw)*h);camera.lookAt(player.position.x,player.position.y+2.1,player.position.z);
 }
-function updateHint(){let t='';if(inventoryOpen||modalOpen||pendingFruit){$('hint').style.display='none';return;}const drop=nearestFruitDrop(5.2);const chest=nearestTreasureChest(6.2);if(drop)t='Passe por cima para pegar '+drop.userData.fruitName;else if(chest)t='Aperte E para abrir o baú e ganhar '+chest.userData.reward+' moedas';else if(currentIsland===0&&player.position.distanceTo(shopNpc.position)<7)t='Aperte E para comprar frutas na loja';else if(currentIsland===0&&player.position.distanceTo(npc.position)<7)t='Aperte E para girar uma fruta no Mestre da Roleta';else if(currentIsland===0&&player.position.distanceTo(questNpc.position)<6)t='Aperte E para receber missões';else if(currentIsland===0&&player.position.distanceTo(raceNpc.position)<7)t='Aperte E para comprar uma raça';else if(nearestRemotePlayer(9))t='Aperte E para propor uma troca de frutas';else if(nearestBoat())t='Aperte E para escolher um barco e viajar para outra ilha';$('hint').textContent=t;$('hint').style.display=t?'block':'none';}
+function updateHint(){let t='';if(inventoryOpen||modalOpen||pendingFruit){$('hint').style.display='none';return;}const drop=nearestFruitDrop(5.2);const chest=nearestTreasureChest(6.2);if(drop)t='Passe por cima para pegar '+drop.userData.fruitName;else if(chest)t='Aperte E para abrir o baú e ganhar '+chest.userData.reward+' moedas';else if(currentIsland===0&&player.position.distanceTo(shopNpc.position)<7)t='Aperte E para comprar frutas na loja';else if(currentIsland===0&&player.position.distanceTo(npc.position)<7)t='Aperte E para girar uma fruta no Mestre da Roleta';else if(currentIsland===0&&player.position.distanceTo(questNpc.position)<6)t='Aperte E para receber missões';else if(currentIsland===0&&player.position.distanceTo(raceNpc.position)<7)t='Aperte E para comprar uma raça';else if(nearestRemotePlayer(9))t='Aperte E para propor uma troca de frutas';else if(nearestBoat())t='Aperte E para entrar no barco e pilotar com WASD';$('hint').textContent=t;$('hint').style.display=t?'block':'none';}
 
 addEventListener('keydown',e=>{
  if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();
@@ -2087,7 +2120,7 @@ addEventListener('keydown',e=>{
  if(inventoryOpen){if(e.code==='Escape')closeInventory();return;}
  if(modalOpen){if(e.code==='Escape')closeModals();return;}
  keys[e.code]=true;
- if(travelState){if(e.code==='Space')tryDisembarkBoat();return;}
+ if(travelState){if(e.code==='Space'||e.code==='KeyE')tryDisembarkBoat();return;}
  if(e.code==='KeyE')interact();
  if(e.code==='KeyF')basicAttack();
  if(e.code==='KeyQ')useFirstSkill();
