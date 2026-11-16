@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FRUIT ADVENTURE — VERSÃO 22 ONLINE</title>
+<title>FRUIT ADVENTURE — VERSÃO 23 ONLINE</title>
 <style>
 *{box-sizing:border-box}body{margin:0;overflow:hidden;background:#183746;color:#fff;font-family:Arial,sans-serif}canvas{display:block}
 #hud,#info,#help{position:absolute;background:rgba(19,48,59,.86);border:1px solid rgba(195,235,225,.58);box-shadow:0 10px 28px #12334455;backdrop-filter:blur(7px)}
@@ -149,6 +149,35 @@ button{border:0;border-radius:10px;padding:12px 18px;font-weight:bold;cursor:poi
 #tradeSubmitButton{width:100%;background:#9bd8ad;color:#183327}
 #tradeStatus{min-height:24px;color:#ffe0a3;font-size:12px;margin:9px 0}
 @media(max-width:700px){#missionCompass{top:110px;min-width:195px;padding:7px 10px}#raceShopCard,#tradeCard{padding:14px}#raceOptions{grid-template-columns:1fr}#boatDrivingHint{bottom:75px;white-space:normal;width:92%}}
+
+/* Personalização completa do personagem */
+#characterModal{position:fixed;inset:0;z-index:140;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(5,17,26,.86);backdrop-filter:blur(8px)}
+#characterCard{width:min(780px,97vw);max-height:92vh;overflow:auto;padding:22px;border-radius:20px;background:linear-gradient(145deg,#244a58,#112735 72%);border:1px solid #9bd7c4;box-shadow:0 22px 80px #000c}
+#characterHeader{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px}
+#characterHeader h2{margin:0;color:#d9f6e8}
+#characterSubtitle{color:#bed8d0;font-size:13px;line-height:1.5;margin:5px 0 16px}
+#characterEditorGrid{display:grid;grid-template-columns:1.05fr 1.4fr;gap:14px}
+#characterPreview{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:290px;padding:18px;border-radius:16px;background:radial-gradient(circle at 50% 28%,#477a80,#183746 68%);border:1px solid #69999a;text-align:center}
+#characterPreview .previewSilhouette{font-size:86px;line-height:1.25;filter:drop-shadow(0 8px 9px #0007)}
+#characterPreview strong{color:#f5e2a9;font-size:14px;margin-top:7px}
+#characterPreview small{color:#c0d9d1;font-size:11px;line-height:1.4;margin-top:5px}
+#appearanceControls{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.appearanceField{padding:10px;border-radius:11px;border:1px solid #567c82;background:#183744;min-width:0}
+.appearanceField label{display:block;font-size:11px;font-weight:bold;color:#cbeadd;margin-bottom:7px;letter-spacing:.3px}
+.appearanceField input[type=color]{width:100%;height:38px;padding:3px;border:1px solid #71989a;background:#102a34;border-radius:8px;cursor:pointer}
+.appearanceField select{width:100%;padding:10px;border-radius:8px;border:1px solid #71989a;background:#102a34;color:#fff;font-size:12px}
+#appearancePresets{display:flex;flex-wrap:wrap;gap:7px;margin:15px 0 10px}
+#appearancePresets button{flex:1;min-width:115px;padding:9px 10px;background:#345d68;color:#f0faf5;border:1px solid #7caea2;font-size:11px}
+#characterActions{display:flex;gap:9px;margin-top:12px}
+#characterSaveButton{flex:1;background:linear-gradient(120deg,#a5d9a9,#77bca7);color:#15352d}
+#characterCancelButton{background:#405b67;color:#eff9f4}
+#characterOpenButton{display:block;width:100%;margin-top:7px;padding:8px 10px;background:#436c7d;color:#fff;font-size:11px}
+.adminRacePicker{margin:12px auto;padding:12px;max-width:440px;border:1px solid #7095ad;background:#17344b;border-radius:12px;text-align:left}
+.adminRacePicker label{display:block;color:#cdeaff;font-size:12px;font-weight:bold;margin-bottom:8px}
+.adminRaceRow{display:flex;gap:8px}
+.adminRaceRow select{flex:1;min-width:0;padding:10px;border-radius:8px;border:1px solid #84a9c4;background:#0e2234;color:#fff;font-size:14px}
+#adminDeactivateButton{background:#a85d5d;color:#fff;margin:6px;border:1px solid #e09a9a}
+@media(max-width:650px){#characterEditorGrid{grid-template-columns:1fr}#characterPreview{min-height:190px}.previewSilhouette{font-size:66px!important}#characterCard{padding:14px}#appearanceControls{gap:7px}.appearanceField{padding:8px}#characterActions{flex-direction:column}#characterCancelButton{width:100%}}
 </style>
 </head>
 <body>
@@ -158,7 +187,7 @@ button{border:0;border-radius:10px;padding:12px 18px;font-weight:bold;cursor:poi
  <div class="stat">❤️ Vida: <span id="health">100</span>/<span id="maxHealth">100</span><div class="bar"><div id="hp" class="fill"></div></div></div>
  <div class="currencyRow"><div class="currencyStat moneyStat">💰 DINHEIRO<b id="money">0</b></div><div class="currencyStat boltStat">🔩 BOLT<b id="bolt">0</b></div></div>
 </div>
-<div id="info"><b id="islandName">ILHA INICIAL</b><br>Abates: <span id="kills">0</span><br>Inimigos próximos: <span id="nearby">0</span><br>🚤 Barcos: 5<br><span id="missionStatus">📜 Missão: nenhuma</span><div id="onlineStatus">🌐 Conectando ao mundo público...</div><div id="onlineConnectionCount">Aguardando jogadores...</div><button id="accountOpenButton" style="margin-top:7px;padding:8px 10px;background:#395f79;color:#fff;width:100%;font-size:11px">👤 CONTA / ENTRAR</button></div>
+<div id="info"><b id="islandName">ILHA INICIAL</b><br>Abates: <span id="kills">0</span><br>Inimigos próximos: <span id="nearby">0</span><br>🚤 Barcos: 5<br><span id="missionStatus">📜 Missão: nenhuma</span><div id="onlineStatus">🌐 Conectando ao mundo público...</div><div id="onlineConnectionCount">Aguardando jogadores...</div><button id="accountOpenButton" style="margin-top:7px;padding:8px 10px;background:#395f79;color:#fff;width:100%;font-size:11px">👤 CONTA / ENTRAR</button><button id="characterOpenButton">👕 PERSONALIZAR PERSONAGEM</button></div>
 <div id="missionCompass"><span id="compassArrow">▲</span><span id="compassText"><b>BÚSSOLA DA MISSÃO</b>Vá até o Mestre das Missões</span></div>
 <div id="skillsPanel"><div id="skillsMastery">SEM FRUTA EQUIPADA</div><b>HABILIDADES — TECLAS 1 A 5</b><div id="skillsList">Você ainda não tem fruta.</div></div>
 <div id="message">Explore as ilhas!</div>
@@ -216,10 +245,11 @@ button{border:0;border-radius:10px;padding:12px 18px;font-weight:bold;cursor:poi
    <button id="adminRainButton" class="adminPrimary">🌧️ CHOVER 5 FRUTAS</button>
    <button id="adminInvincibleButton" class="adminPrimary">🛡️ ATIVAR INVENCIBILIDADE</button>
   </div>
+  <div class="adminRacePicker"><label for="adminRaceSelect">🧬 ESCOLHER RAÇA DO JOGADOR</label><div class="adminRaceRow"><select id="adminRaceSelect"><option value="Humano">Humano</option><option value="Tubarão">Tubarão</option><option value="Coelho">Coelho</option><option value="Leão">Leão</option><option value="Pássaro">Pássaro</option></select><button id="adminApplyRaceButton" class="adminPrimary">APLICAR RAÇA</button></div></div>
   <div class="adminLevelPicker"><label for="adminLevelInput">⭐ ESCOLHER NÍVEL DO JOGADOR (1–700)</label><div class="adminLevelRow"><input id="adminLevelInput" type="number" min="1" max="700" step="1" value="1"><button id="adminSetLevelButton" class="adminPrimary">APLICAR NÍVEL</button></div></div>
   <p style="font-size:12px">Durante o voo: <b>WASD</b> para mover, <b>ESPAÇO</b> para subir e <b>C</b> para descer.</p>
   <div id="adminFruitGrid"></div>
-  <button id="adminPanelClose" class="adminSecondary">FECHAR PAINEL</button>
+  <button id="adminDeactivateButton">⛔ DESATIVAR MODO ADM</button><button id="adminPanelClose" class="adminSecondary">FECHAR PAINEL</button>
  </div>
 </div>
 
@@ -251,6 +281,31 @@ button{border:0;border-radius:10px;padding:12px 18px;font-weight:bold;cursor:poi
   <small id="playerIdentityNote">Aviso: o serviço de contas ainda não está configurado nesta publicação. Este perfil fica salvo somente neste navegador. Use uma senha exclusiva, nunca a mesma de outras contas.</small>
  </div>
 </div>
+
+<div id="characterModal" role="dialog" aria-modal="true" aria-labelledby="characterTitle">
+ <div id="characterCard">
+  <div id="characterHeader"><h2 id="characterTitle">👕 VISTA SEU AVENTUREIRO</h2><span style="color:#f4df9b;font-size:11px;font-weight:bold">EDITOR 3D</span></div>
+  <p id="characterSubtitle">Escolha as cores da pele, roupa, calça, botas e cabelo. Teste estilos diferentes: as mudanças aparecem imediatamente no personagem do cenário e ficam salvas neste navegador.</p>
+  <div id="characterEditorGrid">
+   <div id="characterPreview"><div class="previewSilhouette">🧍</div><strong>PRÉVIA EM TEMPO REAL</strong><small>O modelo 3D atrás deste painel acompanha cada mudança que você fizer.</small></div>
+   <div id="appearanceControls">
+    <div class="appearanceField"><label for="appearanceSkin">COR DA PELE</label><input id="appearanceSkin" type="color" value="#d2a17e"></div>
+    <div class="appearanceField"><label for="appearanceHair">COR DO CABELO</label><input id="appearanceHair" type="color" value="#302b28"></div>
+    <div class="appearanceField"><label for="appearanceShirt">CAMISA / JAQUETA</label><input id="appearanceShirt" type="color" value="#426f80"></div>
+    <div class="appearanceField"><label for="appearancePants">CALÇA</label><input id="appearancePants" type="color" value="#303d4a"></div>
+    <div class="appearanceField"><label for="appearanceBoots">BOTAS</label><input id="appearanceBoots" type="color" value="#262d31"></div>
+    <div class="appearanceField"><label for="appearanceHairStyle">ESTILO DE CABELO</label><select id="appearanceHairStyle"><option value="curto">Curto</option><option value="topete">Topete</option><option value="espigado">Espigado</option><option value="careca">Careca</option></select></div>
+    <div class="appearanceField" style="grid-column:1/-1"><label for="appearanceOutfitStyle">ESTILO DA ROUPA</label><select id="appearanceOutfitStyle"><option value="classico">Clássico</option><option value="marinheiro">Marinheiro • lenço no pescoço</option><option value="explorador">Explorador • mochila nas costas</option></select></div>
+   </div>
+  </div>
+  <div id="appearancePresets">
+   <button type="button" data-appearance-preset="oceano">🌊 GUARDIÃO DO OCEANO</button>
+   <button type="button" data-appearance-preset="aventura">🧭 EXPLORADOR</button>
+   <button type="button" data-appearance-preset="sombras">🌑 SOMBRAS</button>
+  </div>
+  <div id="characterActions"><button id="characterSaveButton">✅ SALVAR E ENTRAR NO MUNDO</button><button id="characterCancelButton">VOLTAR</button></div>
+ </div>
+</div>
 <div id="connectingOverlay" aria-live="polite">
  <div id="connectingCard">
   <div class="connectingMark">🌐</div>
@@ -267,7 +322,7 @@ button{border:0;border-radius:10px;padding:12px 18px;font-weight:bold;cursor:poi
 <script>
 if(!window.THREE){document.body.innerHTML='<div style="padding:30px;font:20px Arial">Não foi possível carregar o motor 3D. Confira sua conexão com a internet e abra o arquivo novamente.</div>';throw new Error('Three.js não carregou');}
 
-// VERSÃO 18: frutas especiais ADM, ataques variados, transformações, drops compartilhados e contas configuráveis na nuvem.
+// VERSÃO 23: editor visual do personagem, aparência sincronizada e controle de ativação do modo ADM.
 // CENA E ILUMINAÇÃO: cenário mais claro, colorido e bem definido.
 const scene=new THREE.Scene();
 scene.background=new THREE.Color(0x91cce8);
@@ -464,17 +519,64 @@ islands.forEach((land,index)=>{
  boatStations.push({boat,position:new THREE.Vector3(bx,.12,bz),angle,index});
 });
 
-// PERSONAGEM DO JOGADOR
+// PERSONALIZAÇÃO DO AVATAR: cores e estilo são salvos no navegador.
+const PLAYER_APPEARANCE_KEY='fruitAdventureAppearanceV1';
+const DEFAULT_PLAYER_APPEARANCE={skin:'#d2a17e',shirt:'#426f80',pants:'#303d4a',boots:'#262d31',hair:'#302b28',hairStyle:'curto',outfitStyle:'classico'};
+function normalizePlayerAppearance(raw){
+ const src=raw&&typeof raw==='object'?raw:{},hex=(value,fallback)=>/^#[0-9a-f]{6}$/i.test(String(value||''))?String(value).toLowerCase():fallback;
+ return {
+  skin:hex(src.skin,DEFAULT_PLAYER_APPEARANCE.skin),
+  shirt:hex(src.shirt,DEFAULT_PLAYER_APPEARANCE.shirt),
+  pants:hex(src.pants,DEFAULT_PLAYER_APPEARANCE.pants),
+  boots:hex(src.boots,DEFAULT_PLAYER_APPEARANCE.boots),
+  hair:hex(src.hair,DEFAULT_PLAYER_APPEARANCE.hair),
+  hairStyle:['curto','topete','espigado','careca'].includes(src.hairStyle)?src.hairStyle:'curto',
+  outfitStyle:['classico','marinheiro','explorador'].includes(src.outfitStyle)?src.outfitStyle:'classico'
+ };
+}
+function appearanceColorNumber(hex){return parseInt(String(hex).replace('#',''),16);}
+function loadPlayerAppearance(){
+ try{return normalizePlayerAppearance(JSON.parse(localStorage.getItem(PLAYER_APPEARANCE_KEY)||'{}'));}catch(e){return {...DEFAULT_PLAYER_APPEARANCE};}
+}
+let playerAppearance=loadPlayerAppearance();
+\nconst player=new THREE.Group();scene.add(player);// PERSONAGEM DO JOGADOR
 const player=new THREE.Group();scene.add(player);
-const skin=mat(0xd2a17e),shirt=mat(0x426f80),pants=mat(0x303d4a),boots=mat(0x262d31),hair=mat(0x302b28);
-addBox(player,1.05,1.35,.62,shirt,0,2.3,0);
-const head=new THREE.Mesh(new THREE.SphereGeometry(.48,16,14),skin);head.position.set(0,3.28,0);head.castShadow=true;player.add(head);
-const hairCap=new THREE.Mesh(new THREE.SphereGeometry(.49,14,10,0,Math.PI*2,0,Math.PI*.48),hair);hairCap.position.set(0,3.42,0);player.add(hairCap);
+const skin=mat(appearanceColorNumber(playerAppearance.skin)),shirt=mat(appearanceColorNumber(playerAppearance.shirt)),pants=mat(appearanceColorNumber(playerAppearance.pants)),boots=mat(appearanceColorNumber(playerAppearance.boots)),hair=mat(appearanceColorNumber(playerAppearance.hair));
+const playerTorso=addBox(player,1.05,1.35,.62,shirt,0,2.3,0);playerTorso.userData.appearancePart='shirt';
+const head=new THREE.Mesh(new THREE.SphereGeometry(.48,16,14),skin);head.position.set(0,3.28,0);head.castShadow=true;head.userData.appearancePart='skin';player.add(head);
+const hairCap=new THREE.Mesh(new THREE.SphereGeometry(.49,14,10,0,Math.PI*2,0,Math.PI*.48),hair);hairCap.position.set(0,3.42,0);hairCap.userData.appearancePart='hair';player.add(hairCap);
+const hairExtras=new THREE.Group();player.add(hairExtras);
+for(let i=0;i<4;i++){const spike=new THREE.Mesh(new THREE.ConeGeometry(.16,.55,7),hair);const a=i*Math.PI/2;spike.position.set(Math.cos(a)*.22,3.72,Math.sin(a)*.18);spike.rotation.z=Math.cos(a)*-.22;spike.rotation.x=Math.sin(a)*.22;hairExtras.add(spike);}
+const hairTopper=new THREE.Mesh(new THREE.ConeGeometry(.2,.62,8),hair);hairTopper.position.set(0,3.82,.2);hairTopper.rotation.x=-.45;player.add(hairTopper);
+
 for(const x of [-.16,.16]){const eye=new THREE.Mesh(new THREE.SphereGeometry(.055,8,8),mat(0x202326));eye.position.set(x,3.3,.43);player.add(eye);}
-const leftArm=new THREE.Group();leftArm.position.set(-.68,2.75,0);player.add(leftArm);addBox(leftArm,.3,1.05,.34,shirt,0,-.48,0);addBox(leftArm,.28,.28,.3,skin,0,-1.05,0);
-const rightArm=new THREE.Group();rightArm.position.set(.68,2.75,0);player.add(rightArm);addBox(rightArm,.3,1.05,.34,shirt,0,-.48,0);addBox(rightArm,.28,.28,.3,skin,0,-1.05,0);
-const leftLeg=new THREE.Group();leftLeg.position.set(-.29,1.62,0);player.add(leftLeg);addBox(leftLeg,.34,1.55,.38,pants,0,-.78,0);addBox(leftLeg,.38,.25,.58,boots,0,-1.55,.08);
-const rightLeg=new THREE.Group();rightLeg.position.set(.29,1.62,0);player.add(rightLeg);addBox(rightLeg,.34,1.55,.38,pants,0,-.78,0);addBox(rightLeg,.38,.25,.58,boots,0,-1.55,.08);
+const outfitDetails=new THREE.Group();player.add(outfitDetails);
+const neckScarf=new THREE.Mesh(new THREE.TorusGeometry(.37,.09,8,24),mat(0xd8bd70));neckScarf.rotation.x=Math.PI/2;neckScarf.position.y=2.86;outfitDetails.add(neckScarf);
+const adventurePack=addBox(outfitDetails,.78,.95,.32,mat(0x8a6344),0,2.25,-.49);
+const packStrap=addBox(outfitDetails,.12,1.08,.12,mat(0xd7c18b),0,2.25,-.67);
+
+const leftArm=new THREE.Group();leftArm.position.set(-.68,2.75,0);player.add(leftArm);const leftSleeve=addBox(leftArm,.3,1.05,.34,shirt,0,-.48,0);leftSleeve.userData.appearancePart='shirt';const leftHand=addBox(leftArm,.28,.28,.3,skin,0,-1.05,0);leftHand.userData.appearancePart='skin';
+const rightArm=new THREE.Group();rightArm.position.set(.68,2.75,0);player.add(rightArm);const rightSleeve=addBox(rightArm,.3,1.05,.34,shirt,0,-.48,0);rightSleeve.userData.appearancePart='shirt';const rightHand=addBox(rightArm,.28,.28,.3,skin,0,-1.05,0);rightHand.userData.appearancePart='skin';
+const leftLeg=new THREE.Group();leftLeg.position.set(-.29,1.62,0);player.add(leftLeg);const leftTrouser=addBox(leftLeg,.34,1.55,.38,pants,0,-.78,0);leftTrouser.userData.appearancePart='pants';const leftBoot=addBox(leftLeg,.38,.25,.58,boots,0,-1.55,.08);leftBoot.userData.appearancePart='boots';
+const rightLeg=new THREE.Group();rightLeg.position.set(.29,1.62,0);player.add(rightLeg);const rightTrouser=addBox(rightLeg,.34,1.55,.38,pants,0,-.78,0);rightTrouser.userData.appearancePart='pants';const rightBoot=addBox(rightLeg,.38,.25,.58,boots,0,-1.55,.08);rightBoot.userData.appearancePart='boots';
+
+function applyPlayerAppearance(raw=playerAppearance){
+ playerAppearance=normalizePlayerAppearance(raw);
+ skin.color.set(playerAppearance.skin);shirt.color.set(playerAppearance.shirt);pants.color.set(playerAppearance.pants);boots.color.set(playerAppearance.boots);hair.color.set(playerAppearance.hair);
+ hairCap.visible=playerAppearance.hairStyle!=='careca';
+ hairExtras.visible=playerAppearance.hairStyle==='espigado';
+ hairTopper.visible=playerAppearance.hairStyle==='topete';
+ neckScarf.visible=playerAppearance.outfitStyle==='marinheiro';
+ adventurePack.visible=playerAppearance.outfitStyle==='explorador';
+ packStrap.visible=playerAppearance.outfitStyle==='explorador';
+ return playerAppearance;
+}
+function savePlayerAppearance(){
+ playerAppearance=normalizePlayerAppearance(playerAppearance);
+ try{localStorage.setItem(PLAYER_APPEARANCE_KEY,JSON.stringify(playerAppearance));}catch(e){}
+ applyPlayerAppearance(playerAppearance);
+}
+applyPlayerAppearance(playerAppearance);
 player.position.set(0,PLAYER_Y,17);
 
 // NPC E MESA DE FRUTAS
@@ -1023,7 +1125,7 @@ function openAdminAccess(){
 }
 function openAdminPanel(){
  $('adminCodeModal').style.display='none';$('adminPanelModal').style.display='flex';
- $('adminLevelInput').value=String(level);
+ $('adminLevelInput').value=String(level);$('adminRaceSelect').value=currentRace;
  renderAdminFruitGrid();updateAdminButtons();
 }
 function closeAdminUI(){
@@ -1060,10 +1162,28 @@ function applyAdminLevel(){
  updateHUD();updateAdminButtons();message('⭐ Nível '+level+' aplicado! Vida: '+Math.ceil(health)+'/'+newMaxHealth+' • Dano: +'+Math.round((damageMultiplierFor(level)-1)*100)+'%.');
  if(typeof queueCloudSave==='function')queueCloudSave();
 }
+function applyAdminRace(){
+ if(!adminUnlocked)return;
+ const requested=$('adminRaceSelect').value;
+ if(!['Humano','Tubarão','Coelho','Leão','Pássaro'].includes(requested)){message('Escolha uma raça válida.');return;}
+ currentRace=requested;
+ try{localStorage.setItem('fruitAdventureRace',currentRace);}catch(e){}
+ updateHUD();updateAdminButtons();
+ message('🧬 ADM: raça '+currentRace+' aplicada gratuitamente!');
+}
+function deactivateAdminMode(){
+ if(!adminUnlocked){closeAdminUI();return;}
+ if(adminFlying)toggleAdminFlight();
+ adminInvincible=false;adminUnlocked=false;
+ try{localStorage.removeItem('fruitAdventureAdmin');localStorage.removeItem('fruitAdventureInvincible');}catch(e){}
+ closeAdminUI();updateHUD();
+ message('⛔ Modo ADM desativado. O código será solicitado para ativar novamente.');
+}
 function updateAdminButtons(){
  const button=$('adminFlyToggle');if(button)button.textContent=adminFlying?'🛬 DESATIVAR VOO ADM':'✈️ ATIVAR VOO ADM';
  const inv=$('adminInvincibleButton');if(inv)inv.textContent=adminInvincible?'🛡️ DESATIVAR INVENCIBILIDADE':'🛡️ ATIVAR INVENCIBILIDADE';
- const state=$('adminState');if(state)state.textContent='MODO ADM ATIVO • NÍVEL '+level+'/'+MAX_LEVEL+' • '+(currentFruit?'FRUTA: '+currentFruit:'SEM FRUTA')+' • '+(adminFlying?'VOANDO':'NO CHÃO')+' • '+(adminInvincible?'INVENCÍVEL':'VULNERÁVEL');
+ const raceSelect=$('adminRaceSelect');if(raceSelect)raceSelect.value=currentRace;
+ const state=$('adminState');if(state)state.textContent='MODO ADM ATIVO • NÍVEL '+level+'/'+MAX_LEVEL+' • RAÇA: '+currentRace+' • '+(currentFruit?'FRUTA: '+currentFruit:'SEM FRUTA')+' • '+(adminFlying?'VOANDO':'NO CHÃO')+' • '+(adminInvincible?'INVENCÍVEL':'VULNERÁVEL');
 }
 function toggleAdminInvincibility(){
  if(!adminUnlocked)return;adminInvincible=!adminInvincible;
@@ -1105,6 +1225,8 @@ function toggleAdminFlight(){
  updateAdminButtons();updateHUD();
 }
 $('adminCodeSubmit').addEventListener('click',submitAdminCode);
+$('adminDeactivateButton').addEventListener('click',deactivateAdminMode);
+$('adminApplyRaceButton').addEventListener('click',applyAdminRace);
 $('adminSetLevelButton').addEventListener('click',applyAdminLevel);
 $('adminCodeClose').addEventListener('click',closeAdminUI);
 $('adminPanelClose').addEventListener('click',closeAdminUI);
@@ -1982,11 +2104,56 @@ async function derivePlayerPasswordHash(password,salt){
  const bits=await crypto.subtle.deriveBits({name:'PBKDF2',salt:new TextEncoder().encode(salt),iterations:160000,hash:'SHA-256'},material,256);
  return Array.from(new Uint8Array(bits),b=>b.toString(16).padStart(2,'0')).join('');
 }
+function syncAppearanceControls(){
+ const fields={skin:'appearanceSkin',shirt:'appearanceShirt',pants:'appearancePants',boots:'appearanceBoots',hair:'appearanceHair'};
+ for(const key of Object.keys(fields))$(fields[key]).value=playerAppearance[key];
+ $('appearanceHairStyle').value=playerAppearance.hairStyle;
+ $('appearanceOutfitStyle').value=playerAppearance.outfitStyle;
+}
+function readAppearanceControls(){
+ return normalizePlayerAppearance({
+  skin:$('appearanceSkin').value,shirt:$('appearanceShirt').value,pants:$('appearancePants').value,
+  boots:$('appearanceBoots').value,hair:$('appearanceHair').value,
+  hairStyle:$('appearanceHairStyle').value,outfitStyle:$('appearanceOutfitStyle').value
+ });
+}
+function openCharacterCustomizer(){
+ playerAppearance=normalizePlayerAppearance(playerAppearance);
+ syncAppearanceControls();applyPlayerAppearance(playerAppearance);
+ modalOpen=true;
+ $('characterModal').style.display='flex';
+ if(document.pointerLockElement)document.exitPointerLock();
+}
+function previewCharacterAppearance(){
+ playerAppearance=readAppearanceControls();applyPlayerAppearance(playerAppearance);
+}
+function applyAppearancePreset(name){
+ const presets={
+  oceano:{skin:'#d2a17e',shirt:'#287b91',pants:'#203f57',boots:'#172b38',hair:'#192a34',hairStyle:'espigado',outfitStyle:'marinheiro'},
+  aventura:{skin:'#c58e69',shirt:'#64834c',pants:'#4a4937',boots:'#413124',hair:'#4a3022',hairStyle:'topete',outfitStyle:'explorador'},
+  sombras:{skin:'#e0b995',shirt:'#373b59',pants:'#242635',boots:'#171923',hair:'#14131c',hairStyle:'curto',outfitStyle:'classico'}
+ };
+ if(!presets[name])return;
+ playerAppearance=normalizePlayerAppearance(presets[name]);syncAppearanceControls();applyPlayerAppearance(playerAppearance);
+}
+function saveAndEnterWorld(){
+ playerAppearance=readAppearanceControls();savePlayerAppearance();
+ $('characterModal').style.display='none';modalOpen=false;
+ message('✅ Personagem salvo! Bem-vindo ao Fruit Adventure, '+onlinePlayerName+'!');
+ updateHUD();
+}
+function cancelCharacterCustomizer(){
+ syncAppearanceControls();applyPlayerAppearance(playerAppearance);
+ $('characterModal').style.display='none';modalOpen=false;
+ message('Aparência atual mantida. Bom jogo!');
+}
 function finishPlayerIdentity(nick){
  onlinePlayerName=nick.slice(0,16);playerIdentityAuthenticated=true;playerIdentityPrompted=true;
  try{localStorage.setItem('fruitAdventurePlayerName',onlinePlayerName);}catch(err){}
- $('playerIdentityModal').style.display='none';modalOpen=false;
- message('✅ Bem-vindo, '+onlinePlayerName+'!');updateHUD();
+ $('playerIdentityModal').style.display='none';
+ openCharacterCustomizer();
+ message('👕 Agora escolha a aparência do seu personagem, '+onlinePlayerName+'!');
+ updateHUD();
 }
 function requirePlayerIdentity(){
  if(playerIdentityAuthenticated||cloudUser)return;
@@ -2034,7 +2201,7 @@ function onlineSetStatus(messageText){
  if(onlineActive)requirePlayerIdentity();
 }
 function onlineMakeLocalState(){
- return {name:onlinePlayerName,x:player.position.x,y:player.position.y,z:player.position.z,yaw:player.rotation.y,island:currentIsland,fruit:currentFruit||'',race:currentRace,level:Math.min(MAX_LEVEL,Math.max(1,level)),health:health,maxHealth:maxHealthForLevel(),adminFlying:!!adminFlying,flying:!!flying,openedChests:[...openedTreasureChestIds]};
+ return {name:onlinePlayerName,x:player.position.x,y:player.position.y,z:player.position.z,yaw:player.rotation.y,island:currentIsland,fruit:currentFruit||'',race:currentRace,appearance:playerAppearance,level:Math.min(MAX_LEVEL,Math.max(1,level)),health:health,maxHealth:maxHealthForLevel(),adminFlying:!!adminFlying,flying:!!flying,openedChests:[...openedTreasureChestIds]};
 }
 function onlineSendToHost(packet){if(onlineHostConnection&&onlineHostConnection.open){try{onlineHostConnection.send(packet);}catch(err){onlineSetStatus('Falha ao enviar dados. Tente reconectar.');}}}
 function onlineBroadcast(packet,exceptId=null){for(const [id,conn] of onlineConnections){if(id!==exceptId&&conn.open){try{conn.send(packet);}catch(err){}}}}
@@ -2058,16 +2225,39 @@ function drawOnlineHealthBar(bar,hp,maxHp=100){
  ctx.fillStyle='#fff';ctx.font='bold 10px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(Math.ceil(hp)+' / '+Math.ceil(maxHp)+' HP',80,6);
  bar.texture.needsUpdate=true;
 }
+function markRemotePart(mesh,part){mesh.userData.appearancePart=part;return mesh;}
+function applyOnlineAvatarAppearance(group,raw){
+ const appearance=normalizePlayerAppearance(raw);
+ group.traverse(o=>{
+  const part=o.userData?.appearancePart;if(!part||!o.material?.color)return;
+  const color=appearance[part];if(color)o.material.color.set(color);
+ });
+ const styles=group.userData.appearanceStyles||{};
+ if(styles.hairCap)styles.hairCap.visible=appearance.hairStyle!=='careca';
+ if(styles.hairSpikes)styles.hairSpikes.visible=appearance.hairStyle==='espigado';
+ if(styles.hairTopper)styles.hairTopper.visible=appearance.hairStyle==='topete';
+ if(styles.neckScarf)styles.neckScarf.visible=appearance.outfitStyle==='marinheiro';
+ if(styles.backpack)styles.backpack.visible=appearance.outfitStyle==='explorador';
+ if(styles.packStrap)styles.packStrap.visible=appearance.outfitStyle==='explorador';
+}
 function createOnlineAvatar(id,name){
  const group=new THREE.Group();
- const shirtColor=onlineHashColor(id);
- const shirtMat=mat(shirtColor,.82),pantsMat=mat(0x303d4a,.92),skinMat=mat(0xd2a17e,.9),bootMat=mat(0x262d31,.95);
- addBox(group,1.05,1.35,.62,shirtMat,0,2.3,0);
- const h=new THREE.Mesh(new THREE.SphereGeometry(.48,14,12),skinMat);h.position.set(0,3.28,0);group.add(h);
- const armL=new THREE.Group();armL.position.set(-.68,2.75,0);group.add(armL);addBox(armL,.3,1.05,.34,shirtMat,0,-.48,0);addBox(armL,.28,.28,.3,skinMat,0,-1.05,0);
- const armR=new THREE.Group();armR.position.set(.68,2.75,0);group.add(armR);addBox(armR,.3,1.05,.34,shirtMat,0,-.48,0);addBox(armR,.28,.28,.3,skinMat,0,-1.05,0);
- const legL=new THREE.Group();legL.position.set(-.29,1.62,0);group.add(legL);addBox(legL,.34,1.55,.38,pantsMat,0,-.78,0);addBox(legL,.38,.25,.58,bootMat,0,-1.55,.08);
- const legR=new THREE.Group();legR.position.set(.29,1.62,0);group.add(legR);addBox(legR,.34,1.55,.38,pantsMat,0,-.78,0);addBox(legR,.38,.25,.58,bootMat,0,-1.55,.08);
+ const shirtMat=mat(onlineHashColor(id),.82),pantsMat=mat(0x303d4a,.92),skinMat=mat(0xd2a17e,.9),bootMat=mat(0x262d31,.95),hairMat=mat(0x302b28,.9);
+ markRemotePart(addBox(group,1.05,1.35,.62,shirtMat,0,2.3,0),'shirt');
+ const h=new THREE.Mesh(new THREE.SphereGeometry(.48,14,12),skinMat);h.position.set(0,3.28,0);markRemotePart(h,'skin');group.add(h);
+ const hairCap=new THREE.Mesh(new THREE.SphereGeometry(.49,14,10,0,Math.PI*2,0,Math.PI*.48),hairMat);hairCap.position.set(0,3.42,0);markRemotePart(hairCap,'hair');group.add(hairCap);
+ const hairSpikes=new THREE.Group();group.add(hairSpikes);
+ for(let i=0;i<4;i++){const spike=new THREE.Mesh(new THREE.ConeGeometry(.16,.55,7),hairMat);const a=i*Math.PI/2;spike.position.set(Math.cos(a)*.22,3.72,Math.sin(a)*.18);hairSpikes.add(spike);}
+ const hairTopper=new THREE.Mesh(new THREE.ConeGeometry(.2,.62,8),hairMat);hairTopper.position.set(0,3.82,.2);hairTopper.rotation.x=-.45;group.add(hairTopper);
+ const armL=new THREE.Group();armL.position.set(-.68,2.75,0);group.add(armL);markRemotePart(addBox(armL,.3,1.05,.34,shirtMat,0,-.48,0),'shirt');markRemotePart(addBox(armL,.28,.28,.3,skinMat,0,-1.05,0),'skin');
+ const armR=new THREE.Group();armR.position.set(.68,2.75,0);group.add(armR);markRemotePart(addBox(armR,.3,1.05,.34,shirtMat,0,-.48,0),'shirt');markRemotePart(addBox(armR,.28,.28,.3,skinMat,0,-1.05,0),'skin');
+ const legL=new THREE.Group();legL.position.set(-.29,1.62,0);group.add(legL);markRemotePart(addBox(legL,.34,1.55,.38,pantsMat,0,-.78,0),'pants');markRemotePart(addBox(legL,.38,.25,.58,bootMat,0,-1.55,.08),'boots');
+ const legR=new THREE.Group();legR.position.set(.29,1.62,0);group.add(legR);markRemotePart(addBox(legR,.34,1.55,.38,pantsMat,0,-.78,0),'pants');markRemotePart(addBox(legR,.38,.25,.58,bootMat,0,-1.55,.08),'boots');
+ const outfitDetails=new THREE.Group();group.add(outfitDetails);
+ const neckScarf=new THREE.Mesh(new THREE.TorusGeometry(.37,.09,8,24),mat(0xd8bd70));neckScarf.rotation.x=Math.PI/2;neckScarf.position.y=2.86;outfitDetails.add(neckScarf);
+ const backpack=addBox(outfitDetails,.78,.95,.32,mat(0x8a6344),0,2.25,-.49);
+ const packStrap=addBox(outfitDetails,.12,1.08,.12,mat(0xd7c18b),0,2.25,-.67);
+ group.userData.appearanceStyles={hairCap,hairSpikes,hairTopper,neckScarf,backpack,packStrap};
  const label=makeLabel(name||'Aventureiro');label.scale.set(5.2,1.3,1);label.position.y=5.15;label.userData.lastName=name||'Aventureiro';group.add(label);
  const healthBar=createOnlineHealthBar(group);drawOnlineHealthBar(healthBar,100);
  scene.add(group);
@@ -2080,9 +2270,11 @@ function onlineApplyRoster(players){
  for(const st of players){
   if(!st||typeof st.id!=='string'||st.id===onlinePeer?.id)continue;
   const id=st.id;seen.add(id);
-  if(!onlineRemoteModels.has(id))onlineRemoteModels.set(id,createOnlineAvatar(id,st.name));
+  if(!onlineRemoteModels.has(id)){const freshModel=createOnlineAvatar(id,st.name);onlineRemoteModels.set(id,freshModel);applyOnlineAvatarAppearance(freshModel.group,st.appearance);freshModel.appearanceSignature=JSON.stringify(normalizePlayerAppearance(st.appearance));}
   const model=onlineRemoteModels.get(id);
-  model.target={x:Number(st.x)||0,y:THREE.MathUtils.clamp(Number(st.y)||PLAYER_Y,PLAYER_Y,160),z:Number(st.z)||0,yaw:Number(st.yaw)||0,island:Math.max(0,Math.min(islands.length-1,Number(st.island)||0)),fruit:String(st.fruit||'').slice(0,24),race:['Tubarão','Coelho','Leão','Pássaro'].includes(st.race)?st.race:'Humano',level:Math.max(1,Math.min(MAX_LEVEL,Math.floor(Number(st.level)||1)))};
+  const incomingAppearance=normalizePlayerAppearance(st.appearance),appearanceSignature=JSON.stringify(incomingAppearance);
+  if(model.appearanceSignature!==appearanceSignature){applyOnlineAvatarAppearance(model.group,incomingAppearance);model.appearanceSignature=appearanceSignature;}
+  model.target={x:Number(st.x)||0,y:THREE.MathUtils.clamp(Number(st.y)||PLAYER_Y,PLAYER_Y,160),z:Number(st.z)||0,yaw:Number(st.yaw)||0,island:Math.max(0,Math.min(islands.length-1,Number(st.island)||0)),fruit:String(st.fruit||'').slice(0,24),race:['Tubarão','Coelho','Leão','Pássaro'].includes(st.race)?st.race:'Humano',appearance:normalizePlayerAppearance(st.appearance),level:Math.max(1,Math.min(MAX_LEVEL,Math.floor(Number(st.level)||1)))};
   model.name=String(st.name||'Aventureiro').slice(0,16);
   model.maxHealth=THREE.MathUtils.clamp(Number(st.maxHealth)||maxHealthForLevel(st.level||1),100,maxHealthForLevel(MAX_LEVEL));model.health=THREE.MathUtils.clamp(Number.isFinite(Number(st.health))?Number(st.health):model.maxHealth,0,model.maxHealth);drawOnlineHealthBar(model.healthBar,model.health,model.maxHealth);
   const label=model.nameLabel;
@@ -2107,7 +2299,7 @@ function onlineHostHandleConnection(conn){
   if(data.type==='state'){
    const st=data.state||{};
    const remoteLevel=Math.max(1,Math.min(MAX_LEVEL,Math.floor(Number(st.level)||1))),remoteMaxHealth=THREE.MathUtils.clamp(Number(st.maxHealth)||maxHealthForLevel(remoteLevel),100,maxHealthForLevel(MAX_LEVEL));
-   onlineRemoteStates.set(conn.peer,{id:conn.peer,name:String(st.name||'Aventureiro').slice(0,16),x:THREE.MathUtils.clamp(Number(st.x)||0,-650,650),y:THREE.MathUtils.clamp(Number(st.y)||PLAYER_Y,PLAYER_Y,180),z:THREE.MathUtils.clamp(Number(st.z)||0,-650,650),yaw:Number(st.yaw)||0,island:Math.max(0,Math.min(islands.length-1,Number(st.island)||0)),fruit:String(st.fruit||'').slice(0,24),race:['Tubarão','Coelho','Leão','Pássaro'].includes(st.race)?st.race:'Humano',level:remoteLevel,maxHealth:remoteMaxHealth,health:THREE.MathUtils.clamp(Number.isFinite(Number(st.health))?Number(st.health):remoteMaxHealth,0,remoteMaxHealth)});
+   onlineRemoteStates.set(conn.peer,{id:conn.peer,name:String(st.name||'Aventureiro').slice(0,16),x:THREE.MathUtils.clamp(Number(st.x)||0,-650,650),y:THREE.MathUtils.clamp(Number(st.y)||PLAYER_Y,PLAYER_Y,180),z:THREE.MathUtils.clamp(Number(st.z)||0,-650,650),yaw:Number(st.yaw)||0,island:Math.max(0,Math.min(islands.length-1,Number(st.island)||0)),fruit:String(st.fruit||'').slice(0,24),race:['Tubarão','Coelho','Leão','Pássaro'].includes(st.race)?st.race:'Humano',appearance:normalizePlayerAppearance(st.appearance),level:remoteLevel,maxHealth:remoteMaxHealth,health:THREE.MathUtils.clamp(Number.isFinite(Number(st.health))?Number(st.health):remoteMaxHealth,0,remoteMaxHealth)});
   }else if(data.type==='action'){
    const seq=Number(data.seq)||0;onlineBroadcast({type:'action',from:conn.peer,action:data.action,detail:data.detail||{},seq});
    onlineShowRemoteAction(conn.peer,data.action,data.detail||{},seq);
@@ -2436,6 +2628,11 @@ async function signOutCloudAccount(){if(!cloudClient||!cloudUser){accountMessage
 async function initCloudAccounts(){
  $('accountOpenButton').addEventListener('click',openAccountModal);$('accountClose').addEventListener('click',closeAccountModal);
  $('playerIdentityCreate').addEventListener('click',createLocalPlayerIdentity);$('playerIdentityLogin').addEventListener('click',loginLocalPlayerIdentity);$('playerIdentityCloud').addEventListener('click',openCloudAccountFromIdentity);
+ $('characterSaveButton').addEventListener('click',saveAndEnterWorld);$('characterCancelButton').addEventListener('click',cancelCharacterCustomizer);
+ $('characterOpenButton').addEventListener('click',openCharacterCustomizer);
+ ['appearanceSkin','appearanceHair','appearanceShirt','appearancePants','appearanceBoots','appearanceHairStyle','appearanceOutfitStyle'].forEach(id=>$(id).addEventListener('input',previewCharacterAppearance));
+ $('appearancePresets').addEventListener('click',e=>{const button=e.target.closest('[data-appearance-preset]');if(button)applyAppearancePreset(button.dataset.appearancePreset);});
+
  $('playerIdentityPassword').addEventListener('keydown',e=>{if(e.key==='Enter')loginLocalPlayerIdentity();});
  $('accountSignUp').addEventListener('click',createCloudAccount);$('accountSignIn').addEventListener('click',signInCloudAccount);$('accountSignOut').addEventListener('click',signOutCloudAccount);
  if(SUPABASE_URL.startsWith('COLE_')||SUPABASE_ANON_KEY.startsWith('COLE_')||!window.supabase?.createClient){accountMessage('Contas no servidor aguardam configuração. O modo online público continua disponível sem conta.');return;}
