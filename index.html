@@ -131,20 +131,41 @@ button{border:0;border-radius:10px;padding:12px 18px;font-weight:bold;cursor:poi
 #onlineConnectionCount{font-size:12px;color:#b9d7cf;margin-top:6px}
 @media(max-width:650px){#onlineCard{padding:15px}#onlineCard .onlineButtons{grid-template-columns:1fr}}
 
+
+#missionCompass{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:4;display:flex;align-items:center;gap:10px;padding:9px 14px;border-radius:13px;background:rgba(15,43,53,.9);border:1px solid #a4d5c5;box-shadow:0 8px 22px #06141b66;min-width:220px;max-width:min(420px,92vw)}
+#compassArrow{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:#274b54;color:#ffe39a;font-size:23px;transform-origin:center;flex:0 0 34px}
+#compassText{font-size:11px;line-height:1.35;color:#e5f5ec;min-width:0}
+#compassText b{display:block;color:#ffe39a;font-size:10px;letter-spacing:.5px}
+#boatDrivingHint{display:none;position:absolute;left:50%;bottom:62px;transform:translateX(-50%);z-index:15;padding:10px 15px;border-radius:12px;background:#102b37ed;border:1px solid #9bcec0;text-align:center;font-size:12px;line-height:1.5;white-space:nowrap}
+#raceShopModal,#tradeModal{position:absolute;inset:0;z-index:42;display:none;align-items:center;justify-content:center;padding:16px;background:#071923df}
+#raceShopCard,#tradeCard{width:min(560px,96vw);max-height:90vh;overflow:auto;padding:22px;border-radius:18px;background:linear-gradient(145deg,#254d52,#142c3b);border:1px solid #8ed8c6;box-shadow:0 18px 60px #000b;text-align:center}
+#raceShopCard h2,#tradeCard h2{margin:0 0 8px;color:#c9f3df}
+#raceShopCard p,#tradeCard p{color:#d3e7e5;font-size:13px;line-height:1.5}
+#raceOptions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:14px 0}
+.raceOption{padding:12px;background:#203f4a;border:1px solid #648e8e;border-radius:11px;color:#effaf5;text-align:left}
+.raceOption small{display:block;margin-top:4px;color:#c2dbd0;font-weight:normal;line-height:1.35}
+#raceShopClose,#tradeCloseButton{width:100%;margin-top:8px;background:#405d66;color:#fff}
+#tradeFruitSelect{width:100%;padding:12px;border-radius:9px;border:1px solid #719a9b;background:#0f2933;color:#fff;margin:9px 0 13px}
+#tradeSubmitButton{width:100%;background:#9bd8ad;color:#183327}
+#tradeStatus{min-height:24px;color:#ffe0a3;font-size:12px;margin:9px 0}
+@media(max-width:700px){#missionCompass{top:110px;min-width:195px;padding:7px 10px}#raceShopCard,#tradeCard{padding:14px}#raceOptions{grid-template-columns:1fr}#boatDrivingHint{bottom:75px;white-space:normal;width:92%}}
 </style>
 </head>
 <body>
 <div id="hud">
  <div class="stat" id="level">Nível: 1</div>
+ <div class="stat" id="raceHud">Raça: Humano</div>
  <div class="stat">❤️ Vida: <span id="health">100</span>/<span id="maxHealth">100</span><div class="bar"><div id="hp" class="fill"></div></div></div>
  <div class="currencyRow"><div class="currencyStat moneyStat">💰 DINHEIRO<b id="money">0</b></div><div class="currencyStat boltStat">🔩 BOLT<b id="bolt">0</b></div></div>
 </div>
 <div id="info"><b id="islandName">ILHA INICIAL</b><br>Abates: <span id="kills">0</span><br>Inimigos próximos: <span id="nearby">0</span><br>🚤 Barcos: 5<br><span id="missionStatus">📜 Missão: nenhuma</span><div id="onlineStatus">🌐 Conectando ao mundo público...</div><div id="onlineConnectionCount">Aguardando jogadores...</div><button id="accountOpenButton" style="margin-top:7px;padding:8px 10px;background:#395f79;color:#fff;width:100%;font-size:11px">👤 CONTA / ENTRAR</button></div>
+<div id="missionCompass"><span id="compassArrow">▲</span><span id="compassText"><b>BÚSSOLA DA MISSÃO</b>Vá até o Mestre das Missões</span></div>
 <div id="skillsPanel"><div id="skillsMastery">SEM FRUTA EQUIPADA</div><b>HABILIDADES — TECLAS 1 A 5</b><div id="skillsList">Você ainda não tem fruta.</div></div>
 <div id="message">Explore as ilhas!</div>
 <div id="hint"></div>
+<div id="boatDrivingHint">🚤 W: acelerar · S: ré/frear · A/D: virar · Espaço: desembarcar perto de uma ilha</div>
 <div id="smokeOverlay"></div>
-<div id="help">WASD: andar · Mouse: câmera · Clique/F: soco · 1–5: habilidades · Q: 1ª habilidade · E: interagir · Espaço: pular · Shift: correr</div>
+<div id="help">WASD: andar · Mouse: câmera · Clique/F: soco · 1–5: habilidades · Q: habilidade/voo Pássaro · E: interagir · Espaço: pular/desembarcar · Shift: correr</div>
 <div id="inventoryToggle"><button id="inventoryOpenButton">🎒 INVENTÁRIO <small>(I)</small></button></div>
 <section id="inventoryPanel" aria-label="Inventário do jogador">
  <div id="inventoryHeader"><span>🎒 INVENTÁRIO</span><button id="inventoryClose" aria-label="Fechar inventário">×</button></div>
@@ -168,10 +189,12 @@ button{border:0;border-radius:10px;padding:12px 18px;font-weight:bold;cursor:poi
  </div>
 </div>
 <div id="fruitDecisionModal"><div id="fruitDecisionCard"><h2>🍈 VOCÊ PEGOU UMA FRUTA!</h2><p id="pickedFruitName">Você está segurando uma fruta.</p><p>O que deseja fazer com ela?</p><button id="eatHeldFruitButton">🍽️ COMER AGORA</button><button id="storeHeldFruitButton">🎒 ARMAZENAR NO INVENTÁRIO</button><button id="dropHeldFruitButton" style="background:#bd8c55;color:#2b2116">⬇️ SOLTAR NO CHÃO</button><small>A fruta ficará visível na mão até você escolher.</small></div></div>
-<div id="boatModal"><div id="boatCard"><h2>🚤 VIAGEM DE BARCO</h2><p>Escolha uma ilha para navegar. O barco leva você até o destino.</p><div id="boatChoices"></div><button id="boatClose">VOLTAR</button></div></div>
+<div id="boatModal"><div id="boatCard"><h2>🚤 PILOTAR BARCO</h2><p>Escolha o destino inicial. Você mesmo vai dirigir: <b>W</b> acelera, <b>S</b> freia/ré, <b>A/D</b> viram e <b>Espaço</b> desembarca perto da ilha.</p><div id="boatChoices"></div><button id="boatClose">VOLTAR</button></div></div>
 <div id="questModal"><div id="questCard"><h2>📜 MESTRE DAS MISSÕES</h2><p id="questDescription">Tenho um trabalho para você.</p><p id="questReward" style="color:#f0d99b;font-weight:bold">Recompensa: 100 moedas</p><button id="questAccept">ACEITAR MISSÃO</button><button id="questClose">FECHAR</button></div></div>
 <div id="shopModal"><div id="shopCard"><h2>🏪 LOJA DE FRUTAS</h2><p>As frutas aparecem com chances diferentes. O estoque muda automaticamente a cada 5 minutos. Ao comprar, você come a fruta imediatamente.</p><div id="shopRotationTimer">⏱️ Próxima rotação em 05:00</div><p id="shopBalance" style="color:#f0d99b;font-weight:bold">Seu dinheiro: 0 moedas</p><div id="shopFruitList"></div><button id="shopClose">FECHAR LOJA</button></div></div>
 
+<div id="raceShopModal"><div id="raceShopCard"><h2>🧬 VENDEDOR DE RAÇAS</h2><p id="raceShopStatus">Escolha uma raça. Comprar outra raça troca a sua atual.</p><div id="raceOptions"></div><button id="raceShopClose">FECHAR</button></div></div>
+<div id="tradeModal"><div id="tradeCard"><h2>🤝 TROCA DE FRUTAS</h2><p id="tradeDescription">Escolha uma fruta para oferecer.</p><select id="tradeFruitSelect" aria-label="Fruta para oferecer"></select><div id="tradeStatus"></div><button id="tradeSubmitButton">ENVIAR PEDIDO</button><button id="tradeCloseButton">CANCELAR</button></div></div>
 <div id="adminCodeModal" class="adminModal" role="dialog" aria-modal="true" aria-labelledby="adminCodeTitle">
  <div class="adminCard" style="max-width:420px">
   <h2 id="adminCodeTitle">🛠 ACESSO ADMINISTRADOR</h2>
@@ -455,7 +478,7 @@ const rightLeg=new THREE.Group();rightLeg.position.set(.29,1.62,0);player.add(ri
 player.position.set(0,PLAYER_Y,17);
 
 // NPC E MESA DE FRUTAS
-const npc=new THREE.Group();scene.add(npc);npc.position.set(0,PLAYER_Y,-14);
+const npc=new THREE.Group();scene.add(npc);npc.position.set(-21,PLAYER_Y,-20);
 addBox(npc,.95,1.35,.6,mat(0x8b7651),0,2.25,0);
 addBox(npc,.32,1.5,.38,mat(0x373e42),-.27,.78,0);addBox(npc,.32,1.5,.38,mat(0x373e42),.27,.78,0);
 const fruitNpcLeftArm=new THREE.Group();fruitNpcLeftArm.position.set(-.62,2.72,0);npc.add(fruitNpcLeftArm);addBox(fruitNpcLeftArm,.3,1.05,.34,mat(0x8b7651),0,-.43,0);addBox(fruitNpcLeftArm,.27,.25,.29,mat(0xc99a78),0,-.98,0);
@@ -464,12 +487,12 @@ const npcHead=new THREE.Mesh(new THREE.SphereGeometry(.46,16,12),mat(0xc99a78));
 addBox(npc,1.15,.18,.8,mat(0x46392e),0,3.68,0);
 const hatTop=new THREE.Mesh(new THREE.CylinderGeometry(.35,.35,.45,12),mat(0x564735));hatTop.position.set(0,3.94,0);npc.add(hatTop);
 for(const x of [-.15,.15]){const eye=new THREE.Mesh(new THREE.SphereGeometry(.05,8,8),mat(0x202020));eye.position.set(x,3.28,.41);npc.add(eye);}
-const npcLabel=makeLabel('MESTRE DAS FRUTAS');npcLabel.position.set(0,6.6,-14);scene.add(npcLabel);addStaticNpcHealthBar(npc,4.55);
-const table=addBox(scene,4.8,.35,2.1,mat(0x75543b),0,2.55,-9.3); // balcão
-for(const x of [-1.8,1.8])for(const z of [-.65,.65])addBox(scene,.22,1.15,.22,mat(0x62462f),x,1.85,-9.3+z);
+const npcLabel=makeLabel('MESTRE DA ROLETA');npcLabel.position.set(-21,6.6,-20);scene.add(npcLabel);addStaticNpcHealthBar(npc,4.55);
+const table=addBox(scene,4.8,.35,2.1,mat(0x75543b),-21,2.55,-15.3); // balcão
+for(const x of [-1.8,1.8])for(const z of [-.65,.65])addBox(scene,.22,1.15,.22,mat(0x62462f),-21+x,1.85,-15.3+z);
 
 // NPC que entrega missões e recompensa o jogador em moedas.
-const questNpc=new THREE.Group();scene.add(questNpc);questNpc.position.set(10,PLAYER_Y,-13);
+const questNpc=new THREE.Group();scene.add(questNpc);questNpc.position.set(-14,PLAYER_Y,-5);
 const questCoat=mat(0x58784e),questPants=mat(0x35433b),questSkin=mat(0xc99a78),questBoots=mat(0x292d2b);
 addBox(questNpc,1.0,1.4,.62,questCoat,0,2.25,0);
 const questHead=new THREE.Mesh(new THREE.SphereGeometry(.46,16,12),questSkin);questHead.position.set(0,3.28,0);questNpc.add(questHead);
@@ -480,23 +503,24 @@ const questLeftArm=new THREE.Group();questLeftArm.position.set(-.67,2.75,0);ques
 const questRightArm=new THREE.Group();questRightArm.position.set(.67,2.75,0);questNpc.add(questRightArm);addBox(questRightArm,.32,1.1,.35,questCoat,0,-.48,0);addBox(questRightArm,.28,.28,.3,questSkin,0,-1.06,0);
 const questLeftLeg=new THREE.Group();questLeftLeg.position.set(-.29,1.55,0);questNpc.add(questLeftLeg);addBox(questLeftLeg,.36,1.4,.4,questPants,0,-.69,0);addBox(questLeftLeg,.4,.24,.58,questBoots,0,-1.42,.08);
 const questRightLeg=new THREE.Group();questRightLeg.position.set(.29,1.55,0);questNpc.add(questRightLeg);addBox(questRightLeg,.36,1.4,.4,questPants,0,-.69,0);addBox(questRightLeg,.4,.24,.58,questBoots,0,-1.42,.08);
-const questLabel=makeLabel('MESTRE DAS MISSÕES');questLabel.position.set(10,6.5,-13);scene.add(questLabel);addStaticNpcHealthBar(questNpc,4.55);
+const questLabel=makeLabel('MESTRE DAS MISSÕES');questLabel.position.set(-14,6.5,-5);scene.add(questLabel);addStaticNpcHealthBar(questNpc,4.55);
 
 // Vendedor de frutas: NPC amigável da loja, próximo aos outros mestres.
 // Loja construída: o vendedor fica dentro de uma pequena casa com entrada aberta.
-const fruitShopBuilding=new THREE.Group();fruitShopBuilding.position.set(-24,1.72,-13);
+const fruitShopBuilding=new THREE.Group();fruitShopBuilding.position.set(-14,1.72,-18);
 const shopWall=mat(0xcbb58d),shopRoofMat=mat(0x72503b),shopTrim=mat(0x59412f);
-addBox(fruitShopBuilding,10,.35,9,shopTrim,0,.18,0);
-addBox(fruitShopBuilding,.45,5.3,9,shopWall,-5,2.9,0);
-addBox(fruitShopBuilding,.45,5.3,9,shopWall,5,2.9,0);
-addBox(fruitShopBuilding,10,5.3,.45,shopWall,0,2.9,-4.5);
-// Fachada dividida: abertura central para entrar.
-addBox(fruitShopBuilding,3.4,5.3,.45,shopWall,-3.3,2.9,4.5);
-addBox(fruitShopBuilding,3.4,5.3,.45,shopWall,3.3,2.9,4.5);
-addBox(fruitShopBuilding,11,.55,10,shopRoofMat,0,5.75,0);
-const shopSign=makeLabel('VENDEDOR DE FRUTAS');shopSign.scale.set(9,2,1);shopSign.position.set(0,6.9,4.9);fruitShopBuilding.add(shopSign);
+// Salão amplo: 28 x 20, com espaço para os dois vendedores e balcões.
+addBox(fruitShopBuilding,28,.35,20,shopTrim,0,.18,0);
+addBox(fruitShopBuilding,.55,5.3,20,shopWall,-14,2.9,0);
+addBox(fruitShopBuilding,.55,5.3,20,shopWall,14,2.9,0);
+addBox(fruitShopBuilding,28,5.3,.55,shopWall,0,2.9,-10);
+// A fachada tem uma entrada central larga.
+addBox(fruitShopBuilding,8.5,5.3,.55,shopWall,-9.75,2.9,10);
+addBox(fruitShopBuilding,8.5,5.3,.55,shopWall,9.75,2.9,10);
+addBox(fruitShopBuilding,29,.55,21,shopRoofMat,0,5.75,0);
+const shopSign=makeLabel('CASA DAS FRUTAS');shopSign.scale.set(12,2.3,1);shopSign.position.set(0,6.9,10.4);fruitShopBuilding.add(shopSign);
 scene.add(fruitShopBuilding);
-const shopNpc=new THREE.Group();scene.add(shopNpc);shopNpc.position.set(-24,PLAYER_Y,-14);
+const shopNpc=new THREE.Group();scene.add(shopNpc);shopNpc.position.set(-7,PLAYER_Y,-20);
 const shopCoat=mat(0x426b69),shopPants=mat(0x37454b),shopSkin=mat(0xc99a78),shopGold=mat(0xd3ad60);
 addBox(shopNpc,1.0,1.4,.62,shopCoat,0,2.25,0);
 const shopHead=new THREE.Mesh(new THREE.SphereGeometry(.46,16,12),shopSkin);shopHead.position.set(0,3.28,0);shopNpc.add(shopHead);
@@ -507,7 +531,19 @@ const shopArmL=new THREE.Group();shopArmL.position.set(-.67,2.75,0);shopNpc.add(
 const shopArmR=new THREE.Group();shopArmR.position.set(.67,2.75,0);shopNpc.add(shopArmR);addBox(shopArmR,.32,1.1,.35,shopCoat,0,-.48,0);addBox(shopArmR,.28,.28,.3,shopSkin,0,-1.06,0);
 const shopLegL=new THREE.Group();shopLegL.position.set(-.29,1.55,0);shopNpc.add(shopLegL);addBox(shopLegL,.36,1.4,.4,shopPants,0,-.69,0);addBox(shopLegL,.4,.24,.58,mat(0x292d2e),0,-1.42,.08);
 const shopLegR=new THREE.Group();shopLegR.position.set(.29,1.55,0);shopNpc.add(shopLegR);addBox(shopLegR,.36,1.4,.4,shopPants,0,-.69,0);addBox(shopLegR,.4,.24,.58,mat(0x292d2e),0,-1.42,.08);
-const shopLabel=makeLabel('VENDEDOR DE FRUTAS');shopLabel.position.set(-24,6.5,-14);scene.add(shopLabel);addStaticNpcHealthBar(shopNpc,4.55);
+const shopLabel=makeLabel('VENDEDOR DE FRUTAS');shopLabel.position.set(-7,6.5,-20);scene.add(shopLabel);addStaticNpcHealthBar(shopNpc,4.55);
+
+
+const raceNpc=new THREE.Group();scene.add(raceNpc);raceNpc.position.set(-33,PLAYER_Y,-7);
+const raceCoat=mat(0x4d657c),raceSkin=mat(0xc99a78),raceGold=mat(0xd8b65e);
+addBox(raceNpc,1.05,1.45,.65,raceCoat,0,2.25,0);
+const raceHead=new THREE.Mesh(new THREE.SphereGeometry(.47,16,12),raceSkin);raceHead.position.y=3.28;raceNpc.add(raceHead);
+addBox(raceNpc,1.2,.18,.85,raceGold,0,3.65,0);
+const raceArmL=new THREE.Group();raceArmL.position.set(-.68,2.75,0);raceNpc.add(raceArmL);addBox(raceArmL,.32,1.1,.35,raceCoat,0,-.48,0);
+const raceArmR=new THREE.Group();raceArmR.position.set(.68,2.75,0);raceNpc.add(raceArmR);addBox(raceArmR,.32,1.1,.35,raceCoat,0,-.48,0);
+const raceLegL=new THREE.Group();raceLegL.position.set(-.29,1.55,0);raceNpc.add(raceLegL);addBox(raceLegL,.36,1.4,.4,mat(0x303d4a),0,-.69,0);
+const raceLegR=new THREE.Group();raceLegR.position.set(.29,1.55,0);raceNpc.add(raceLegR);addBox(raceLegR,.36,1.4,.4,mat(0x303d4a),0,-.69,0);
+const raceLabel=makeLabel('VENDEDOR DE RAÇAS');raceLabel.position.set(-33,6.5,-7);scene.add(raceLabel);addStaticNpcHealthBar(raceNpc,4.55);
 
 const fruitData=[
  {name:'Papel',chance:17,color:0xe2ddcd,secondary:0xb7c9c1,skills:[
@@ -887,11 +923,20 @@ function updateEnemyProjectiles(delta){
 
 // ESTADO DO JOGO
 const MAX_LEVEL=700;
+const RACE_CATALOG=[
+ {name:'Tubarão',price:800,icon:'🦈',description:'Nada rápido e não sofre dano na água.'},
+ {name:'Coelho',price:700,icon:'🐇',description:'Corre 35% mais rápido em terra.'},
+ {name:'Leão',price:1200,icon:'🦁',description:'Recebe 1% de bônus de dano por nível.'},
+ {name:'Pássaro',price:1000,icon:'🪽',description:'Aperte Q para voar durante 10 segundos.'}
+];
+let currentRace='Humano';
+try{const savedRace=localStorage.getItem('fruitAdventureRace');if(['Tubarão','Coelho','Leão','Pássaro'].includes(savedRace))currentRace=savedRace;}catch(e){}
 let currentFruit=null,money=0,bolt=0,xp=0,level=1,health=100,kills=0;
 try{level=Math.min(MAX_LEVEL,Math.max(1,Math.floor(Number(localStorage.getItem('fruitAdventureLevel'))||1)));xp=Math.max(0,Math.min(99,Math.floor(Number(localStorage.getItem('fruitAdventureXP'))||0)));}catch(err){}
 function levelMultiplierFor(value=level){const safeLevel=Math.max(1,Math.min(MAX_LEVEL,Math.floor(Number(value)||1)));return 1+(safeLevel-1)*.01;}
+function damageMultiplierFor(value=level,race=currentRace){const safeLevel=Math.max(1,Math.min(MAX_LEVEL,Math.floor(Number(value)||1)));return 1+(safeLevel-1)*(race==='Leão'?.01:.005);}
 function maxHealthForLevel(value=level){return Math.round(100*levelMultiplierFor(value));}
-function damageForLevel(baseDamage,value=level){return Math.round(Math.max(0,Number(baseDamage)||0)*levelMultiplierFor(value)*100)/100;}
+function damageForLevel(baseDamage,value=level,race=currentRace){return Math.round(Math.max(0,Number(baseDamage)||0)*damageMultiplierFor(value,race)*100)/100;}
 health=maxHealthForLevel(level);
 try{const savedBolt=Number(localStorage.getItem('fruitAdventureBolt')||0);if(Number.isFinite(savedBolt))bolt=Math.max(0,Math.floor(savedBolt));}catch(err){}
 function saveBolt(){try{localStorage.setItem('fruitAdventureBolt',String(bolt));}catch(err){}}
@@ -909,7 +954,7 @@ function addExperience(amount){
 let activeQuest=null,completedQuests=0;
 let currentIsland=0,yaw=0,pitch=.28,locked=false,jumping=false,velocityY=0;
 let attackCooldown=0,messageTime=0,modalOpen=false,walkTime=0;
-let flying=false,flightTimer=0,flightBoard=null,sugarTimer=0,sugarAura=null,smokeTimer=0;
+let flying=false,flightTimer=0,flightBoard=null,sugarTimer=0,sugarAura=null,smokeTimer=0,waterDamageTimer=0;
 let transformTimer=0,transformModel=null,transformHitTimer=0,transformBreakTimer=0,transformationFruit='',transformationDamage=40,transformationSkillIndex=3;
 let travelState=null,travelBoat=null;
 const keys={},projectiles=[],visualEffects=[];
@@ -1011,7 +1056,7 @@ function applyAdminLevel(){
  else health=Math.min(newMaxHealth,health);
  try{localStorage.setItem('fruitAdventureLevel',String(level));localStorage.setItem('fruitAdventureXP','0');localStorage.setItem('fruitAdventureHealth',String(health));}catch(err){}
  $('adminLevelInput').value=String(level);
- updateHUD();updateAdminButtons();message('⭐ Nível '+level+' aplicado! Vida: '+Math.ceil(health)+'/'+newMaxHealth+' • Dano: +'+Math.round((levelMultiplierFor(level)-1)*100)+'%.');
+ updateHUD();updateAdminButtons();message('⭐ Nível '+level+' aplicado! Vida: '+Math.ceil(health)+'/'+newMaxHealth+' • Dano: +'+Math.round((damageMultiplierFor(level)-1)*100)+'%.');
  if(typeof queueCloudSave==='function')queueCloudSave();
 }
 function updateAdminButtons(){
@@ -1170,8 +1215,51 @@ function buyFruit(name){
 $('shopFruitList').addEventListener('click',e=>{const button=e.target.closest('[data-buy-fruit]');if(button)buyFruit(button.dataset.buyFruit);});
 $('shopClose').addEventListener('click',closeShop);
 
+
+function openRaceShop(){
+ modalOpen=true;$('raceShopModal').style.display='flex';$('raceShopStatus').textContent='Raça atual: '+currentRace+'. Comprar uma raça diferente troca sua raça atual.';
+ const list=$('raceOptions');list.innerHTML='';
+ for(const race of RACE_CATALOG){
+  const button=document.createElement('button');button.className='raceOption';
+  button.innerHTML='<b>'+race.icon+' '+race.name+' — '+race.price.toLocaleString('pt-BR')+' moedas</b><small>'+race.description+'</small>';
+  button.addEventListener('click',()=>buyRace(race.name));list.appendChild(button);
+ }
+ if(document.pointerLockElement)document.exitPointerLock();
+}
+function closeRaceShop(){modalOpen=false;$('raceShopModal').style.display='none';}
+function buyRace(name){
+ const race=RACE_CATALOG.find(r=>r.name===name);if(!race)return;
+ if(currentRace===name){$('raceShopStatus').textContent='Você já usa a raça '+name+'.';return;}
+ if(money<race.price){$('raceShopStatus').textContent='Dinheiro insuficiente. Você precisa de '+race.price.toLocaleString('pt-BR')+' moedas.';return;}
+ money-=race.price;currentRace=name;
+ try{localStorage.setItem('fruitAdventureRace',currentRace);}catch(e){}
+ updateHUD();$('raceShopStatus').textContent='✅ Raça '+name+' comprada e equipada! '+race.description;
+ message('🧬 NOVA RAÇA: '+name.toUpperCase()+'!');
+}
+$('raceShopClose').addEventListener('click',closeRaceShop);
+
+
+function updateMissionCompass(){
+ const arrow=$('compassArrow'),label=$('compassText');if(!arrow||!label)return;
+ let targetX=questNpc.position.x,targetZ=questNpc.position.z,title='MESTRE DAS MISSÕES';
+ if(activeQuest){
+  const land=islands[activeQuest.islandIndex];title=land.name+' • '+activeQuest.progress+'/'+activeQuest.target;
+  if(currentIsland===activeQuest.islandIndex){
+   let nearest=null,best=Infinity;
+   for(const enemy of enemies){if(!enemy.userData.alive||enemy.userData.islandIndex!==activeQuest.islandIndex)continue;const d=player.position.distanceTo(enemy.position);if(d<best){best=d;nearest=enemy;}}
+   if(nearest){targetX=nearest.position.x;targetZ=nearest.position.z;}else{targetX=land.x;targetZ=land.z;}
+  }else{targetX=land.x;targetZ=land.z;}
+ }
+ const dx=targetX-player.position.x,dz=targetZ-player.position.z;
+ const bearing=Math.atan2(-dx,-dz),relative=bearing-yaw;
+ arrow.style.transform='rotate('+(relative*180/Math.PI)+'deg)';
+ const distance=Math.round(Math.hypot(dx,dz));
+ label.innerHTML='<b>BÚSSOLA DA MISSÃO</b>'+title+' • '+distance+' m';
+}
+
 function updateHUD(){
  $('level').textContent='Nível: '+level;
+ $('raceHud').textContent='Raça: '+currentRace;
  $('health').textContent=Math.ceil(health);
  $('maxHealth').textContent=maxHealthForLevel().toLocaleString('pt-BR');
  $('money').textContent=money.toLocaleString('pt-BR');
@@ -1182,7 +1270,7 @@ function updateHUD(){
  $('nearby').textContent=enemies.filter(e=>e.userData.alive&&e.userData.islandIndex===currentIsland&&player.position.distanceTo(e.position)<18).length;
  if(activeQuest){$('missionStatus').textContent='📜 Missão: '+islands[activeQuest.islandIndex].name+' — '+activeQuest.progress+'/'+activeQuest.target;}
  else{$('missionStatus').textContent='📜 Missões concluídas: '+completedQuests;}
- updateMasteryUI();
+ updateMasteryUI();updateMissionCompass();
  if(adminUnlocked&&adminUIOpen)updateAdminButtons();
  if(inventoryOpen)renderInventory();
  if(typeof queueCloudSave==='function')queueCloudSave();
@@ -1220,7 +1308,7 @@ function refreshFruitSpinPrice(){const cost=fruitSpinCost();const formatted=cost
 function openFruitNPC(){modalOpen=true;$('modal').style.display='flex';refreshFruitSpinPrice();const cost=fruitSpinCost().toLocaleString('pt-BR');$('spinResult').textContent=currentFruit?'Fruta equipada: '+currentFruit+' • Maestria: '+currentMastery()+'. Este giro custa '+cost+' moedas.':'Você ainda não tem fruta. Este giro custa '+cost+' moedas.';if(document.pointerLockElement)document.exitPointerLock();}
 function closeFruitNPC(){modalOpen=false;$('modal').style.display='none';}
 function closeBoatMenu(){modalOpen=false;$('boatModal').style.display='none';}
-function closeModals(){if(pendingFruit)return;if($('accountModal').style.display==='flex'){closeAccountModal();return;}if(adminUIOpen){closeAdminUI();return;}closeFruitNPC();closeBoatMenu();closeQuestNPC();closeShop();}
+function closeModals(){if(pendingFruit)return;if($('accountModal').style.display==='flex'){closeAccountModal();return;}if(adminUIOpen){closeAdminUI();return;}closeRaceShop();closeTradeModal();closeFruitNPC();closeBoatMenu();closeQuestNPC();closeShop();}
 function spinFruit(){
  const cost=fruitSpinCost();
  if(money<cost){$('spinResult').textContent='Você precisa de '+cost.toLocaleString('pt-BR')+' moedas para este giro. Derrote inimigos ou abra baús para ganhar dinheiro.';return;}
@@ -1243,17 +1331,43 @@ function openBoatMenu(){
 function startBoatTrip(destination){
  if(travelState)return;
  const from=boatStations[currentIsland],to=boatStations[destination];if(!from||!to)return;
- closeBoatMenu();travelBoat=makeBoatModel();travelBoat.position.copy(from.position);travelBoat.rotation.y=from.angle;scene.add(travelBoat);
- const start=from.position.clone(),end=to.position.clone();travelState={from:start,to:end,destination,elapsed:0,duration:Math.max(3.5,start.distanceTo(end)/28)};
- player.visible=false;message('🚤 Navegando para '+islands[destination].name+'...');
+ closeBoatMenu();travelBoat=makeBoatModel();travelBoat.position.copy(from.position);
+ const heading=Math.atan2(to.position.x-from.position.x,to.position.z-from.position.z);
+ travelBoat.rotation.y=heading;scene.add(travelBoat);
+ travelState={destination,heading,speed:0,elapsed:0};player.visible=false;
+ $('boatDrivingHint').style.display='block';message('🚤 Barco pronto! Use WASD para pilotar até '+islands[destination].name+'.');
+}
+function finishBoatAtIsland(index){
+ const land=islands[index],station=boatStations[index],angle=station.angle;
+ if(travelBoat){scene.remove(travelBoat);travelBoat=null;}travelState=null;player.visible=true;$('boatDrivingHint').style.display='none';
+ currentIsland=index;player.position.set(land.x+Math.sin(angle)*(land.r-12),PLAYER_Y,land.z+Math.cos(angle)*(land.r-12));player.rotation.y=angle+Math.PI;
+ message('🏝️ Você chegou à '+land.name+'!');updateHUD();
+}
+function tryDisembarkBoat(){
+ if(!travelState||!travelBoat)return;
+ let best=-1,bestDist=Infinity;
+ islands.forEach((land,index)=>{const d=Math.hypot(travelBoat.position.x-land.x,travelBoat.position.z-land.z);if(d<=land.r+12&&d<bestDist){best=index;bestDist=d;}});
+ if(best<0){message('Chegue perto de uma ilha antes de desembarcar.');return;}
+ finishBoatAtIsland(best);
 }
 function updateBoatTravel(delta){
  if(!travelState||!travelBoat)return;
- travelState.elapsed+=delta;const t=Math.min(1,travelState.elapsed/travelState.duration),ease=t*t*(3-2*t);
- travelBoat.position.lerpVectors(travelState.from,travelState.to,ease);travelBoat.position.y=.18+Math.sin(travelState.elapsed*4)*.12+Math.sin(t*Math.PI)*.7;
- const dx=travelState.to.x-travelState.from.x,dz=travelState.to.z-travelState.from.z;travelBoat.rotation.y=Math.atan2(dx,dz);
- if(t>=1){const dest=travelState.destination,land=islands[dest],a=boatStations[dest].angle;scene.remove(travelBoat);travelBoat=null;travelState=null;player.visible=true;currentIsland=dest;
-  player.position.set(land.x+Math.sin(a)*(land.r-11),PLAYER_Y,land.z+Math.cos(a)*(land.r-11));player.rotation.y=a+Math.PI;message('Você chegou à '+land.name+'!');updateHUD();}
+ travelState.elapsed+=delta;
+ const steer=(keys.KeyA||keys.ArrowLeft?1:0)-(keys.KeyD||keys.ArrowRight?1:0);
+ const acceleration=(keys.KeyW||keys.ArrowUp?1:0)-(keys.KeyS||keys.ArrowDown?1:0);
+ travelState.heading+=steer*delta*(.65+Math.min(1,Math.abs(travelState.speed)/10)*1.25);
+ if(acceleration>0)travelState.speed=Math.min(24,travelState.speed+12*delta);
+ else if(acceleration<0)travelState.speed=Math.max(-7,travelState.speed-16*delta);
+ else travelState.speed*=Math.pow(.985,delta*60);
+ travelBoat.rotation.y=travelState.heading;
+ travelBoat.position.x+=Math.sin(travelState.heading)*travelState.speed*delta;
+ travelBoat.position.z+=Math.cos(travelState.heading)*travelState.speed*delta;
+ travelBoat.position.x=THREE.MathUtils.clamp(travelBoat.position.x,-780,780);
+ travelBoat.position.z=THREE.MathUtils.clamp(travelBoat.position.z,-780,780);
+ travelBoat.position.y=.18+Math.sin(travelState.elapsed*4)*.12;
+ const destination=islands[travelState.destination];
+ const distance=Math.hypot(travelBoat.position.x-destination.x,travelBoat.position.z-destination.z);
+ if(distance<=destination.r+8){finishBoatAtIsland(travelState.destination);}
 }
 function interact(){
  if(!onlineActive){message("Aguarde a conexão com o mundo público.");return;}
@@ -1261,9 +1375,11 @@ function interact(){
  if(modalOpen){closeModals();return;}
  const fruitDrop=nearestFruitDrop(5.2);if(fruitDrop){pickUpFruitDrop(fruitDrop);return;}
  const chest=nearestTreasureChest(6.2);if(chest){openTreasureChest(chest);return;}
- if(currentIsland===0&&player.position.distanceTo(shopNpc.position)<8){openShop();return;}
- if(currentIsland===0&&player.position.distanceTo(npc.position)<5.8){openFruitNPC();return;}
- if(currentIsland===0&&player.position.distanceTo(questNpc.position)<5.8){openQuestNPC();return;}
+ if(currentIsland===0&&player.position.distanceTo(shopNpc.position)<7){openShop();return;}
+ if(currentIsland===0&&player.position.distanceTo(npc.position)<7){openFruitNPC();return;}
+ if(currentIsland===0&&player.position.distanceTo(questNpc.position)<6){openQuestNPC();return;}
+ if(currentIsland===0&&player.position.distanceTo(raceNpc.position)<7){openRaceShop();return;}
+ const otherPlayer=nearestRemotePlayer(9);if(otherPlayer){openTradeWith(otherPlayer.id);return;}
  const boat=nearestBoat();if(boat){openBoatMenu();return;}
  message('Aproxime-se de uma fruta, NPC ou barco e aperte E.');
 }
@@ -1372,7 +1488,7 @@ function damageEnemy(e,amount,masteryReward=0,killMasteryReward=0){
   if(e.userData.isBoss){money+=250+e.userData.islandIndex*150;bolt+=50+e.userData.islandIndex*25;}
   const rewardText=e.userData.isBoss?'👑 CHEFE DERROTADO! • Recompensa especial':'💰 +25 moedas • 🔩 +10 Bolt';
   const masteryText=killMasteryReward>0&&currentFruit?' • +'+killMasteryReward+' maestria de '+currentFruit:'';
-  if(leveledUp){message('⭐ Nível '+level+'! Vida máxima: '+maxHealthForLevel()+' • Dano: +'+Math.round((levelMultiplierFor()-1)*100)+'%'+(level===MAX_LEVEL?' • NÍVEL MÁXIMO ALCANÇADO!':'')+' '+rewardText+masteryText);}
+  if(leveledUp){message('⭐ Nível '+level+'! Vida máxima: '+maxHealthForLevel()+' • Dano: +'+Math.round((damageMultiplierFor()-1)*100)+'%'+(level===MAX_LEVEL?' • NÍVEL MÁXIMO ALCANÇADO!':'')+' '+rewardText+masteryText);}
   else if(questCompleted)message('🏆 Inimigo derrotado! '+rewardText+masteryText);
   else message('Inimigo derrotado! '+rewardText+masteryText);
   updateHUD();
@@ -1672,7 +1788,20 @@ function activateCatalogSkill(skill,target,key){
  }
  message('Essa habilidade ainda não está disponível.');
 }
-function useFirstSkill(){activateSkill(0);}
+function startBirdFlight(){
+ if(flying||adminFlying){message('Você já está voando.');return;}
+ flying=true;flightTimer=10;flightBoard=new THREE.Group();
+ const featherMat=mat(0xe8e3d5,.8),goldFeather=mat(0xc8ad72,.8);
+ for(const side of [-1,1]){
+  const wing=new THREE.Group();wing.position.set(side*.35,.15,0);wing.rotation.z=side*.16;
+  const main=new THREE.Mesh(new THREE.BoxGeometry(2.2,.16,.65),featherMat);main.position.x=side*1.1;main.rotation.z=side*.12;wing.add(main);
+  for(let i=0;i<4;i++){const feather=new THREE.Mesh(new THREE.BoxGeometry(1.25,.12,.22),i===0?goldFeather:featherMat);feather.position.set(side*(.65+i*.32),-.08,i*.17-.25);feather.rotation.z=side*.18;wing.add(feather);}
+  flightBoard.add(wing);
+ }
+ flightBoard.position.set(0,2.2,.1);player.add(flightBoard);
+ message('🪽 RAÇA PÁSSARO: voo ativado por 10 segundos!');
+}
+function useFirstSkill(){if(currentRace==='Pássaro'){startBirdFlight();return;}activateSkill(0);}
 function updateProjectiles(delta){
  for(let i=projectiles.length-1;i>=0;i--){const p=projectiles[i];p.obj.position.addScaledVector(p.dir,p.speed*delta);p.obj.rotation.y+=delta*4;p.life-=delta;let hit=false;
   for(const e of enemies){if(e.userData.alive&&e.userData.islandIndex===currentIsland&&p.obj.position.distanceTo(e.position.clone().add(new THREE.Vector3(0,2,0)))<2.5){damageEnemy(e,p.damage,p.masteryReward);hit=true;break;}}
@@ -1681,11 +1810,19 @@ function updateProjectiles(delta){
 }
 function nearestIslandAt(x,z){let best=0,bestD=Infinity;islands.forEach((land,i)=>{const d=Math.hypot(x-land.x,z-land.z);if(d<bestD){bestD=d;best=i;}});return best;}
 function finishFlight(){flying=false;if(flightBoard){player.remove(flightBoard);flightBoard=null;}const idx=nearestIslandAt(player.position.x,player.position.z),land=islands[idx];currentIsland=idx;const dx=player.position.x-land.x,dz=player.position.z-land.z,d=Math.hypot(dx,dz),lim=land.r-7;if(d>lim){player.position.x=land.x+dx/d*lim;player.position.z=land.z+dz/d*lim;}player.position.y=PLAYER_Y;message('O voo terminou. Você pousou na '+land.name+'.');updateHUD();}
+function isPositionOnIsland(x,z){
+ return islands.findIndex(land=>Math.hypot(x-land.x,z-land.z)<=land.r*.9);
+}
 function movePlayer(delta){
  if(!onlineActive||modalOpen||inventoryOpen||travelState)return;
  let f=0,s=0;if(keys.KeyW||keys.ArrowUp)f++;if(keys.KeyS||keys.ArrowDown)f--;if(keys.KeyD||keys.ArrowRight)s++;if(keys.KeyA||keys.ArrowLeft)s--;
  const moving=f!==0||s!==0;
- if(moving){const len=Math.hypot(f,s);f/=len;s/=len;let speed=(keys.ShiftLeft||keys.ShiftRight)?13:8;if(flying||adminFlying)speed=17;if(sugarTimer>0)speed=18;if(transformTimer>0)speed=22;
+ const landAtStart=isPositionOnIsland(player.position.x,player.position.z),inWater=landAtStart<0;
+ if(moving){
+  const len=Math.hypot(f,s);f/=len;s/=len;let speed=(keys.ShiftLeft||keys.ShiftRight)?13:8;
+  if(flying||adminFlying)speed=17;if(sugarTimer>0)speed=18;if(transformTimer>0)speed=22;
+  if(currentRace==='Coelho')speed*=1.35;
+  if(inWater)speed*=currentRace==='Tubarão'?1.35:.72;
   const dx=-Math.sin(yaw)*f+Math.cos(yaw)*s,dz=-Math.cos(yaw)*f-Math.sin(yaw)*s;
   player.position.x+=dx*speed*delta;player.position.z+=dz*speed*delta;player.rotation.y=Math.atan2(dx,dz);walkTime+=delta*10;
   leftLeg.rotation.x=Math.sin(walkTime)*.55;rightLeg.rotation.x=-Math.sin(walkTime)*.55;leftArm.rotation.x=-Math.sin(walkTime)*.35;rightArm.rotation.x=Math.sin(walkTime)*.35;
@@ -1693,14 +1830,22 @@ function movePlayer(delta){
  if(adminFlying){
   const vertical=(keys.Space?1:0)-((keys.KeyC||keys.ControlLeft)?1:0);
   player.position.y=THREE.MathUtils.clamp(player.position.y+vertical*18*delta,4,150);
-  player.position.x=THREE.MathUtils.clamp(player.position.x,-420,420);
-  player.position.z=THREE.MathUtils.clamp(player.position.z,-420,420);
+  player.position.x=THREE.MathUtils.clamp(player.position.x,-780,780);player.position.z=THREE.MathUtils.clamp(player.position.z,-780,780);
   currentIsland=nearestIslandAt(player.position.x,player.position.z);
- }else if(flying){player.position.y=9+Math.sin(performance.now()*.004)*.45;flightTimer-=delta;if(flightTimer<=0)finishFlight();currentIsland=nearestIslandAt(player.position.x,player.position.z);}
- else{
-  const land=islands[currentIsland],dx=player.position.x-land.x,dz=player.position.z-land.z,r=Math.hypot(dx,dz),limit=land.r-3.8;
-  if(r>limit){player.position.x=land.x+dx/r*limit;player.position.z=land.z+dz/r*limit;}
-  if(jumping){player.position.y+=velocityY*delta;velocityY-=24*delta;if(player.position.y<=PLAYER_Y){player.position.y=PLAYER_Y;jumping=false;velocityY=0;}}
+ }else if(flying){
+  player.position.y=9+Math.sin(performance.now()*.004)*.45;flightTimer-=delta;
+  if(flightTimer<=0)finishFlight();
+  currentIsland=nearestIslandAt(player.position.x,player.position.z);
+ }else{
+  const landIndex=isPositionOnIsland(player.position.x,player.position.z);
+  if(landIndex>=0){currentIsland=landIndex;waterDamageTimer=0;if(jumping){player.position.y+=velocityY*delta;velocityY-=24*delta;if(player.position.y<=PLAYER_Y){player.position.y=PLAYER_Y;jumping=false;velocityY=0;}}else player.position.y=PLAYER_Y;}
+  else{
+   jumping=false;velocityY=0;player.position.y=PLAYER_Y-.22;
+   if(currentFruit&&currentRace!=='Tubarão'){
+    waterDamageTimer-=delta;
+    if(waterDamageTimer<=0){playerTakeDamage(8);waterDamageTimer=1;message('🌊 A fruta pesa na água! Você perdeu 8 de vida. A raça Tubarão não sofre esse efeito.');}
+   }else waterDamageTimer=0;
+  }
  }
 }
 function updateSugar(delta){
@@ -1766,10 +1911,10 @@ function updateEnemies(delta){
  }
 }
 function updateCamera(){
- if(travelState&&travelBoat){camera.position.set(travelBoat.position.x+7,travelBoat.position.y+8,travelBoat.position.z+12);camera.lookAt(travelBoat.position.x,travelBoat.position.y+1,travelBoat.position.z);return;}
+ if(travelState&&travelBoat){const h=travelState.heading;camera.position.set(travelBoat.position.x-Math.sin(h)*13+5,travelBoat.position.y+8,travelBoat.position.z-Math.cos(h)*13+5);camera.lookAt(travelBoat.position.x,travelBoat.position.y+1,travelBoat.position.z);return;}
  const dist=(flying||adminFlying)?13:10,h=dist*Math.cos(pitch);camera.position.set(player.position.x+Math.sin(yaw)*h,player.position.y+3.3+Math.sin(pitch)*dist,player.position.z+Math.cos(yaw)*h);camera.lookAt(player.position.x,player.position.y+2.1,player.position.z);
 }
-function updateHint(){let t='';if(inventoryOpen||modalOpen||pendingFruit){$('hint').style.display='none';return;}const drop=nearestFruitDrop(5.2);const chest=nearestTreasureChest(6.2);if(drop)t='Passe por cima para pegar '+drop.userData.fruitName;else if(chest)t='Aperte E para abrir o baú e ganhar '+chest.userData.reward+' moedas';else if(currentIsland===0&&player.position.distanceTo(shopNpc.position)<8)t='Aperte E para comprar frutas na loja';else if(currentIsland===0&&player.position.distanceTo(npc.position)<6)t='Aperte E para girar uma fruta no Mestre das Frutas';else if(currentIsland===0&&player.position.distanceTo(questNpc.position)<6)t='Aperte E para receber missões e ganhar dinheiro';else if(nearestBoat())t='Aperte E para escolher um barco e viajar para outra ilha';$('hint').textContent=t;$('hint').style.display=t?'block':'none';}
+function updateHint(){let t='';if(inventoryOpen||modalOpen||pendingFruit){$('hint').style.display='none';return;}const drop=nearestFruitDrop(5.2);const chest=nearestTreasureChest(6.2);if(drop)t='Passe por cima para pegar '+drop.userData.fruitName;else if(chest)t='Aperte E para abrir o baú e ganhar '+chest.userData.reward+' moedas';else if(currentIsland===0&&player.position.distanceTo(shopNpc.position)<7)t='Aperte E para comprar frutas na loja';else if(currentIsland===0&&player.position.distanceTo(npc.position)<7)t='Aperte E para girar uma fruta no Mestre da Roleta';else if(currentIsland===0&&player.position.distanceTo(questNpc.position)<6)t='Aperte E para receber missões';else if(currentIsland===0&&player.position.distanceTo(raceNpc.position)<7)t='Aperte E para comprar uma raça';else if(nearestRemotePlayer(9))t='Aperte E para propor uma troca de frutas';else if(nearestBoat())t='Aperte E para escolher um barco e viajar para outra ilha';$('hint').textContent=t;$('hint').style.display=t?'block':'none';}
 
 addEventListener('keydown',e=>{
  if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();
@@ -1778,6 +1923,7 @@ addEventListener('keydown',e=>{
  if(inventoryOpen){if(e.code==='Escape')closeInventory();return;}
  if(modalOpen){if(e.code==='Escape')closeModals();return;}
  keys[e.code]=true;
+ if(travelState){if(e.code==='Space')tryDisembarkBoat();return;}
  if(e.code==='KeyE')interact();
  if(e.code==='KeyF')basicAttack();
  if(e.code==='KeyQ')useFirstSkill();
@@ -1887,7 +2033,7 @@ function onlineSetStatus(messageText){
  if(onlineActive)requirePlayerIdentity();
 }
 function onlineMakeLocalState(){
- return {name:onlinePlayerName,x:player.position.x,y:player.position.y,z:player.position.z,yaw:player.rotation.y,island:currentIsland,fruit:currentFruit||'',level:Math.min(MAX_LEVEL,Math.max(1,level)),health:health,maxHealth:maxHealthForLevel(),adminFlying:!!adminFlying,flying:!!flying,openedChests:[...openedTreasureChestIds]};
+ return {name:onlinePlayerName,x:player.position.x,y:player.position.y,z:player.position.z,yaw:player.rotation.y,island:currentIsland,fruit:currentFruit||'',race:currentRace,level:Math.min(MAX_LEVEL,Math.max(1,level)),health:health,maxHealth:maxHealthForLevel(),adminFlying:!!adminFlying,flying:!!flying,openedChests:[...openedTreasureChestIds]};
 }
 function onlineSendToHost(packet){if(onlineHostConnection&&onlineHostConnection.open){try{onlineHostConnection.send(packet);}catch(err){onlineSetStatus('Falha ao enviar dados. Tente reconectar.');}}}
 function onlineBroadcast(packet,exceptId=null){for(const [id,conn] of onlineConnections){if(id!==exceptId&&conn.open){try{conn.send(packet);}catch(err){}}}}
@@ -2066,11 +2212,118 @@ function onlineApplyPvPDamage(id,action,detail,seq){
  if(distance>reach||Math.abs(model.group.position.y-player.position.y)>12)return;
  const impactColor=detail.fruit==='Candy'?0xffa6d1:detail.fruit==='Train'?0xb87843:detail.fruit==='Papel'?0xe5e0d2:0x90d9ee;
  spawnImpactEffect(player.position,impactColor);
- damage=damageForLevel(damage,detail.attackerLevel||model.target.level||1);
+ damage=damageForLevel(damage,detail.attackerLevel||model.target.level||1,detail.attackerRace||model.target.race||'Humano');
  playerTakeDamage(damage);
  message('⚔️ '+model.name+' acertou você! -'+damage.toLocaleString('pt-BR')+' de vida');
 }
+
+let tradeUIState=null,pendingOutgoingTrade=null;
+const processedTradeIds=new Set();
+function nearestRemotePlayer(maxDistance=9){
+ let best=null,bestDistance=maxDistance;
+ for(const [id,model] of onlineRemoteModels){if(model.target.island!==currentIsland)continue;const d=player.position.distanceTo(model.group.position);if(d<bestDistance){bestDistance=d;best={id,model,distance:d};}}
+ return best;
+}
+function ownedFruitList(){return [...(currentFruit?[currentFruit]:[]),...storedFruits].filter(name=>fruitNames.includes(name));}
+function hasOwnedFruit(name){return name===currentFruit||storedFruits.includes(name);}
+function saveTradedFruitBag(){
+ try{localStorage.setItem('fruitAdventureBag',JSON.stringify(storedFruits));localStorage.setItem('fruitAdventureEquipped',currentFruit||'');}catch(e){}
+ updateHUD();renderInventory();
+}
+function removeOwnedFruit(name){
+ if(currentFruit===name){currentFruit=null;try{localStorage.removeItem('fruitAdventureEquipped');}catch(e){}}
+ else{const at=storedFruits.indexOf(name);if(at<0)return false;storedFruits.splice(at,1);}
+ saveTradedFruitBag();return true;
+}
+function addOwnedFruit(name){if(!fruitNames.includes(name))return false;storedFruits.push(name);saveTradedFruitBag();return true;}
+function showTradeModal(state){
+ tradeUIState=state;const select=$('tradeFruitSelect');select.innerHTML='';
+ const choices=ownedFruitList();
+ for(const fruit of choices){const option=document.createElement('option');option.value=fruit;option.textContent=fruit;select.appendChild(option);}
+ const hasChoices=choices.length>0;select.style.display=(state.mode==='confirm'||state.mode==='waiting')?'none':'block';select.disabled=!hasChoices;
+ const button=$('tradeSubmitButton');button.disabled=!hasChoices&&state.mode!=='confirm';
+ button.style.display=state.mode==='waiting'?'none':'block';
+ if(state.mode==='request'){$('tradeDescription').textContent='Ofereça uma fruta a '+state.targetName+'. A outra pessoa poderá escolher uma fruta para devolver.';button.textContent='ENVIAR PEDIDO';}
+ else if(state.mode==='respond'){$('tradeDescription').textContent=state.fromName+' oferece '+state.fruitA+'. Escolha qual fruta vai oferecer em troca.';button.textContent='ENVIAR CONTRAOFERTA';}
+ else if(state.mode==='confirm'){$('tradeDescription').textContent='A proposta está pronta: você entrega '+state.fruitA+' e recebe '+state.fruitB+'.';button.textContent='CONFIRMAR TROCA';}
+ else{$('tradeDescription').textContent='Pedido enviado. Aguarde a resposta do outro jogador.';}
+ $('tradeStatus').textContent=hasChoices?'Frutas disponíveis: '+choices.join(', '):'Você não tem frutas para oferecer.';
+ $('tradeModal').style.display='flex';modalOpen=true;if(document.pointerLockElement)document.exitPointerLock();
+}
+function closeTradeModal(){
+ $('tradeModal').style.display='none';tradeUIState=null;modalOpen=false;
+}
+function openTradeWith(targetId){
+ const model=onlineRemoteModels.get(targetId);if(!model){message('Jogador não encontrado.');return;}
+ if(!ownedFruitList().length){message('Você precisa ter uma fruta equipada ou guardada para trocar.');return;}
+ showTradeModal({mode:'request',toId:targetId,targetName:model.name||'Aventureiro'});
+}
+function submitTradeAction(){
+ const state=tradeUIState;if(!state)return;
+ if(state.mode==='request'){
+  const fruitA=$('tradeFruitSelect').value;if(!hasOwnedFruit(fruitA)){message('Você não tem mais essa fruta.');return;}
+  const tradeId=(onlinePeer?.id||'player')+'-'+Date.now()+'-'+Math.random().toString(36).slice(2,7);
+  pendingOutgoingTrade={tradeId,toId:state.toId,fruitA};
+  sendOnlineAction('tradeRequest',{toId:state.toId,tradeId,fruitA});
+  closeTradeModal();message('🤝 Pedido de troca enviado. Aguarde a resposta.');
+ }else if(state.mode==='respond'){
+  const fruitB=$('tradeFruitSelect').value;if(!hasOwnedFruit(fruitB)){message('Você não tem mais essa fruta.');return;}
+  state.fruitB=fruitB;
+  sendOnlineAction('tradeResponse',{toId:state.fromId,tradeId:state.tradeId,fruitB});
+  closeTradeModal();message('Contraoferta enviada. Esperando confirmação do outro jogador.');
+ }else if(state.mode==='confirm'){
+  sendOnlineAction('tradeComplete',{tradeId:state.tradeId,initiatorId:state.initiatorId,responderId:state.responderId,fruitA:state.fruitA,fruitB:state.fruitB});
+  closeTradeModal();message('✅ Troca confirmada! Atualizando os inventários...');
+ }
+}
+function declineTradeAction(){
+ const state=tradeUIState;if(!state){closeTradeModal();return;}
+ if(state.mode==='respond')sendOnlineAction('tradeDecline',{toId:state.fromId,tradeId:state.tradeId});
+ if(state.mode==='confirm'){sendOnlineAction('tradeDecline',{toId:state.responderId,tradeId:state.tradeId});pendingOutgoingTrade=null;}
+ closeTradeModal();message('Troca cancelada.');
+}
+$('tradeSubmitButton').addEventListener('click',submitTradeAction);
+$('tradeCloseButton').addEventListener('click',declineTradeAction);
+function handleTradeRequest(fromId,detail){
+ if(detail.toId!==onlinePeer?.id)return;
+ if(tradeUIState||pendingOutgoingTrade){sendOnlineAction('tradeDecline',{toId:fromId,tradeId:detail.tradeId});return;}
+ if(!hasOwnedFruit(String(detail.fruitA||''))){sendOnlineAction('tradeDecline',{toId:fromId,tradeId:detail.tradeId});return;}
+ const fromName=onlineRemoteModels.get(fromId)?.name||'Outro jogador';
+ showTradeModal({mode:'respond',fromId,fromName,tradeId:String(detail.tradeId||''),fruitA:String(detail.fruitA||'')});
+}
+function handleTradeResponse(fromId,detail){
+ if(detail.toId!==onlinePeer?.id||!pendingOutgoingTrade||pendingOutgoingTrade.tradeId!==detail.tradeId)return;
+ const fruitB=String(detail.fruitB||'');
+ if(!fruitNames.includes(fruitB)){message('A outra pessoa enviou uma fruta inválida.');return;}
+ if(!hasOwnedFruit(pendingOutgoingTrade.fruitA)){pendingOutgoingTrade=null;message('Você não tem mais a fruta oferecida. A troca foi cancelada.');return;}
+ const model=onlineRemoteModels.get(fromId);
+ showTradeModal({mode:'confirm',tradeId:detail.tradeId,initiatorId:onlinePeer.id,responderId:fromId,fruitA:pendingOutgoingTrade.fruitA,fruitB,targetName:model?.name||'Aventureiro'});
+}
+function handleTradeDecline(detail){
+ if(detail.toId!==onlinePeer?.id)return;
+ if(pendingOutgoingTrade?.tradeId===detail.tradeId)pendingOutgoingTrade=null;
+ if(tradeUIState?.tradeId===detail.tradeId)closeTradeModal();
+ message('O outro jogador recusou a troca.');
+}
+function applyCompletedTrade(detail){
+ if(processedTradeIds.has(String(detail.tradeId||'')))return;
+ const localId=onlinePeer?.id;
+ const initiatorId=String(detail.initiatorId||''),responderId=String(detail.responderId||'');
+ if(localId!==initiatorId&&localId!==responderId)return;
+ const fruitOut=localId===initiatorId?String(detail.fruitA||''):String(detail.fruitB||'');
+ const fruitIn=localId===initiatorId?String(detail.fruitB||''):String(detail.fruitA||'');
+ if(!fruitNames.includes(fruitOut)||!fruitNames.includes(fruitIn)||!hasOwnedFruit(fruitOut)){message('Troca não aplicada: a fruta oferecida não está mais no seu inventário.');return;}
+ if(!removeOwnedFruit(fruitOut))return;
+ addOwnedFruit(fruitIn);processedTradeIds.add(String(detail.tradeId||''));
+ if(pendingOutgoingTrade?.tradeId===detail.tradeId)pendingOutgoingTrade=null;
+ if(tradeUIState?.tradeId===detail.tradeId)closeTradeModal();
+ message('🤝 Troca concluída! Você entregou '+fruitOut+' e recebeu '+fruitIn+'. A fruta recebida está na mochila.');
+}
 function onlineShowRemoteAction(id,action,detail,seq=0){
+ if(action==='tradeRequest'){handleTradeRequest(id,detail);return;}
+ if(action==='tradeResponse'){handleTradeResponse(id,detail);return;}
+ if(action==='tradeDecline'){handleTradeDecline(detail);return;}
+ if(action==='tradeComplete'){applyCompletedTrade(detail);return;}
  if(action==='chestOpen'){
   const chest=treasureChests.find(c=>c.userData.chestId===String(detail.chestId||''));
   if(chest)markTreasureChestOpened(chest);
@@ -2090,8 +2343,8 @@ function onlineShowRemoteAction(id,action,detail,seq=0){
 }
 function sendOnlineAction(action,detail={}){
  if(!onlineActive)return;
- const packet={type:'action',action,detail:{...detail,attackerLevel:level},seq:++onlineLocalActionSequence};
- if(onlineIsHost){onlineBroadcast({...packet,from:onlinePeer.id});}else onlineSendToHost(packet);
+ const packet={type:'action',action,detail:{...detail,attackerLevel:level,attackerRace:currentRace},seq:++onlineLocalActionSequence};
+ if(onlineIsHost){onlineBroadcast({...packet,from:onlinePeer.id});if(action==='tradeComplete')onlineShowRemoteAction(onlinePeer.id,action,packet.detail,packet.seq);}else onlineSendToHost(packet);
 }
 function onlineUpdate(delta){
  onlineUpdateRemoteModels(delta);
