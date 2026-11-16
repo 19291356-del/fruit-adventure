@@ -400,8 +400,8 @@ function createRaceAccessories(parent){
 
  const lion=new THREE.Group();parent.add(lion);
  const maneMat=mat(0xa95d25,.88),maneLight=mat(0xd28a39,.82);
- const maneRing=new THREE.Mesh(new THREE.TorusGeometry(.57,.19,10,28),maneMat);maneRing.rotation.x=Math.PI/2;maneRing.position.y=3.27;maneRing.castShadow=true;lion.add(maneRing);
- const maneTop=new THREE.Mesh(new THREE.SphereGeometry(.48,16,12),maneMat);maneTop.scale.set(1.14,.62,.9);maneTop.position.set(0,3.64,-.015);lion.add(maneTop);
+ const maneRing=new THREE.Mesh(new THREE.TorusGeometry(.57,.19,10,28),maneMat);maneRing.rotation.x=Math.PI/2;maneRing.position.set(0,3.27,-.35);maneRing.castShadow=true;lion.add(maneRing);
+ const maneTop=new THREE.Mesh(new THREE.SphereGeometry(.48,16,12),maneMat);maneTop.scale.set(1.14,.62,.9);maneTop.position.set(0,3.64,-.12);lion.add(maneTop);
  for(let i=0;i<8;i++){
   const angle=i*Math.PI/4;
   const tuft=new THREE.Mesh(new THREE.ConeGeometry(.16,.43,8),i%2?maneLight:maneMat);
