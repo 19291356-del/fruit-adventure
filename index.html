@@ -2218,7 +2218,7 @@ function onlineApplyPvPDamage(id,action,detail,seq){
  message('⚔️ '+model.name+' acertou você! -'+damage.toLocaleString('pt-BR')+' de vida');
 }
 
-let tradeUIState=null,pendingOutgoingTrade=null;
+let tradeUIState=null,pendingOutgoingTrade=null,pendingIncomingTrade=null;
 const processedTradeIds=new Set();
 function nearestRemotePlayer(maxDistance=9){
  let best=null,bestDistance=maxDistance;
@@ -2269,7 +2269,7 @@ function submitTradeAction(){
   closeTradeModal();message('🤝 Pedido de troca enviado. Aguarde a resposta.');
  }else if(state.mode==='respond'){
   const fruitB=$('tradeFruitSelect').value;if(!hasOwnedFruit(fruitB)){message('Você não tem mais essa fruta.');return;}
-  state.fruitB=fruitB;
+  state.fruitB=fruitB;pendingIncomingTrade={tradeId:state.tradeId,fromId:state.fromId,fruitA:state.fruitA,fruitB};
   sendOnlineAction('tradeResponse',{toId:state.fromId,tradeId:state.tradeId,fruitB});
   closeTradeModal();message('Contraoferta enviada. Esperando confirmação do outro jogador.');
  }else if(state.mode==='confirm'){
@@ -2279,7 +2279,7 @@ function submitTradeAction(){
 }
 function declineTradeAction(){
  const state=tradeUIState;if(!state){closeTradeModal();return;}
- if(state.mode==='respond')sendOnlineAction('tradeDecline',{toId:state.fromId,tradeId:state.tradeId});
+ if(state.mode==='respond'){sendOnlineAction('tradeDecline',{toId:state.fromId,tradeId:state.tradeId});pendingIncomingTrade=null;}
  if(state.mode==='confirm'){sendOnlineAction('tradeDecline',{toId:state.responderId,tradeId:state.tradeId});pendingOutgoingTrade=null;}
  closeTradeModal();message('Troca cancelada.');
 }
@@ -2287,44 +2287,48 @@ $('tradeSubmitButton').addEventListener('click',submitTradeAction);
 $('tradeCloseButton').addEventListener('click',declineTradeAction);
 function handleTradeRequest(fromId,detail){
  if(detail.toId!==onlinePeer?.id)return;
- if(tradeUIState||pendingOutgoingTrade){sendOnlineAction('tradeDecline',{toId:fromId,tradeId:detail.tradeId});return;}
+ if(tradeUIState||pendingOutgoingTrade||pendingIncomingTrade){sendOnlineAction('tradeDecline',{toId:fromId,tradeId:detail.tradeId});return;}
  const fruitA=String(detail.fruitA||'');if(!fruitNames.includes(fruitA)||!ownedFruitList().length){sendOnlineAction('tradeDecline',{toId:fromId,tradeId:detail.tradeId});return;}
  const fromName=onlineRemoteModels.get(fromId)?.name||'Outro jogador';
  showTradeModal({mode:'respond',fromId,fromName,tradeId:String(detail.tradeId||''),fruitA});
 }
 function handleTradeResponse(fromId,detail){
- if(detail.toId!==onlinePeer?.id||!pendingOutgoingTrade||pendingOutgoingTrade.tradeId!==detail.tradeId)return;
+ if(detail.toId!==onlinePeer?.id||!pendingOutgoingTrade||pendingOutgoingTrade.tradeId!==detail.tradeId||pendingOutgoingTrade.toId!==fromId)return;
  const fruitB=String(detail.fruitB||'');
  if(!fruitNames.includes(fruitB)){message('A outra pessoa enviou uma fruta inválida.');return;}
  if(!hasOwnedFruit(pendingOutgoingTrade.fruitA)){pendingOutgoingTrade=null;message('Você não tem mais a fruta oferecida. A troca foi cancelada.');return;}
  const model=onlineRemoteModels.get(fromId);
  showTradeModal({mode:'confirm',tradeId:detail.tradeId,initiatorId:onlinePeer.id,responderId:fromId,fruitA:pendingOutgoingTrade.fruitA,fruitB,targetName:model?.name||'Aventureiro'});
 }
-function handleTradeDecline(detail){
+function handleTradeDecline(fromId,detail){
  if(detail.toId!==onlinePeer?.id)return;
- if(pendingOutgoingTrade?.tradeId===detail.tradeId)pendingOutgoingTrade=null;
+ if(pendingOutgoingTrade?.tradeId===detail.tradeId&&pendingOutgoingTrade.toId===fromId)pendingOutgoingTrade=null;
+ if(pendingIncomingTrade?.tradeId===detail.tradeId&&pendingIncomingTrade.fromId===fromId)pendingIncomingTrade=null;
  if(tradeUIState?.tradeId===detail.tradeId)closeTradeModal();
  message('O outro jogador recusou a troca.');
 }
-function applyCompletedTrade(detail){
+function applyCompletedTrade(fromId,detail){
  if(processedTradeIds.has(String(detail.tradeId||'')))return;
  const localId=onlinePeer?.id;
  const initiatorId=String(detail.initiatorId||''),responderId=String(detail.responderId||'');
- if(localId!==initiatorId&&localId!==responderId)return;
+ if(fromId!==initiatorId||localId!==initiatorId&&localId!==responderId)return;
+ if(localId===initiatorId&&(!pendingOutgoingTrade||pendingOutgoingTrade.tradeId!==detail.tradeId||pendingOutgoingTrade.toId!==responderId||pendingOutgoingTrade.fruitA!==detail.fruitA))return;
+ if(localId===responderId&&(!pendingIncomingTrade||pendingIncomingTrade.tradeId!==detail.tradeId||pendingIncomingTrade.fromId!==initiatorId||pendingIncomingTrade.fruitB!==detail.fruitB))return;
  const fruitOut=localId===initiatorId?String(detail.fruitA||''):String(detail.fruitB||'');
  const fruitIn=localId===initiatorId?String(detail.fruitB||''):String(detail.fruitA||'');
  if(!fruitNames.includes(fruitOut)||!fruitNames.includes(fruitIn)||!hasOwnedFruit(fruitOut)){message('Troca não aplicada: a fruta oferecida não está mais no seu inventário.');return;}
  if(!removeOwnedFruit(fruitOut))return;
  addOwnedFruit(fruitIn);processedTradeIds.add(String(detail.tradeId||''));
  if(pendingOutgoingTrade?.tradeId===detail.tradeId)pendingOutgoingTrade=null;
+ if(pendingIncomingTrade?.tradeId===detail.tradeId)pendingIncomingTrade=null;
  if(tradeUIState?.tradeId===detail.tradeId)closeTradeModal();
  message('🤝 Troca concluída! Você entregou '+fruitOut+' e recebeu '+fruitIn+'. A fruta recebida está na mochila.');
 }
 function onlineShowRemoteAction(id,action,detail,seq=0){
  if(action==='tradeRequest'){handleTradeRequest(id,detail);return;}
  if(action==='tradeResponse'){handleTradeResponse(id,detail);return;}
- if(action==='tradeDecline'){handleTradeDecline(detail);return;}
- if(action==='tradeComplete'){applyCompletedTrade(detail);return;}
+ if(action==='tradeDecline'){handleTradeDecline(id,detail);return;}
+ if(action==='tradeComplete'){applyCompletedTrade(id,detail);return;}
  if(action==='chestOpen'){
   const chest=treasureChests.find(c=>c.userData.chestId===String(detail.chestId||''));
   if(chest)markTreasureChestOpened(chest);
