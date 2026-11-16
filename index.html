@@ -387,9 +387,9 @@ function addTree(x,z,theme){
  }else{
   const crown=new THREE.Mesh(new THREE.SphereGeometry(theme==='floresta'?2.5:2.1,12,10),leafMat);crown.position.set(0,6.2,0);crown.castShadow=true;group.add(crown);
  }
- group.position.set(x,0,z);scene.add(group);breakables.push(group);addWorldCollider(x,z,theme==='praia'?.95:1.8,'árvore');
+ group.position.set(x,0,z);scene.add(group);breakables.push(group);group.userData.worldCollider=addWorldCollider(x,z,theme==='praia'?.95:1.8,'árvore');
 }
-function addRock(x,z,size,color=0x777a76){const r=new THREE.Mesh(new THREE.DodecahedronGeometry(size,0),mat(color));r.position.set(x,PLAYER_Y+size*.55,z);r.rotation.set(Math.random(),Math.random(),Math.random());r.castShadow=true;scene.add(r);breakables.push(r);addWorldCollider(x,z,Math.max(.7,size*.82),'rocha');}
+function addRock(x,z,size,color=0x777a76){const r=new THREE.Mesh(new THREE.DodecahedronGeometry(size,0),mat(color));r.position.set(x,PLAYER_Y+size*.55,z);r.rotation.set(Math.random(),Math.random(),Math.random());r.castShadow=true;scene.add(r);breakables.push(r);r.userData.worldCollider=addWorldCollider(x,z,Math.max(.7,size*.82),'rocha');}
 function addHouse(island,angle,houseIndex){
  const palettes={
   praia:{wall:0xe2d1ad,roof:0x9a5941,trim:0x70503a,door:0x70472f,glass:0x8ac4cd},
@@ -456,7 +456,7 @@ function addTreasureChest(island,islandIndex,chestIndex){
  const label=makeLabel('BAÚ DE MOEDAS');label.scale.set(5.1,1.25,1);label.position.set(0,4.45,0);g.add(label);g.userData.label=label;
  if(openedTreasureChestIds.has(id)){g.userData.opened=true;lid.rotation.x=-1.08;label.visible=false;}
  g.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
- scene.add(g);treasureChests.push(g);addWorldCollider(g.position.x,g.position.z,1.7,'baú');addWorldCollider(g.position.x,g.position.z,1.7,'baú');
+ scene.add(g);treasureChests.push(g);addWorldCollider(g.position.x,g.position.z,1.7,'baú');
 }
 function makeLabel(text){
  const c=document.createElement('canvas');c.width=512;c.height=128;const ctx=c.getContext('2d');
@@ -472,7 +472,13 @@ const enemyHouseColliders=[];
 const worldColliders=[];
 const PLAYER_COLLISION_RADIUS=.82;
 function addWorldCollider(x,z,radius,label='objeto'){
- if(Number.isFinite(x)&&Number.isFinite(z)&&Number.isFinite(radius)&&radius>0)worldColliders.push({x,z,radius,label});
+ if(Number.isFinite(x)&&Number.isFinite(z)&&Number.isFinite(radius)&&radius>0){const collider={x,z,radius,label};worldColliders.push(collider);return collider;}
+ return null;
+}
+function removeWorldCollider(obj){
+ const collider=obj?.userData?.worldCollider;if(!collider)return;
+ const index=worldColliders.indexOf(collider);if(index>=0)worldColliders.splice(index,1);
+ delete obj.userData.worldCollider;
 }
 function isPlayerBlockedAt(x,z,fromX=x,fromZ=z){
  for(const obstacle of worldColliders){
@@ -485,10 +491,10 @@ function isPlayerBlockedAt(x,z,fromX=x,fromZ=z){
  }
  for(const house of enemyHouseColliders){
   const bounds=house.userData.enemyCollision||{};
-  const halfWidth=Number(bounds.halfWidth)||4.4,halfDepth=Number(bounds.halfDepth)||3.9,doorWidth=Number(bounds.doorHalfWidth)||.75;
+  const halfWidth=Number(bounds.halfWidth)||4.4,halfDepth=Number(bounds.halfDepth)||3.9,doorWidth=Number(bounds.playerDoorHalfWidth)||Number(bounds.doorHalfWidth)||.75;
   const current=house.worldToLocal(new THREE.Vector3(x,PLAYER_Y,z)),previous=house.worldToLocal(new THREE.Vector3(fromX,PLAYER_Y,fromZ));
   const inside=Math.abs(current.x)<halfWidth+PLAYER_COLLISION_RADIUS&&Math.abs(current.z)<halfDepth+PLAYER_COLLISION_RADIUS;
-  const doorway=current.z>-.55&&current.z<halfDepth+PLAYER_COLLISION_RADIUS&&Math.abs(current.x)<doorWidth+PLAYER_COLLISION_RADIUS;
+  const doorway=Math.abs(current.z)<halfDepth+PLAYER_COLLISION_RADIUS&&Math.abs(current.x)<doorWidth+PLAYER_COLLISION_RADIUS;
   if(inside&&!doorway){
    const wasInside=Math.abs(previous.x)<halfWidth+PLAYER_COLLISION_RADIUS&&Math.abs(previous.z)<halfDepth+PLAYER_COLLISION_RADIUS;
    const penetration=Math.min(halfWidth+PLAYER_COLLISION_RADIUS-Math.abs(current.x),halfDepth+PLAYER_COLLISION_RADIUS-Math.abs(current.z));
@@ -668,7 +674,7 @@ addBox(fruitShopBuilding,8.5,5.3,.55,shopWall,-9.75,2.9,10);
 addBox(fruitShopBuilding,8.5,5.3,.55,shopWall,9.75,2.9,10);
 addBox(fruitShopBuilding,29,.55,21,shopRoofMat,0,5.75,0);
 const shopSign=makeLabel('CASA DAS FRUTAS');shopSign.scale.set(12,2.3,1);shopSign.position.set(0,6.9,10.4);fruitShopBuilding.add(shopSign);
-fruitShopBuilding.userData.enemyCollision={halfWidth:13.7,halfDepth:9.7,doorHalfWidth:5.4};enemyHouseColliders.push(fruitShopBuilding);
+fruitShopBuilding.userData.enemyCollision={halfWidth:13.7,halfDepth:9.7,doorHalfWidth:5.4,playerDoorHalfWidth:9.2};enemyHouseColliders.push(fruitShopBuilding);
 scene.add(fruitShopBuilding);
 const shopNpc=new THREE.Group();scene.add(shopNpc);shopNpc.position.set(-7,PLAYER_Y,-20);addWorldCollider(-7,-20,.9,'vendedor');
 const shopCoat=mat(0x426b69),shopPants=mat(0x37454b),shopSkin=mat(0xc99a78),shopGold=mat(0xd3ad60);
@@ -1518,7 +1524,7 @@ function startBoatTrip(){
 function finishBoatAtIsland(index){
  const land=islands[index],vx=travelBoat.position.x-land.x,vz=travelBoat.position.z-land.z,distance=Math.hypot(vx,vz)||1;
  if(travelBoat){scene.remove(travelBoat);travelBoat=null;}travelState=null;player.visible=true;$('boatDrivingHint').style.display='none';
- currentIsland=index;player.position.set(land.x+vx/distance*(land.r-12),PLAYER_Y,land.z+vz/distance*(land.r-12));player.rotation.y=Math.atan2(-vx,-vz);
+ currentIsland=index;player.position.set(land.x+vx/distance*(land.r*.86),PLAYER_Y,land.z+vz/distance*(land.r*.86));player.rotation.y=Math.atan2(-vx,-vz);
  message('🏝️ Você desembarcou na '+land.name+'!');updateHUD();
 }
 function tryDisembarkBoat(){
@@ -2085,7 +2091,7 @@ function updateTransform(delta){
  if(transformModel)transformModel.rotation.y=Math.sin(performance.now()*.003)*.025;
  if(transformHitTimer<=0){let hit=false;for(const e of enemies){if(e.userData.alive&&e.userData.islandIndex===currentIsland&&player.position.distanceTo(e.position)<3.8){damageEnemy(e,transformationDamage,5);hit=true;}}if(hit)transformHitTimer=.7;}
  if(onlineActive)for(const [id,model] of onlineRemoteModels){if(model.target.island!==currentIsland)continue;const d=player.position.distanceTo(model.group.position);if(d<3.8&&performance.now()>(model.transformPvpAt||0)){model.transformPvpAt=performance.now()+700;sendOnlineAction('skill',{fruit:transformationFruit,skillIndex:transformationSkillIndex});}}
- if(transformBreakTimer<=0){for(let i=breakables.length-1;i>=0;i--){const obj=breakables[i];if(!obj.parent){breakables.splice(i,1);continue;}const pos=new THREE.Vector3();obj.getWorldPosition(pos);if(pos.distanceTo(player.position)<3.4){scene.remove(obj);breakables.splice(i,1);const burst=new THREE.Mesh(new THREE.IcosahedronGeometry(.5,0),mat(0x9b8b70));burst.position.copy(pos);addVisualEffect(burst,.35,(dt,fx)=>{fx.obj.scale.multiplyScalar(1+dt*4);});}}
+ if(transformBreakTimer<=0){for(let i=breakables.length-1;i>=0;i--){const obj=breakables[i];if(!obj.parent){removeWorldCollider(obj);breakables.splice(i,1);continue;}const pos=new THREE.Vector3();obj.getWorldPosition(pos);if(pos.distanceTo(player.position)<3.4){scene.remove(obj);removeWorldCollider(obj);breakables.splice(i,1);const burst=new THREE.Mesh(new THREE.IcosahedronGeometry(.5,0),mat(0x9b8b70));burst.position.copy(pos);addVisualEffect(burst,.35,(dt,fx)=>{fx.obj.scale.multiplyScalar(1+dt*4);});}}
   transformBreakTimer=.22;}
  if(transformTimer<=0){transformTimer=0;if(transformModel){player.remove(transformModel);transformModel=null;}for(const child of player.children)child.visible=true;message('A transformação terminou.');transformationFruit='';}
 }
