@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FRUIT ADVENTURE — VERSÃO 27 ONLINE</title>
+<title>FRUIT ADVENTURE — VERSÃO 28 ONLINE</title>
 <style>
 *{box-sizing:border-box}body{margin:0;overflow:hidden;background:#183746;color:#fff;font-family:Arial,sans-serif}canvas{display:block}
 #hud,#info,#help{position:absolute;background:rgba(19,48,59,.86);border:1px solid rgba(195,235,225,.58);box-shadow:0 10px 28px #12334455;backdrop-filter:blur(7px)}
@@ -178,6 +178,82 @@ button{border:0;border-radius:10px;padding:12px 18px;font-weight:bold;cursor:poi
 .adminRaceRow select{flex:1;min-width:0;padding:10px;border-radius:8px;border:1px solid #84a9c4;background:#0e2234;color:#fff;font-size:14px}
 #adminDeactivateButton{background:#a85d5d;color:#fff;margin:6px;border:1px solid #e09a9a}
 @media(max-width:650px){#characterEditorGrid{grid-template-columns:1fr}#characterPreview{min-height:190px}.previewSilhouette{font-size:66px!important}#characterCard{padding:14px}#appearanceControls{gap:7px}.appearanceField{padding:8px}#characterActions{flex-direction:column}#characterCancelButton{width:100%}}
+
+/* VERSÃO 28 — interface premium e acabamento visual */
+:root{--ui-ink:#f4fbff;--ui-muted:#b9d0da;--ui-line:rgba(177,224,232,.25);--ui-glass:rgba(8,25,43,.82);--ui-cyan:#75e2dc;--ui-gold:#ffd27a}
+body{font-family:Inter,"Segoe UI",Arial,sans-serif;background:#102a45;color:var(--ui-ink);letter-spacing:.12px}
+canvas{filter:saturate(1.08) contrast(1.025)}
+#hud,#info,#help,#skillsPanel,#missionCompass,#inventoryPanel{border:1px solid var(--ui-line);background:linear-gradient(145deg,rgba(13,39,62,.91),rgba(5,19,35,.88));box-shadow:0 15px 38px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.09);backdrop-filter:blur(13px);-webkit-backdrop-filter:blur(13px)}
+#hud{top:16px;left:16px;width:258px;padding:39px 15px 14px;border-radius:17px;overflow:hidden}
+#hud:before{content:"FRUIT ADVENTURE  •  STATUS";position:absolute;top:0;left:0;right:0;padding:10px 14px;background:linear-gradient(100deg,rgba(35,129,147,.92),rgba(32,77,112,.88));border-bottom:1px solid rgba(173,239,234,.2);font-size:10px;font-weight:900;letter-spacing:1.45px;color:#eaffff}
+#hud .stat{font-size:13px;font-weight:650;color:#e8f5fa;margin:9px 0}
+#level{color:#ffe2a4!important;font-size:15px!important}
+#raceHud{display:inline-block;padding:4px 8px;border-radius:7px;background:rgba(91,158,166,.18);border:1px solid rgba(120,210,205,.23);color:#a9f1e7!important;font-size:11px!important}
+#hud .bar{height:10px;background:rgba(0,0,0,.38);border:1px solid rgba(255,255,255,.09);border-radius:99px;box-shadow:inset 0 2px 4px #0007}
+#hp{background:linear-gradient(90deg,#ff657c,#ff9b75);border-radius:99px;box-shadow:0 0 12px #ff637766}
+#xp{background:linear-gradient(90deg,#62d9c4,#b5f18c);border-radius:99px}
+.currencyRow{gap:8px;margin-top:11px}
+.currencyStat{padding:9px;border-radius:11px;border:1px solid rgba(255,255,255,.13);box-shadow:inset 0 1px 0 #ffffff18,0 5px 12px #0002;font-size:10px;letter-spacing:.65px}
+.currencyStat b{font-size:16px;margin-top:4px}
+.moneyStat{background:linear-gradient(135deg,rgba(143,103,37,.92),rgba(74,54,29,.94))}
+.boltStat{background:linear-gradient(135deg,rgba(39,113,142,.94),rgba(25,59,87,.96))}
+#info{top:16px;right:16px;min-width:190px;padding:14px 15px;border-radius:16px;font-size:12px;line-height:1.85;color:#dcecf4}
+#islandName{display:inline-block;margin-bottom:5px;color:#ffe2a4;font-size:13px;letter-spacing:1px;text-shadow:0 2px 12px #0008}
+#missionStatus{display:block;padding:8px 9px;border:1px solid rgba(255,210,122,.22);border-radius:9px;background:rgba(135,100,40,.17);color:#ffe5b1}
+#onlineStatus{border-radius:9px;background:rgba(25,110,104,.28);border:1px solid rgba(111,225,195,.28);color:#d9fff1}
+#onlineConnectionCount{color:#a9c9da}
+#accountOpenButton,#characterOpenButton{border:1px solid rgba(185,226,239,.24)!important;border-radius:9px!important;background:linear-gradient(120deg,#326a87,#244863)!important;color:#f0fbff!important}
+#missionCompass{top:16px;min-width:235px;padding:9px 13px;border-radius:15px;box-shadow:0 12px 30px #06101e66,inset 0 1px 0 #ffffff18}
+#compassArrow{background:linear-gradient(145deg,#267f91,#21465e);color:#ffe29a;border:1px solid #8ee0d2;box-shadow:0 0 16px #55d9cb33}
+#compassText{font-size:11px}
+#compassText b{color:#7fe2d9;font-size:9px;letter-spacing:1px}
+#skillsPanel{right:16px;bottom:82px;width:270px;padding:14px;border-radius:16px;color:#e2f1f7}
+#skillsPanel b{color:#8de7df;letter-spacing:.45px}
+#skillsMastery{background:linear-gradient(105deg,rgba(38,116,125,.65),rgba(29,55,79,.85));border:1px solid rgba(130,220,208,.29);border-radius:10px}
+.skillRow{border-top:1px solid rgba(255,255,255,.09);padding:6px 2px}
+.skillRow small{color:#ffe0a0}
+.skillRow .skillDesc{color:#a9c4d1}
+#help{bottom:14px;max-width:min(880px,92vw);padding:12px 19px;border-radius:14px;border-color:rgba(135,216,220,.3);background:linear-gradient(100deg,rgba(8,27,48,.91),rgba(20,57,76,.9),rgba(8,27,48,.91));color:#e1f4f6;font-size:11px;letter-spacing:.25px;white-space:normal;box-shadow:0 9px 28px #0005}
+#help:before{content:"⌨ CONTROLES  ";color:#82e5dc;font-weight:900;letter-spacing:1px}
+#message{padding:12px 20px;border:1px solid rgba(159,232,223,.4);border-radius:14px;background:linear-gradient(110deg,rgba(10,45,65,.9),rgba(27,82,92,.88));box-shadow:0 10px 30px #0005;backdrop-filter:blur(8px);color:#f5fffb;font-size:18px;letter-spacing:.3px}
+#hint,#boatDrivingHint{border:1px solid rgba(126,223,213,.42);border-radius:12px;background:rgba(6,27,45,.92);box-shadow:0 10px 30px #0006;color:#eafff7;backdrop-filter:blur(10px)}
+#inventoryToggle button{border:1px solid rgba(170,238,226,.55);border-radius:12px;background:linear-gradient(135deg,#2b8290,#24506e);box-shadow:0 9px 24px #0006;font-size:12px;letter-spacing:.5px}
+#inventoryPanel{border-radius:16px}
+#inventoryHeader{background:linear-gradient(105deg,#246c7e,#1c3d5b);border-bottom:1px solid rgba(255,255,255,.1)}
+.invTab{border:1px solid rgba(161,207,220,.22);background:rgba(38,67,88,.85);color:#dceef5}
+.invTab.active{background:linear-gradient(120deg,#8ce1cc,#9ed7f2);color:#12354a;border-color:#c4fff1}
+.invStat,.invEmpty{background:rgba(30,67,87,.66);border:1px solid rgba(157,211,221,.19);border-radius:10px}
+button{font-family:inherit;border-radius:10px;letter-spacing:.15px;box-shadow:0 4px 12px rgba(0,0,0,.15);transition:filter .18s ease,transform .18s ease,box-shadow .18s ease}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #8ce8dd;outline-offset:2px}
+#card,#boatCard,#fruitDecisionCard,#questCard,#shopCard,#raceShopCard,#tradeCard,#playerIdentityCard,#characterCard{border:1px solid rgba(160,232,221,.45);border-radius:20px;background:linear-gradient(145deg,rgba(27,76,91,.98),rgba(9,28,48,.99) 72%);box-shadow:0 24px 80px rgba(0,0,0,.58),inset 0 1px 0 rgba(255,255,255,.12)}
+#card h2,#boatCard h2,#fruitDecisionCard h2,#questCard h2,#shopCard h2,#raceShopCard h2,#tradeCard h2,#playerIdentityCard h2,#characterHeader h2{color:#bff4e4;text-shadow:0 2px 16px rgba(100,225,207,.16)}
+#card p,#boatCard p,#fruitDecisionCard p,#questCard p,#shopCard p,#raceShopCard p,#tradeCard p,#playerIdentityCard p{color:#d1e5ec}
+.fruitCard,.shopFruitRow,.raceOption{border:1px solid rgba(147,211,213,.24);background:linear-gradient(145deg,rgba(43,81,101,.94),rgba(23,47,70,.96));border-radius:12px;box-shadow:inset 0 1px 0 #ffffff0d}
+.fruitCard:hover,.raceOption:hover{border-color:rgba(136,233,217,.7);box-shadow:0 7px 18px #0004}
+#characterPreview{border:1px solid rgba(142,223,211,.35);background:radial-gradient(ellipse at 50% 25%,#5799a0 0%,#28566e 48%,#10263e 100%);box-shadow:inset 0 0 35px #081a2b88}
+.appearanceField{background:rgba(19,53,72,.72);border-color:rgba(151,207,213,.25)}
+#connectingCard{border:1px solid rgba(153,239,221,.65);background:linear-gradient(135deg,rgba(17,75,90,.97),rgba(13,36,63,.97));box-shadow:0 12px 35px #00121f88}
+#playerIdentityModal,#characterModal{backdrop-filter:blur(11px);-webkit-backdrop-filter:blur(11px)}
+@media(max-width:700px){
+ #hud{top:8px;left:8px;width:204px;padding:35px 10px 10px;border-radius:13px}
+ #hud:before{padding:8px 10px;font-size:9px}
+ #hud .stat{font-size:11px;margin:6px 0}
+ #level{font-size:13px!important}
+ .currencyStat{padding:7px 6px}
+ .currencyStat b{font-size:13px}
+ #info{top:8px;right:8px;min-width:145px;max-width:44vw;padding:9px;font-size:10px;line-height:1.65;border-radius:13px}
+ #islandName{font-size:11px}
+ #missionCompass{top:116px;min-width:185px;max-width:58vw;padding:7px 9px}
+ #skillsPanel{right:8px;bottom:83px;width:min(205px,48vw);padding:9px;border-radius:13px}
+ #help{bottom:8px;padding:9px 11px;font-size:10px;line-height:1.45}
+ #help:before{display:block;margin-bottom:3px}
+ #inventoryToggle{left:8px;bottom:8px}
+ #inventoryToggle button{padding:9px 11px}
+ #inventoryPanel{left:8px;bottom:57px}
+ #message{top:25%;font-size:15px;padding:9px 13px}
+}
+@media(prefers-reduced-motion:reduce){button{transition:none}button:hover{transform:none}}
+
 </style>
 </head>
 <body>
@@ -322,7 +398,7 @@ button{border:0;border-radius:10px;padding:12px 18px;font-weight:bold;cursor:poi
 <script>
 if(!window.THREE){document.body.innerHTML='<div style="padding:30px;font:20px Arial">Não foi possível carregar o motor 3D. Confira sua conexão com a internet e abra o arquivo novamente.</div>';throw new Error('Three.js não carregou');}
 
-// VERSÃO 27: editor visual do personagem, aparência sincronizada e controle de ativação do modo ADM.
+// VERSÃO 28: interface visual renovada, renderização cinematográfica e polimento de HUD.
 // CENA E ILUMINAÇÃO: cenário mais claro, colorido e bem definido.
 const scene=new THREE.Scene();
 scene.background=new THREE.Color(0x91cce8);
@@ -334,14 +410,15 @@ renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));
 renderer.shadowMap.enabled=true;
 renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 renderer.outputEncoding=THREE.sRGBEncoding;
-renderer.toneMapping=THREE.NoToneMapping;
-renderer.toneMappingExposure=1;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.12;
 document.body.appendChild(renderer.domElement);
 scene.add(new THREE.HemisphereLight(0xeaf6ff,0x526d46,1.12));
 scene.add(new THREE.AmbientLight(0xffffff,.18));
 const sun=new THREE.DirectionalLight(0xfff4df,1.28);
 sun.position.set(-65,100,45);sun.castShadow=true;
 sun.shadow.mapSize.set(2048,2048);
+sun.shadow.camera.near=1;sun.shadow.camera.far=500;sun.shadow.bias=-0.00015;sun.shadow.normalBias=0.035;sun.shadow.radius=3;
 sun.shadow.camera.left=-300;sun.shadow.camera.right=300;sun.shadow.camera.top=300;sun.shadow.camera.bottom=-300;
 scene.add(sun);
 
