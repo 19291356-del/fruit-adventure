@@ -1354,13 +1354,13 @@ function tryDisembarkBoat(){
 function updateBoatTravel(delta){
  if(!travelState||!travelBoat)return;
  travelState.elapsed+=delta;
- const steer=(keys.KeyA||keys.ArrowLeft?1:0)-(keys.KeyD||keys.ArrowRight?1:0);
+ const steer=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0);
  const acceleration=(keys.KeyW||keys.ArrowUp?1:0)-(keys.KeyS||keys.ArrowDown?1:0);
  travelState.heading+=steer*delta*(.65+Math.min(1,Math.abs(travelState.speed)/10)*1.25);
  if(acceleration>0)travelState.speed=Math.min(24,travelState.speed+12*delta);
  else if(acceleration<0)travelState.speed=Math.max(-7,travelState.speed-16*delta);
  else travelState.speed*=Math.pow(.985,delta*60);
- travelBoat.rotation.y=travelState.heading;
+ travelBoat.rotation.y=travelState.heading+Math.PI;
  travelBoat.position.x+=Math.sin(travelState.heading)*travelState.speed*delta;
  travelBoat.position.z+=Math.cos(travelState.heading)*travelState.speed*delta;
  travelBoat.position.x=THREE.MathUtils.clamp(travelBoat.position.x,-780,780);
