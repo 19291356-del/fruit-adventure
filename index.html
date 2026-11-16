@@ -158,7 +158,7 @@ button{border:0;border-radius:10px;padding:12px 18px;font-weight:bold;cursor:poi
 #characterSubtitle{color:#bed8d0;font-size:13px;line-height:1.5;margin:5px 0 16px}
 #characterEditorGrid{display:grid;grid-template-columns:1.05fr 1.4fr;gap:14px}
 #characterPreview{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:290px;padding:18px;border-radius:16px;background:radial-gradient(circle at 50% 28%,#477a80,#183746 68%);border:1px solid #69999a;text-align:center}
-#characterPreview .previewSilhouette{font-size:86px;line-height:1.25;filter:drop-shadow(0 8px 9px #0007)}
+#characterPreviewCanvas{display:block;width:100%;height:245px;max-width:330px;filter:drop-shadow(0 9px 10px #0006)}
 #characterPreview strong{color:#f5e2a9;font-size:14px;margin-top:7px}
 #characterPreview small{color:#c0d9d1;font-size:11px;line-height:1.4;margin-top:5px}
 #appearanceControls{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -287,7 +287,7 @@ button{border:0;border-radius:10px;padding:12px 18px;font-weight:bold;cursor:poi
   <div id="characterHeader"><h2 id="characterTitle">👕 VISTA SEU AVENTUREIRO</h2><span style="color:#f4df9b;font-size:11px;font-weight:bold">EDITOR 3D</span></div>
   <p id="characterSubtitle">Escolha as cores da pele, roupa, calça, botas e cabelo. Teste estilos diferentes: as mudanças aparecem imediatamente no personagem do cenário e ficam salvas neste navegador.</p>
   <div id="characterEditorGrid">
-   <div id="characterPreview"><div class="previewSilhouette">🧍</div><strong>PRÉVIA EM TEMPO REAL</strong><small>O modelo 3D atrás deste painel acompanha cada mudança que você fizer.</small></div>
+   <div id="characterPreview"><canvas id="characterPreviewCanvas" width="420" height="310"></canvas><strong>PRÉVIA 3D EM TEMPO REAL</strong><small>Gire o modelo na tela e veja as cores e os estilos antes de entrar no mundo.</small></div>
    <div id="appearanceControls">
     <div class="appearanceField"><label for="appearanceSkin">COR DA PELE</label><input id="appearanceSkin" type="color" value="#d2a17e"></div>
     <div class="appearanceField"><label for="appearanceHair">COR DO CABELO</label><input id="appearanceHair" type="color" value="#302b28"></div>
@@ -2103,6 +2103,28 @@ async function derivePlayerPasswordHash(password,salt){
  const bits=await crypto.subtle.deriveBits({name:'PBKDF2',salt:new TextEncoder().encode(salt),iterations:160000,hash:'SHA-256'},material,256);
  return Array.from(new Uint8Array(bits),b=>b.toString(16).padStart(2,'0')).join('');
 }
+let characterPreviewRenderer=null,characterPreviewScene=null,characterPreviewCamera=null,characterPreviewModel=null;
+function refreshCharacterPreview(){
+ const canvas=$('characterPreviewCanvas');if(!canvas)return;
+ try{
+  if(!characterPreviewRenderer){
+   characterPreviewRenderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true});
+   characterPreviewRenderer.setPixelRatio(Math.min(devicePixelRatio||1,1.5));
+   characterPreviewScene=new THREE.Scene();
+   characterPreviewScene.add(new THREE.HemisphereLight(0xf2fbff,0x405060,1.35));
+   const previewSun=new THREE.DirectionalLight(0xffe9c9,1.65);previewSun.position.set(5,9,7);characterPreviewScene.add(previewSun);
+   characterPreviewCamera=new THREE.PerspectiveCamera(34,1,.1,100);
+   characterPreviewCamera.position.set(6.2,4.8,8.4);characterPreviewCamera.lookAt(0,2.1,0);
+  }
+  const width=Math.max(180,canvas.clientWidth||300),height=Math.max(170,canvas.clientHeight||245);
+  characterPreviewRenderer.setSize(width,height,false);
+  characterPreviewCamera.aspect=width/height;characterPreviewCamera.updateProjectionMatrix();
+  if(characterPreviewModel)characterPreviewScene.remove(characterPreviewModel);
+  characterPreviewModel=player.clone(true);characterPreviewModel.position.set(0,0,0);characterPreviewModel.rotation.y=-.35;
+  characterPreviewScene.add(characterPreviewModel);
+  characterPreviewRenderer.render(characterPreviewScene,characterPreviewCamera);
+ }catch(err){const preview=$('characterPreview');if(preview&&!preview.querySelector('.previewError')){const note=document.createElement('small');note.className='previewError';note.textContent='A prévia 3D não pôde ser iniciada neste navegador.';preview.appendChild(note);}}
+}
 function syncAppearanceControls(){
  const fields={skin:'appearanceSkin',shirt:'appearanceShirt',pants:'appearancePants',boots:'appearanceBoots',hair:'appearanceHair'};
  for(const key of Object.keys(fields))$(fields[key]).value=playerAppearance[key];
@@ -2118,13 +2140,13 @@ function readAppearanceControls(){
 }
 function openCharacterCustomizer(){
  playerAppearance=normalizePlayerAppearance(playerAppearance);
- syncAppearanceControls();applyPlayerAppearance(playerAppearance);
+ syncAppearanceControls();applyPlayerAppearance(playerAppearance);refreshCharacterPreview();
  modalOpen=true;
  $('characterModal').style.display='flex';
  if(document.pointerLockElement)document.exitPointerLock();
 }
 function previewCharacterAppearance(){
- playerAppearance=readAppearanceControls();applyPlayerAppearance(playerAppearance);
+ playerAppearance=readAppearanceControls();applyPlayerAppearance(playerAppearance);refreshCharacterPreview();
 }
 function applyAppearancePreset(name){
  const presets={
@@ -2133,7 +2155,7 @@ function applyAppearancePreset(name){
   sombras:{skin:'#e0b995',shirt:'#373b59',pants:'#242635',boots:'#171923',hair:'#14131c',hairStyle:'curto',outfitStyle:'classico'}
  };
  if(!presets[name])return;
- playerAppearance=normalizePlayerAppearance(presets[name]);syncAppearanceControls();applyPlayerAppearance(playerAppearance);
+ playerAppearance=normalizePlayerAppearance(presets[name]);syncAppearanceControls();applyPlayerAppearance(playerAppearance);refreshCharacterPreview();
 }
 function saveAndEnterWorld(){
  playerAppearance=readAppearanceControls();savePlayerAppearance();
@@ -2645,6 +2667,7 @@ initCloudAccounts().finally(()=>onlineAutoStart());
 const clock=new THREE.Clock();
 function animate(){requestAnimationFrame(animate);const delta=Math.min(clock.getDelta(),.04);
  onlineUpdate(delta);
+ if(characterPreviewRenderer&&$('characterModal')?.style.display==='flex'&&characterPreviewModel){characterPreviewModel.rotation.y+=delta*.45;characterPreviewRenderer.render(characterPreviewScene,characterPreviewCamera);}
  updateShopRotation();updateBoatTravel(delta);if(adminFlightAura){adminFlightAura.rotation.y+=delta*.9;adminFlightAura.children[0].rotation.z+=delta*1.7;adminFlightAura.children[1].rotation.x+=delta*1.2;}movePlayer(delta);if(punchTimer>0){punchTimer=Math.max(0,punchTimer-delta);const arm=punchSide>0?rightArm:leftArm;const progress=1-punchTimer/.28;arm.rotation.x=-Math.sin(Math.PI*progress)*2.05;}updateEnemies(delta);updateEnemyRespawns();updateEnemyProjectiles(delta);updateProjectiles(delta);updateVisualEffects(delta);updateSugar(delta);updateTransform(delta);updateFruitDropPickup();updateCamera();updateHint();
  fruitNpcLeftArm.rotation.x=Math.sin(performance.now()*.0015)*.08;fruitNpcRightArm.rotation.x=-.18+Math.sin(performance.now()*.0015)*.08;questLeftArm.rotation.x=Math.sin(performance.now()*.0012)*.1;questRightArm.rotation.x=-.22+Math.sin(performance.now()*.0012)*.1;shopArmL.rotation.x=Math.sin(performance.now()*.0014)*.09;shopArmR.rotation.x=-.2+Math.sin(performance.now()*.0014)*.09;
  attackCooldown=Math.max(0,attackCooldown-delta);
