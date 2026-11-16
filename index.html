@@ -895,7 +895,7 @@ islands.forEach((island,idx)=>{
  const count=idx===0?7:6;
  for(let i=0;i<count;i++){const a=(i/count)*Math.PI*2+.5,r=island.r*.55;createEnemy(island.x+Math.cos(a)*r,island.z+Math.sin(a)*r,idx);}
  // Um chefe exclusivo por ilha, numa pequena formação rochosa afastada da costa.
- const angle=.7+idx*1.17,bossX=island.x+Math.cos(angle)*(island.r*.78),bossZ=island.z+Math.sin(angle)*(island.r*.78);
+ const angle=.7+idx*1.17,bossX=island.x+Math.cos(angle)*(island.r+28),bossZ=island.z+Math.sin(angle)*(island.r+28);
  const platform=new THREE.Mesh(new THREE.CylinderGeometry(13,16,5,16),mat(island.side));
  platform.position.set(bossX,-.1,bossZ);platform.castShadow=true;platform.receiveShadow=true;scene.add(platform);
  const boss=createEnemy(bossX, bossZ,idx,true);
