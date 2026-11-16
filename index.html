@@ -539,7 +539,6 @@ function loadPlayerAppearance(){
  try{return normalizePlayerAppearance(JSON.parse(localStorage.getItem(PLAYER_APPEARANCE_KEY)||'{}'));}catch(e){return {...DEFAULT_PLAYER_APPEARANCE};}
 }
 let playerAppearance=loadPlayerAppearance();
-\nconst player=new THREE.Group();scene.add(player);// PERSONAGEM DO JOGADOR
 const player=new THREE.Group();scene.add(player);
 const skin=mat(appearanceColorNumber(playerAppearance.skin)),shirt=mat(appearanceColorNumber(playerAppearance.shirt)),pants=mat(appearanceColorNumber(playerAppearance.pants)),boots=mat(appearanceColorNumber(playerAppearance.boots)),hair=mat(appearanceColorNumber(playerAppearance.hair));
 const playerTorso=addBox(player,1.05,1.35,.62,shirt,0,2.3,0);playerTorso.userData.appearancePart='shirt';
