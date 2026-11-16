@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FRUIT ADVENTURE — VERSÃO 26 ONLINE</title>
+<title>FRUIT ADVENTURE — VERSÃO 27 ONLINE</title>
 <style>
 *{box-sizing:border-box}body{margin:0;overflow:hidden;background:#183746;color:#fff;font-family:Arial,sans-serif}canvas{display:block}
 #hud,#info,#help{position:absolute;background:rgba(19,48,59,.86);border:1px solid rgba(195,235,225,.58);box-shadow:0 10px 28px #12334455;backdrop-filter:blur(7px)}
@@ -322,7 +322,7 @@ button{border:0;border-radius:10px;padding:12px 18px;font-weight:bold;cursor:poi
 <script>
 if(!window.THREE){document.body.innerHTML='<div style="padding:30px;font:20px Arial">Não foi possível carregar o motor 3D. Confira sua conexão com a internet e abra o arquivo novamente.</div>';throw new Error('Three.js não carregou');}
 
-// VERSÃO 26: editor visual do personagem, aparência sincronizada e controle de ativação do modo ADM.
+// VERSÃO 27: editor visual do personagem, aparência sincronizada e controle de ativação do modo ADM.
 // CENA E ILUMINAÇÃO: cenário mais claro, colorido e bem definido.
 const scene=new THREE.Scene();
 scene.background=new THREE.Color(0x91cce8);
@@ -376,6 +376,57 @@ function addHumanFace(parent,skinMaterial,hairMaterial){
  const mouthCurve=new THREE.QuadraticBezierCurve3(new THREE.Vector3(-.105,3.055,.425),new THREE.Vector3(0,3.025,.45),new THREE.Vector3(.105,3.055,.425));
  const mouth=new THREE.Mesh(new THREE.TubeGeometry(mouthCurve,14,.014,6,false),mouthMat);face.add(mouth);
  return face;
+}
+function createRaceAccessories(parent){
+ const styles={};
+ const human=new THREE.Group();parent.add(human);
+ const strap=addBox(human,.16,1.38,.09,mat(0x9a7540,.82),-.24,2.34,.39);strap.rotation.z=-.32;
+ const badge=new THREE.Mesh(new THREE.OctahedronGeometry(.15,0),mat(0xe4bd65,.52,.18));badge.position.set(.02,2.0,.43);human.add(badge);
+ styles.Humano=human;
+
+ const shark=new THREE.Group();parent.add(shark);
+ const finShape=new THREE.Shape();finShape.moveTo(-.4,0);finShape.lineTo(-.25,.48);finShape.lineTo(-.03,1.02);finShape.lineTo(.13,.67);finShape.lineTo(.39,.12);finShape.lineTo(.4,0);finShape.closePath();
+ const fin=new THREE.Mesh(new THREE.ExtrudeGeometry(finShape,{depth:.14,bevelEnabled:true,bevelSegments:2,steps:1,bevelSize:.035,bevelThickness:.035}),mat(0x36758a,.72));
+ fin.position.set(0,2.62,-.49);fin.castShadow=true;shark.add(fin);
+ const finStripe=addBox(shark,.045,.62,.025,mat(0x8bc8d1,.6),0,3.02,-.315);finStripe.rotation.z=-.2;
+ styles.Tubarão=shark;
+
+ const rabbit=new THREE.Group();parent.add(rabbit);
+ for(const side of [-1,1]){
+  const ear=new THREE.Mesh(new THREE.SphereGeometry(.16,16,12),mat(0xd1a17f,.82));ear.scale.set(.78,2.75,.62);ear.position.set(side*.19,3.88,-.015);ear.rotation.z=-side*.14;ear.castShadow=true;rabbit.add(ear);
+  const inner=new THREE.Mesh(new THREE.SphereGeometry(.105,12,10),mat(0xd77f86,.72));inner.scale.set(.62,2.2,.22);inner.position.set(side*.19,3.9,.085);inner.rotation.z=-side*.14;rabbit.add(inner);
+ }
+ styles.Coelho=rabbit;
+
+ const lion=new THREE.Group();parent.add(lion);
+ const maneMat=mat(0xa95d25,.88),maneLight=mat(0xd28a39,.82);
+ const maneRing=new THREE.Mesh(new THREE.TorusGeometry(.57,.19,10,28),maneMat);maneRing.rotation.x=Math.PI/2;maneRing.position.y=3.27;maneRing.castShadow=true;lion.add(maneRing);
+ const maneTop=new THREE.Mesh(new THREE.SphereGeometry(.48,16,12),maneMat);maneTop.scale.set(1.14,.62,.9);maneTop.position.set(0,3.64,-.015);lion.add(maneTop);
+ for(let i=0;i<8;i++){
+  const angle=i*Math.PI/4;
+  const tuft=new THREE.Mesh(new THREE.ConeGeometry(.16,.43,8),i%2?maneLight:maneMat);
+  tuft.position.set(Math.sin(angle)*.62,3.27+Math.cos(angle)*.48,Math.cos(angle)*.12);
+  tuft.rotation.z=Math.sin(angle)*.58;tuft.rotation.x=Math.cos(angle)*.42;lion.add(tuft);
+ }
+ styles.Leão=lion;
+
+ const bird=new THREE.Group();parent.add(bird);
+ for(const side of [-1,1]){
+  const wing=new THREE.Group();wing.position.set(side*.57,2.8,-.36);wing.rotation.z=-side*.28;bird.add(wing);
+  const base=new THREE.Mesh(new THREE.SphereGeometry(.31,14,12),mat(0x86b8cf,.78));base.scale.set(1.05,1.55,.34);base.position.set(side*.12,.02,0);wing.add(base);
+  for(let i=0;i<4;i++){
+   const feather=new THREE.Mesh(new THREE.SphereGeometry(.17,12,10),mat(i%2?0xd9eaf0:0xa8d0df,.78));
+   feather.scale.set(.72,2.35,.42);feather.position.set(side*(.22+i*.095),-.18-i*.15,-.025);feather.rotation.z=-side*(.42+i*.11);wing.add(feather);
+  }
+ }
+ styles.Pássaro=bird;
+ return styles;
+}
+function applyRaceVisuals(model,race){
+ const styles=model?.userData?.raceAccessories;if(!styles)return;
+ const valid=['Humano','Tubarão','Coelho','Leão','Pássaro'].includes(race)?race:'Humano';
+ for(const [name,group] of Object.entries(styles))group.visible=name===valid;
+ model.userData.raceVisual=valid;
 }
 function addTree(x,z,theme){
  const group=new THREE.Group();
@@ -607,6 +658,7 @@ const outfitDetails=new THREE.Group();player.add(outfitDetails);
 const neckScarf=new THREE.Mesh(new THREE.TorusGeometry(.37,.09,8,24),mat(0xd8bd70));neckScarf.rotation.x=Math.PI/2;neckScarf.position.y=2.86;outfitDetails.add(neckScarf);
 const adventurePack=addBox(outfitDetails,.78,.95,.32,mat(0x8a6344),0,2.25,-.49);
 const packStrap=addBox(outfitDetails,.12,1.08,.12,mat(0xd7c18b),0,2.25,-.67);
+player.userData.raceAccessories=createRaceAccessories(player);
 
 const leftArm=new THREE.Group();leftArm.position.set(-.68,2.75,0);player.add(leftArm);const leftSleeve=addBox(leftArm,.3,1.05,.34,shirt,0,-.48,0);leftSleeve.userData.appearancePart='shirt';const leftHand=addBox(leftArm,.28,.28,.3,skin,0,-1.05,0);leftHand.userData.appearancePart='skin';
 const rightArm=new THREE.Group();rightArm.position.set(.68,2.75,0);player.add(rightArm);const rightSleeve=addBox(rightArm,.3,1.05,.34,shirt,0,-.48,0);rightSleeve.userData.appearancePart='shirt';const rightHand=addBox(rightArm,.28,.28,.3,skin,0,-1.05,0);rightHand.userData.appearancePart='skin';
@@ -1080,13 +1132,14 @@ function updateEnemyProjectiles(delta){
 // ESTADO DO JOGO
 const MAX_LEVEL=700;
 const RACE_CATALOG=[
- {name:'Tubarão',price:800,icon:'🦈',description:'Nada rápido e não sofre dano na água.'},
- {name:'Coelho',price:700,icon:'🐇',description:'Corre 35% mais rápido em terra.'},
- {name:'Leão',price:1200,icon:'🦁',description:'Recebe 1% de bônus de dano por nível.'},
- {name:'Pássaro',price:1000,icon:'🪽',description:'Aperte Q para voar durante 10 segundos.'}
+ {name:'Tubarão',price:800,icon:'🦈',description:'Barbatana dorsal. Nada rápido e não sofre dano na água.'},
+ {name:'Coelho',price:700,icon:'🐇',description:'Orelhas longas. Corre 35% mais rápido em terra.'},
+ {name:'Leão',price:1200,icon:'🦁',description:'Juba de leão. Recebe 1% de bônus de dano por nível.'},
+ {name:'Pássaro',price:1000,icon:'🪽',description:'Asas de penas. Aperte Q para voar durante 10 segundos.'}
 ];
 let currentRace='Humano';
 try{const savedRace=localStorage.getItem('fruitAdventureRace');if(['Tubarão','Coelho','Leão','Pássaro'].includes(savedRace))currentRace=savedRace;}catch(e){}
+applyRaceVisuals(player,currentRace);
 let currentFruit=null,money=0,bolt=0,xp=0,level=1,health=100,kills=0;
 try{level=Math.min(MAX_LEVEL,Math.max(1,Math.floor(Number(localStorage.getItem('fruitAdventureLevel'))||1)));xp=Math.max(0,Math.min(99,Math.floor(Number(localStorage.getItem('fruitAdventureXP'))||0)));}catch(err){}
 function levelMultiplierFor(value=level){const safeLevel=Math.max(1,Math.min(MAX_LEVEL,Math.floor(Number(value)||1)));return 1+(safeLevel-1)*.01;}
@@ -1222,6 +1275,7 @@ function applyAdminRace(){
  const allowedRaces=['Humano','Tubarão','Coelho','Leão','Pássaro'];
  if(!allowedRaces.includes(requested)){message('Escolha uma raça válida no seletor do painel ADM.');return;}
  currentRace=requested;
+ applyRaceVisuals(player,currentRace);
  try{localStorage.setItem('fruitAdventureRace',currentRace);}catch(e){}
  if(currentRace==='Tubarão')waterDamageTimer=0;
  updateHUD();updateAdminButtons();
@@ -1413,7 +1467,7 @@ function buyRace(name){
  const race=RACE_CATALOG.find(r=>r.name===name);if(!race)return;
  if(currentRace===name){$('raceShopStatus').textContent='Você já usa a raça '+name+'.';return;}
  if(money<race.price){$('raceShopStatus').textContent='Dinheiro insuficiente. Você precisa de '+race.price.toLocaleString('pt-BR')+' moedas.';return;}
- money-=race.price;currentRace=name;
+ money-=race.price;currentRace=name;applyRaceVisuals(player,currentRace);
  try{localStorage.setItem('fruitAdventureRace',currentRace);}catch(e){}
  updateHUD();$('raceShopStatus').textContent='✅ Raça '+name+' comprada e equipada! '+race.description;
  message('🧬 NOVA RAÇA: '+name.toUpperCase()+'!');
@@ -2361,6 +2415,8 @@ function createOnlineAvatar(id,name){
  const backpack=addBox(outfitDetails,.78,.95,.32,mat(0x8a6344),0,2.25,-.49);
  const packStrap=addBox(outfitDetails,.12,1.08,.12,mat(0xd7c18b),0,2.25,-.67);
  group.userData.appearanceStyles={hairCap,hairSpikes,hairTopper,neckScarf,backpack,packStrap};
+ group.userData.raceAccessories=createRaceAccessories(group);
+ applyRaceVisuals(group,'Humano');
  const label=makeLabel(name||'Aventureiro');label.scale.set(5.2,1.3,1);label.position.y=5.15;label.userData.lastName=name||'Aventureiro';group.add(label);
  const healthBar=createOnlineHealthBar(group);drawOnlineHealthBar(healthBar,100);
  scene.add(group);
@@ -2377,6 +2433,8 @@ function onlineApplyRoster(players){
   const model=onlineRemoteModels.get(id);
   const incomingAppearance=normalizePlayerAppearance(st.appearance),appearanceSignature=JSON.stringify(incomingAppearance);
   if(model.appearanceSignature!==appearanceSignature){applyOnlineAvatarAppearance(model.group,incomingAppearance);model.appearanceSignature=appearanceSignature;}
+  const incomingRace=['Humano','Tubarão','Coelho','Leão','Pássaro'].includes(st.race)?st.race:'Humano';
+  if(model.raceSignature!==incomingRace){applyRaceVisuals(model.group,incomingRace);model.raceSignature=incomingRace;}
   model.target={x:Number(st.x)||0,y:THREE.MathUtils.clamp(Number.isFinite(Number(st.y))?Number(st.y):PLAYER_Y,-3.6,160),z:Number(st.z)||0,yaw:Number(st.yaw)||0,island:Math.max(0,Math.min(islands.length-1,Number(st.island)||0)),fruit:String(st.fruit||'').slice(0,24),race:['Tubarão','Coelho','Leão','Pássaro'].includes(st.race)?st.race:'Humano',appearance:normalizePlayerAppearance(st.appearance),level:Math.max(1,Math.min(MAX_LEVEL,Math.floor(Number(st.level)||1)))};
   model.name=String(st.name||'Aventureiro').slice(0,16);
   model.maxHealth=THREE.MathUtils.clamp(Number(st.maxHealth)||maxHealthForLevel(st.level||1),100,maxHealthForLevel(MAX_LEVEL));model.health=THREE.MathUtils.clamp(Number.isFinite(Number(st.health))?Number(st.health):model.maxHealth,0,model.maxHealth);drawOnlineHealthBar(model.healthBar,model.health,model.maxHealth);
