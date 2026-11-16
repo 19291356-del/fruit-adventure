@@ -2092,7 +2092,7 @@ function updateOnlineCount(){
  const count=onlineIsHost?onlineConnections.size+1:(onlineActive?onlineRemoteModels.size+1:0);
  $('onlineConnectionCount').textContent=onlineActive?('👥 '+count+' jogador(es) conectados'):'Aguardando jogadores...';
 }
-let playerIdentityAuthenticated=false,playerIdentityPrompted=false;
+let playerIdentityAuthenticated=false,playerIdentityPrompted=false,characterCustomizationShown=false;
 const LOCAL_PLAYER_ACCOUNTS_KEY='fruitAdventureLocalAccountsV1';
 function readLocalPlayerAccounts(){
  try{const value=JSON.parse(localStorage.getItem(LOCAL_PLAYER_ACCOUNTS_KEY)||'{}');return value&&typeof value==='object'?value:{};}catch(err){return {};}
@@ -2139,6 +2139,7 @@ function readAppearanceControls(){
  });
 }
 function openCharacterCustomizer(){
+ characterCustomizationShown=true;
  playerAppearance=normalizePlayerAppearance(playerAppearance);
  syncAppearanceControls();applyPlayerAppearance(playerAppearance);refreshCharacterPreview();
  modalOpen=true;
@@ -2177,7 +2178,7 @@ function finishPlayerIdentity(nick){
  updateHUD();
 }
 function requirePlayerIdentity(){
- if(playerIdentityAuthenticated||cloudUser)return;
+ if(playerIdentityAuthenticated||cloudUser){if(!characterCustomizationShown)openCharacterCustomizer();return;}
  if(playerIdentityPrompted)return;
  playerIdentityPrompted=true;modalOpen=true;
  if(document.pointerLockElement)document.exitPointerLock();
