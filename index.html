@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FRUIT ADVENTURE — VERSÃO 21 ONLINE</title>
+<title>FRUIT ADVENTURE — VERSÃO 22 ONLINE</title>
 <style>
 *{box-sizing:border-box}body{margin:0;overflow:hidden;background:#183746;color:#fff;font-family:Arial,sans-serif}canvas{display:block}
 #hud,#info,#help{position:absolute;background:rgba(19,48,59,.86);border:1px solid rgba(195,235,225,.58);box-shadow:0 10px 28px #12334455;backdrop-filter:blur(7px)}
@@ -519,6 +519,7 @@ addBox(fruitShopBuilding,8.5,5.3,.55,shopWall,-9.75,2.9,10);
 addBox(fruitShopBuilding,8.5,5.3,.55,shopWall,9.75,2.9,10);
 addBox(fruitShopBuilding,29,.55,21,shopRoofMat,0,5.75,0);
 const shopSign=makeLabel('CASA DAS FRUTAS');shopSign.scale.set(12,2.3,1);shopSign.position.set(0,6.9,10.4);fruitShopBuilding.add(shopSign);
+fruitShopBuilding.userData.enemyCollision={halfWidth:13.7,halfDepth:9.7,doorHalfWidth:5.4};enemyHouseColliders.push(fruitShopBuilding);
 scene.add(fruitShopBuilding);
 const shopNpc=new THREE.Group();scene.add(shopNpc);shopNpc.position.set(-7,PLAYER_Y,-20);
 const shopCoat=mat(0x426b69),shopPants=mat(0x37454b),shopSkin=mat(0xc99a78),shopGold=mat(0xd3ad60);
@@ -853,11 +854,11 @@ function updateEnemyHealthBar(enemy){
 function enemyInsideHouse(x,z){
  const point=new THREE.Vector3(x,PLAYER_Y,z);
  for(const house of enemyHouseColliders){
-  const local=house.worldToLocal(point.clone());
-  // Casas convencionais: não deixe o inimigo atravessar o volume da construção.
-  // A entrada frontal fica livre para a aproximação.
-  if(Math.abs(local.x)<4.65&&Math.abs(local.z)<3.95&&local.y<5.5){
-   if(local.z>2.9&&Math.abs(local.x)<1.15)continue;
+  const local=house.worldToLocal(point.clone()),bounds=house.userData.enemyCollision||{};
+  const halfWidth=Number(bounds.halfWidth)||4.65,halfDepth=Number(bounds.halfDepth)||3.95;
+  if(Math.abs(local.x)<halfWidth&&Math.abs(local.z)<halfDepth&&local.y<5.5){
+   const doorHalfWidth=Number(bounds.doorHalfWidth)||1.15;
+   if(local.z>halfDepth-.9&&Math.abs(local.x)<doorHalfWidth)continue;
    return true;
   }
  }
@@ -1252,7 +1253,7 @@ function updateMissionCompass(){
  }
  const dx=targetX-player.position.x,dz=targetZ-player.position.z;
  const bearing=Math.atan2(-dx,-dz),relative=bearing-yaw;
- arrow.style.transform='rotate('+(relative*180/Math.PI)+'deg)';
+ arrow.style.transform='rotate('+(-relative*180/Math.PI)+'deg)';
  const distance=Math.round(Math.hypot(dx,dz));
  label.innerHTML='<b>BÚSSOLA DA MISSÃO</b>'+title+' • '+distance+' m';
 }
@@ -2081,7 +2082,7 @@ function onlineApplyRoster(players){
   const id=st.id;seen.add(id);
   if(!onlineRemoteModels.has(id))onlineRemoteModels.set(id,createOnlineAvatar(id,st.name));
   const model=onlineRemoteModels.get(id);
-  model.target={x:Number(st.x)||0,y:THREE.MathUtils.clamp(Number(st.y)||PLAYER_Y,PLAYER_Y,160),z:Number(st.z)||0,yaw:Number(st.yaw)||0,island:Math.max(0,Math.min(islands.length-1,Number(st.island)||0)),fruit:String(st.fruit||'').slice(0,24),level:Math.max(1,Math.min(MAX_LEVEL,Math.floor(Number(st.level)||1)))};
+  model.target={x:Number(st.x)||0,y:THREE.MathUtils.clamp(Number(st.y)||PLAYER_Y,PLAYER_Y,160),z:Number(st.z)||0,yaw:Number(st.yaw)||0,island:Math.max(0,Math.min(islands.length-1,Number(st.island)||0)),fruit:String(st.fruit||'').slice(0,24),race:['Tubarão','Coelho','Leão','Pássaro'].includes(st.race)?st.race:'Humano',level:Math.max(1,Math.min(MAX_LEVEL,Math.floor(Number(st.level)||1)))};
   model.name=String(st.name||'Aventureiro').slice(0,16);
   model.maxHealth=THREE.MathUtils.clamp(Number(st.maxHealth)||maxHealthForLevel(st.level||1),100,maxHealthForLevel(MAX_LEVEL));model.health=THREE.MathUtils.clamp(Number.isFinite(Number(st.health))?Number(st.health):model.maxHealth,0,model.maxHealth);drawOnlineHealthBar(model.healthBar,model.health,model.maxHealth);
   const label=model.nameLabel;
@@ -2106,7 +2107,7 @@ function onlineHostHandleConnection(conn){
   if(data.type==='state'){
    const st=data.state||{};
    const remoteLevel=Math.max(1,Math.min(MAX_LEVEL,Math.floor(Number(st.level)||1))),remoteMaxHealth=THREE.MathUtils.clamp(Number(st.maxHealth)||maxHealthForLevel(remoteLevel),100,maxHealthForLevel(MAX_LEVEL));
-   onlineRemoteStates.set(conn.peer,{id:conn.peer,name:String(st.name||'Aventureiro').slice(0,16),x:THREE.MathUtils.clamp(Number(st.x)||0,-650,650),y:THREE.MathUtils.clamp(Number(st.y)||PLAYER_Y,PLAYER_Y,180),z:THREE.MathUtils.clamp(Number(st.z)||0,-650,650),yaw:Number(st.yaw)||0,island:Math.max(0,Math.min(islands.length-1,Number(st.island)||0)),fruit:String(st.fruit||'').slice(0,24),level:remoteLevel,maxHealth:remoteMaxHealth,health:THREE.MathUtils.clamp(Number.isFinite(Number(st.health))?Number(st.health):remoteMaxHealth,0,remoteMaxHealth)});
+   onlineRemoteStates.set(conn.peer,{id:conn.peer,name:String(st.name||'Aventureiro').slice(0,16),x:THREE.MathUtils.clamp(Number(st.x)||0,-650,650),y:THREE.MathUtils.clamp(Number(st.y)||PLAYER_Y,PLAYER_Y,180),z:THREE.MathUtils.clamp(Number(st.z)||0,-650,650),yaw:Number(st.yaw)||0,island:Math.max(0,Math.min(islands.length-1,Number(st.island)||0)),fruit:String(st.fruit||'').slice(0,24),race:['Tubarão','Coelho','Leão','Pássaro'].includes(st.race)?st.race:'Humano',level:remoteLevel,maxHealth:remoteMaxHealth,health:THREE.MathUtils.clamp(Number.isFinite(Number(st.health))?Number(st.health):remoteMaxHealth,0,remoteMaxHealth)});
   }else if(data.type==='action'){
    const seq=Number(data.seq)||0;onlineBroadcast({type:'action',from:conn.peer,action:data.action,detail:data.detail||{},seq});
    onlineShowRemoteAction(conn.peer,data.action,data.detail||{},seq);
@@ -2287,9 +2288,9 @@ $('tradeCloseButton').addEventListener('click',declineTradeAction);
 function handleTradeRequest(fromId,detail){
  if(detail.toId!==onlinePeer?.id)return;
  if(tradeUIState||pendingOutgoingTrade){sendOnlineAction('tradeDecline',{toId:fromId,tradeId:detail.tradeId});return;}
- if(!hasOwnedFruit(String(detail.fruitA||''))){sendOnlineAction('tradeDecline',{toId:fromId,tradeId:detail.tradeId});return;}
+ const fruitA=String(detail.fruitA||'');if(!fruitNames.includes(fruitA)||!ownedFruitList().length){sendOnlineAction('tradeDecline',{toId:fromId,tradeId:detail.tradeId});return;}
  const fromName=onlineRemoteModels.get(fromId)?.name||'Outro jogador';
- showTradeModal({mode:'respond',fromId,fromName,tradeId:String(detail.tradeId||''),fruitA:String(detail.fruitA||'')});
+ showTradeModal({mode:'respond',fromId,fromName,tradeId:String(detail.tradeId||''),fruitA});
 }
 function handleTradeResponse(fromId,detail){
  if(detail.toId!==onlinePeer?.id||!pendingOutgoingTrade||pendingOutgoingTrade.tradeId!==detail.tradeId)return;
